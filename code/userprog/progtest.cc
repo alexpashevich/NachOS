@@ -11,6 +11,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "console.h"
+// #include "synchconsole.h"
 #include "addrspace.h"
 #include "synch.h"
 
@@ -87,9 +88,29 @@ ConsoleTest (char *in, char *out)
       {
 	  readAvail->P ();	// wait for character to arrive
 	  ch = console->GetChar ();
+    if (ch != '\n') {
+      console->PutChar ('<');
+      writeDone->P ();
+    }
 	  console->PutChar (ch);	// echo it!
 	  writeDone->P ();	// wait for write to finish
+    if (ch != '\n') {
+      console->PutChar ('>');
+      writeDone->P ();
+    }
 	  if (ch == 'q')
 	      return;		// if q, quit
+    if (ch == EOF)
+        return; // if ^D quit
       }
+}
+
+void
+SynchConsoleTest (char *in, char *out)
+{
+    char ch;
+    SynchConsole *mysynchconsole = new SynchConsole(in, out);
+    while ((ch = mysynchconsole->SynchGetChar()) != EOF)
+        mysynchconsole->SynchPutChar(ch);
+    fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
 }

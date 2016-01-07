@@ -15,8 +15,12 @@
 int
 main ()
 {
+    int a, b, c;
+    b = 5;
+    c = 7;
+    a = b * c;
     Halt ();
 
     /* not reached */
-    return 0;
+    return a;
 }
