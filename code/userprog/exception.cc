@@ -72,13 +72,13 @@ void copyStringFromMachine(int from, char *to, unsigned size)
   int temp[1];
   for (i = 0; i < size; ++i)
   {
-    machine->ReadMem(from + i, 1, temp);
+    ASSERT(machine->ReadMem(from + i, 1, temp));
     to[i] = ((char*)temp)[0];
-    if (((char*)temp)[0] == 0)
+    if (((char*)temp)[0] == '\0')
       break;
   }
   if (i == size)
-    to[size - 1] = 0;
+    to[size - 1] = '\0';
 }
 #endif
 
@@ -123,9 +123,21 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_GetChar: {
-        char ch;
-        ch = synchconsole->SynchGetChar();
+        char ch = synchconsole->SynchGetChar();
         machine->WriteRegister(2, (int)ch);
+        break;
+      }
+      case SC_GetString: {
+        int to = machine->ReadRegister(4);
+        int n = machine->ReadRegister(5);
+        char str[n];
+        synchconsole->SynchGetString(str, n);
+        int i;
+        for (i = 0; i < n; ++i) {
+          ASSERT(machine->WriteMem(to + i, 1, (int)(str[i])));
+          if (str[i] == '\0')
+            break;
+        }
         break;
       }
       default: {

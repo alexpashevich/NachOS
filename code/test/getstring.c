@@ -3,11 +3,9 @@
 int
 main()
 {
-	int i;
-	char s[5];
-	PutString("Please type 5 characters...\n");
-	for (i = 0; i < 5; ++i)
-		s[i] = GetChar();
+	char s[10];
+	PutString("Please type string with maximum 10 characters...\n");
+	GetString(s, 10);
 	PutString("You have just typed: ");
 	PutString(s);
 	PutChar('\n');

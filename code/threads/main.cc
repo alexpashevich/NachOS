@@ -24,6 +24,7 @@
 //    -s causes user programs to be executed in single-step mode
 //    -x runs a user program
 //    -c tests the console
+//    -sc tests the synchconsole
 //
 //  FILESYS
 //    -f causes the physical disk to be formatted

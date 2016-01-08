@@ -42,7 +42,8 @@ char SynchConsole::SynchGetChar()
 void SynchConsole::SynchPutString(const char s[])
 {
     int i;
-    for (i = 0; s[i] != 0; ++i) {
+    for (i = 0; s[i] != '\0'; ++i)
+    {
         console->PutChar(s[i]);
         writeDone->P();
     }
@@ -51,10 +52,23 @@ void SynchConsole::SynchPutString(const char s[])
 void SynchConsole::SynchGetString(char *s, int n)
 {
     int i;
-    for (i = 0; i < n; ++i) {
+    for (i = 0; i < n - 1; ++i)
+    {
         readAvail->P();
         s[i] = console->GetChar();
+        if (s[i] == '\n')
+        {
+            s[i + 1] = '\0';
+            break;
+        }
+        if (s[i] == EOF)
+        {
+            s[i] = '\0';
+            break;
+        }
     }
+    if (i == n - 1)
+        s[n - 1] = '\0';
 }
 
 #endif
