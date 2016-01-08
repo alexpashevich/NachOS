@@ -29,7 +29,13 @@
 #define SC_Close		8
 #define SC_Fork			9
 #define SC_Yield		10
+
+#ifdef CHANGED
 #define SC_PutChar		11
+#define SC_PutString	12
+#define SC_GetChar		13
+#define SC_GetString	14
+#endif
 
 #ifdef IN_USER_MODE
 
@@ -129,8 +135,20 @@ void Fork (void (*func) ());
  */
 void Yield ();
 
-/* Put one char to a char stream */
+#ifdef CHANGED
+/* Put one char to an output stream */
 void PutChar (char c);
+
+/* Put a string to an output stream */
+void PutString (char *c);
+
+/* Get one char from an input stream */
+char GetChar ();
+
+/* Get a string with length n from an input stream */
+void GetString (char *s, int n);
+#endif
+
 
 #endif // IN_USER_MODE
 

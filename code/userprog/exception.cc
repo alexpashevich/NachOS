@@ -64,31 +64,46 @@ UpdatePC ()
 //      are in machine.h.
 //----------------------------------------------------------------------
 
-// void
-// ExceptionHandler (ExceptionType which)
-// {
-//     int type = machine->ReadRegister (2);
 
-//     if ((which == SyscallException) && (type == SC_Halt))
-//       {
-// 	  DEBUG ('a', "Shutdown, initiated by user program.\n");
-// 	  interrupt->Halt ();
-//       }
-//     else
-//       {
-// 	  printf ("Unexpected user mode exception %d %d\n", which, type);
-// 	  ASSERT (FALSE);
-//       }
-
-//     // LB: Do not forget to increment the pc before returning!
-//     UpdatePC ();
-//     // End of addition
-// }
+#ifdef CHANGED
+void copyStringFromMachine(int from, char *to, unsigned size)
+{
+  unsigned i;
+  int temp[1];
+  for (i = 0; i < size; ++i)
+  {
+    machine->ReadMem(from + i, 1, temp);
+    to[i] = ((char*)temp)[0];
+    if (((char*)temp)[0] == 0)
+      break;
+  }
+  if (i == size)
+    to[size - 1] = 0;
+}
+#endif
 
 void
 ExceptionHandler (ExceptionType which)
 {
   int type = machine->ReadRegister(2);
+
+#ifndef CHANGED
+  if ((which == SyscallException) && (type == SC_Halt))
+      {
+   DEBUG ('a', "Shutdown, initiated by user program.\n");
+   interrupt->Halt ();
+      }
+    else
+      {
+   printf ("Unexpected user mode exception %d %d\n", which, type);
+   ASSERT (FALSE);
+      }
+
+    // LB: Do not forget to increment the pc before returning!
+    UpdatePC ();
+    // End of addition
+}
+#else
   if (which == SyscallException) {
     switch (type) {
       case SC_Halt: {
@@ -97,8 +112,20 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_PutChar: {
-        // char ch = (char)machine->ReadRegister(4);
-        // synchconsole->SynchPutChar(ch);
+        char ch = (char)machine->ReadRegister(4);
+        synchconsole->SynchPutChar(ch);
+        break;
+      }
+      case SC_PutString: {
+        int from = machine->ReadRegister(4);
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        synchconsole->SynchPutString(stringbuffer);
+        break;
+      }
+      case SC_GetChar: {
+        char ch;
+        ch = synchconsole->SynchGetChar();
+        machine->WriteRegister(2, (int)ch);
         break;
       }
       default: {
@@ -109,3 +136,4 @@ ExceptionHandler (ExceptionType which)
     UpdatePC();
   }
 }
+#endif

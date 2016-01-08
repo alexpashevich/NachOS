@@ -16,7 +16,7 @@
 #include "copyright.h"
 #include "console.h"
 #include "system.h"
-#include "synch.h" //?
+// #include "synch.h" //?
 
 // Dummy functions because C++ is weird about pointers to member functions
 static void ConsoleReadPoll(int c) 
@@ -149,55 +149,4 @@ Console::PutChar(char ch)
     putBusy = TRUE;
     interrupt->Schedule(ConsoleWriteDone, (int)this, ConsoleTime,
 					ConsoleWriteInt);
-}
-
-static Semaphore *readAvail;
-static Semaphore *writeDone;
-
-static void ReadAvail(int arg) { readAvail->V(); }
-static void WriteDone(int arg) { writeDone->V(); }
-
-SynchConsole::SynchConsole(char *readFile, char *writeFile)
-{
-    readAvail = new Semaphore("read avail", 0);
-    writeDone = new Semaphore("write done", 0);
-    console = new Console(readFile, writeFile,
-                          ReadAvail, WriteDone, 0);
-}
-
-SynchConsole::~SynchConsole()
-{
-    delete console;
-    delete writeDone;
-    delete readAvail;
-}
-
-void SynchConsole::SynchPutChar(const char ch)
-{
-    console->PutChar(ch);
-    writeDone->P();
-}
-
-char SynchConsole::SynchGetChar()
-{
-    readAvail->P();
-    return console->GetChar();
-}
-
-void SynchConsole::SynchPutString(const char s[])
-{
-    int i;
-    for (i = 0; s[i] != 0; ++i) {
-        console->PutChar(s[i]);
-        writeDone->P();
-    }
-}
-
-void SynchConsole::SynchGetString(char *s, int n)
-{
-    int i;
-    for (i = 0; i < n; ++i) {
-        readAvail->P();
-        s[i] = console->GetChar();
-    }
 }

@@ -29,7 +29,10 @@ SynchDisk *synchDisk;
 
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
 Machine *machine;		// user program memory and registers
-// SynchConsole *synchconsole;
+#ifdef CHANGED
+SynchConsole *synchconsole;
+char *stringbuffer;
+#endif
 #endif
 
 #ifdef NETWORK
@@ -84,7 +87,6 @@ Initialize (int argc, char **argv)
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
-    // synchconsole = new SynchConsole(NULL, NULL);
 #endif
 #ifdef FILESYS_NEEDED
     bool format = FALSE;	// format disk
@@ -159,6 +161,10 @@ Initialize (int argc, char **argv)
 
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
+#ifdef CHANGED
+    synchconsole = new SynchConsole(NULL, NULL);
+    stringbuffer = new char[MAX_STRING_SIZE];
+#endif
 #endif
 
 #ifdef FILESYS
@@ -188,7 +194,10 @@ Cleanup ()
 
 #ifdef USER_PROGRAM
     delete machine;
-    // delete synchconsole;
+#ifdef CHANGED
+    delete synchconsole;
+    delete[] stringbuffer;
+#endif
 #endif
 
 #ifdef FILESYS_NEEDED
