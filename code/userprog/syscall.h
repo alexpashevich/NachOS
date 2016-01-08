@@ -35,6 +35,8 @@
 #define SC_PutString	12
 #define SC_GetChar		13
 #define SC_GetString	14
+#define SC_PutInt		15
+#define SC_GetInt		16
 #endif
 
 #ifdef IN_USER_MODE
@@ -142,11 +144,17 @@ void PutChar (char c);
 /* Put a string to an output stream */
 void PutString (char *c);
 
+/* Put one int to an output stream */
+void PutInt (int n);
+
 /* Get one char from an input stream */
 char GetChar ();
 
 /* Get a string with length n from an input stream */
 void GetString (char *s, int n);
+
+/* Get one int from an input stream */
+void GetInt (int *n);
 #endif
 
 

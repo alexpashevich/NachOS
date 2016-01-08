@@ -130,19 +130,38 @@ ExceptionHandler (ExceptionType which)
       case SC_GetString: {
         int to = machine->ReadRegister(4);
         int n = machine->ReadRegister(5);
-        char str[n];
-        synchconsole->SynchGetString(str, n);
+        char buf[n];
+        synchconsole->SynchGetString(buf, n);
         int i;
         for (i = 0; i < n; ++i) {
-          ASSERT(machine->WriteMem(to + i, 1, (int)(str[i])));
-          if (str[i] == '\0')
+          ASSERT(machine->WriteMem(to + i, 1, (int)(buf[i])));
+          if (buf[i] == '\0')
             break;
         }
         break;
       }
+      case SC_PutInt: {
+        int val = machine->ReadRegister(4);
+        char buf[12];
+        snprintf(buf, 12, "%d", val);
+        synchconsole->SynchPutString(buf);
+        break;
+      }
+      case SC_GetInt: {
+        int addr = machine->ReadRegister(4);
+        char buf[12];
+        synchconsole->SynchGetString(buf, 12);
+        int res = 0;
+        sscanf(buf, "%d", &res);
+        ASSERT(machine->WriteMem(addr, 4, res));
+        break;
+      }
       default: {
+        int val = machine->ReadRegister(4);
         printf("Unexpected user mode exception %d %d\n", which, type);
+        printf("r4 = %d\n", val);
         ASSERT(FALSE);
+        // Halt();
       }
     }
     UpdatePC();
