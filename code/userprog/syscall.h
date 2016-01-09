@@ -31,12 +31,14 @@
 #define SC_Yield		10
 
 #ifdef CHANGED
-#define SC_PutChar		11
-#define SC_PutString	12
-#define SC_GetChar		13
-#define SC_GetString	14
-#define SC_PutInt		15
-#define SC_GetInt		16
+#define SC_PutChar			11
+#define SC_PutString		12
+#define SC_GetChar			13
+#define SC_GetString		14
+#define SC_PutInt			15
+#define SC_GetInt			16
+#define SC_UserThreadCreate 17
+#define SC_UserThreadExit	18
 #endif
 
 #ifdef IN_USER_MODE
@@ -155,6 +157,12 @@ void GetString (char *s, int n);
 
 /* Get one int from an input stream */
 void GetInt (int *n);
+
+/* Create a new thread executing the function with arguments */
+int UserThreadCreate(void (*f)(void *), void *arg);
+
+/* Destroy the thread */
+void UserThreadExit();
 #endif
 
 
