@@ -109,6 +109,8 @@ ExceptionHandler (ExceptionType which)
     switch (type) {
       case SC_Halt: {
         DEBUG('a', "Shutdown, initiated by user program.\n");
+        int res = machine->ReadRegister(2);
+        printf("main is finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
