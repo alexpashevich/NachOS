@@ -2,6 +2,7 @@
 
 void func (void *arg) {
 	PutString("I am here\n");
+	UserThreadExit();
 }
 
 int main () {

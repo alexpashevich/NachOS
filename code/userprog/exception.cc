@@ -108,17 +108,23 @@ ExceptionHandler (ExceptionType which)
   if (which == SyscallException) {
     switch (type) {
       case SC_Halt: {
+        int res = machine->ReadRegister(4);
         while (currentThread->space->GetCounterValue() > 1) {
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
-        int res = machine->ReadRegister(2);
         printf("main is finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
-      case SC_Yield: {
-        currentThread->Yield();
+      case SC_Exit: {
+        int res = machine->ReadRegister(4);
+        while (currentThread->space->GetCounterValue() > 1) {
+          currentThread->space->mainthreadwait->P();
+        }
+        DEBUG('a', "Shutdown, end of main function.\n");
+        printf("main is finished with value %d\n", res);
+        interrupt->Halt();
         break;
       }
       case SC_PutChar: {
