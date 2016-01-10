@@ -32,6 +32,7 @@ Machine *machine;		// user program memory and registers
 #ifdef CHANGED
 SynchConsole *synchconsole;
 char *stringbuffer;
+Semaphore *bufferlock;
 #endif
 #endif
 
@@ -164,6 +165,7 @@ Initialize (int argc, char **argv)
 #ifdef CHANGED
     synchconsole = new SynchConsole(NULL, NULL);
     stringbuffer = new char[MAX_STRING_SIZE];
+    bufferlock = new Semaphore("buffer lock semaphore", 1);
 #endif
 #endif
 
@@ -197,6 +199,7 @@ Cleanup ()
 #ifdef CHANGED
     delete synchconsole;
     delete[] stringbuffer;
+    delete bufferlock;
 #endif
 #endif
 

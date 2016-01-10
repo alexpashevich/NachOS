@@ -1,10 +1,13 @@
 #include "syscall.h"
 
 void func(void *arg) {
-	PutString("I am fucking created!!!\n");
 	int myarg = ((int*)arg)[0];
 	PutString("The argument = ");
 	PutInt(myarg);
+	PutChar('\n');
+	char ch = GetChar();
+	PutString("second thread get char ");
+	PutChar(ch);
 	PutChar('\n');
 	UserThreadExit();
 }
@@ -17,6 +20,8 @@ main()
 	*a = 228;
 	UserThreadCreate(func, (void*)a);
 	char ch = GetChar();
-	Halt();
-	return (int)ch; // just because if we don't use this char, the warning is arasen
+	PutString("first thread get char ");
+	PutChar(ch);
+	PutChar('\n');
+	return 0;
 }

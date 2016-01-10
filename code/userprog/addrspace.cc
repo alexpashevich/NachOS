@@ -119,7 +119,11 @@ AddrSpace::AddrSpace (OpenFile * executable)
 			       [noffH.initData.virtualAddr]),
 			      noffH.initData.size, noffH.initData.inFileAddr);
       }
-
+#ifdef CHANGED
+    lock = new Semaphore("address space lock", 1);
+    mainthreadwait = new Semaphore("address space condition", 0);
+    counter = 1;
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -133,6 +137,10 @@ AddrSpace::~AddrSpace ()
   // delete pageTable;
   delete [] pageTable;
   // End of modification
+#ifdef CHANGED
+  delete lock;
+  delete mainthreadwait;
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -195,3 +203,22 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+
+#ifdef CHANGED
+void AddrSpace::IncrementCounter () {
+    this->lock->P();
+    ++this->counter;
+    this->lock->V();
+}
+void AddrSpace::DecrementCounter () {
+    this->lock->P();
+    --this->counter;
+    this->lock->V();
+    if (this->counter == 1)
+        this->mainthreadwait->V();
+}
+
+int AddrSpace::GetCounterValue() {
+    return counter;
+}
+#endif

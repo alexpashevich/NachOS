@@ -108,6 +108,9 @@ ExceptionHandler (ExceptionType which)
   if (which == SyscallException) {
     switch (type) {
       case SC_Halt: {
+        while (currentThread->space->GetCounterValue() > 1) {
+          currentThread->space->mainthreadwait->P();
+        }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         int res = machine->ReadRegister(2);
         printf("main is finished with value %d\n", res);
@@ -125,8 +128,10 @@ ExceptionHandler (ExceptionType which)
       }
       case SC_PutString: {
         int from = machine->ReadRegister(4);
+        bufferlock->P();
         copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
         synchconsole->SynchPutString(stringbuffer);
+        bufferlock->V();
         break;
       }
       case SC_GetChar: {
@@ -164,7 +169,6 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadCreate: {
-        fprintf(stderr, "SC_UserThreadCreate is catched\n");
         int f = machine->ReadRegister(4);
         int arg = machine->ReadRegister(5);
         int res = do_UserThreadCreate(f, arg);
@@ -172,7 +176,6 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadExit: {
-        fprintf(stderr, "SC_UserThreadExit is catched\n");
         do_UserThreadExit();
         break;
       }

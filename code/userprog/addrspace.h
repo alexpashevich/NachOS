@@ -16,6 +16,10 @@
 #include "copyright.h"
 #include "filesys.h"
 
+#ifdef CHANGED
+#include "synch.h"
+#endif
+
 #define UserStackSize		1024	// increase this as necessary!
 
 class AddrSpace
@@ -31,6 +35,17 @@ class AddrSpace
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
+
+#ifdef CHANGED
+  public:
+    void IncrementCounter(); // in case one more thread started to use this addrspace
+    void DecrementCounter(); // in case one thread using this addrspace was destroyed
+    int GetCounterValue();
+    Semaphore *mainthreadwait;
+    Semaphore *lock;
+  private:
+    int counter;
+#endif
 
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation

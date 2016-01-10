@@ -16,6 +16,10 @@
 #include "stats.h"
 #include "timer.h"
 
+#ifdef CHANGED
+#include "synch.h"
+#endif
+
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
 						// called before anything else
@@ -38,6 +42,7 @@ extern Machine *machine;	// user program memory and registers
 extern SynchConsole *synchconsole; // user program console
 #define MAX_STRING_SIZE 100
 extern char *stringbuffer;
+extern Semaphore *bufferlock;
 #endif
 
 #endif

@@ -1,6 +1,5 @@
 #ifdef CHANGED
 #include "thread.h"
-#include "stdio.h" // delete
 #include "system.h"
 
 class funcAndArg {
@@ -11,7 +10,6 @@ public:
 };
 
 static void StartUserThread(int myfuncandarg) {
-	fprintf(stderr, "StartUserThread is running, don't know what to do next...\n");
 // getting the real arguments at first
 	int f = ((funcAndArg*) myfuncandarg)->f;
 	int arg = ((funcAndArg*) myfuncandarg)->arg;
@@ -39,17 +37,17 @@ int do_UserThreadCreate(int f, int arg) {
 		return -1;
 // creating a new thread if there are enough resources
     Thread *newthread = new Thread ("thread created by user");
+    currentThread->space->IncrementCounter();
 // initializing it
     newthread->SaveUserState();
 // putting it in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newthread->Fork (StartUserThread, (int)myfuncandarg);
-    fprintf(stderr, "StartUserThread is in the queue\n");
 	return 0;
 }
 
 void do_UserThreadExit() {
-	fprintf(stderr, "I m finishing the thread\n");
+	currentThread->space->DecrementCounter();
 	currentThread->space = NULL;
 	currentThread->Finish();
 }
