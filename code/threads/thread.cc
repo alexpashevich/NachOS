@@ -408,6 +408,15 @@ Thread::RestoreUserState ()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, userRegisters[i]);
 }
+
+#ifdef CHANGED
+void
+Thread::SaveUserRegister (int reg, int val)
+{
+    userRegisters[reg] = val; 
+}
+#endif
+
 #endif
 
 

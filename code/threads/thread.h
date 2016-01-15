@@ -112,8 +112,8 @@ class Thread
 	printf ("%s, ", name);
     }
 #ifdef CHANGED
-    int stackSlot;
-    int SP;
+    void SaveUserRegister (int reg, int val);
+    int stackSlotNb;    // need to know which slot did current thread take
 #endif
   private:
     // some of the private data for this class is listed above

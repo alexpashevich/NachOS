@@ -36,7 +36,7 @@ StartUserThread(int myFuncAndArg)
 	currentThread->RestoreUserState();
 
 // initialize the stack pointer of the thread program
-	machine->WriteRegister(StackReg, currentThread->SP);
+	// machine->WriteRegister(StackReg, currentThread->SP);
 
 // pass the arguments
 	machine->WriteRegister(4, arg);
@@ -53,7 +53,8 @@ StartUserThread(int myFuncAndArg)
 //----------------------------------------------------------------------
 // do_UserThreadCreate
 //		Creates a new thread newThread, initialise it and place it in
-//		the threads queue (in the kernel). 
+//		the threads queue (in the kernel). Returns 0 on success and
+//		-1 on failure.
 //----------------------------------------------------------------------
 
 int
@@ -62,24 +63,26 @@ do_UserThreadCreate(int f, int arg)
 
 
 // finding out if we have enough resources to create a thread
-	currentThread->space->bitMapLock->P();
-	int freeStacksNb = currentThread->space->stackMap->NumClear();
-	currentThread->space->bitMapLock->V();
-	if(freeStacksNb == 0)
+	currentThread->space->bitMapLock->P();	
+	if(currentThread->space->stackMap->NumClear() == 0)
 	{
 		/* Cannot create new thread because of lack of free memory */
+		currentThread->space->bitMapLock->V();
 		return -1;
 	}
+	currentThread->space->bitMapLock->V();
 
 // creating a new thread if there are enough resources
     Thread *newThread = new Thread ("Thread created by user");
     currentThread->space->IncrementCounter();
 
-// initializing it
+// finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
     currentThread->space->bitMapLock->P();
-    newThread->stackSlot = currentThread->space->stackMap->Find();
+    newThread->stackSlotNb = currentThread->space->stackMap->Find();
     currentThread->space->bitMapLock->V();
-    newThread->SP = currentThread->space->mainStackTop - newThread->stackSlot * threadStackSize;
+    newThread->SaveUserRegister(StackReg, 
+    						currentThread->space->mainStackTop - newThread->stackSlotNb * threadStackSize);
+
 // putting it in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
@@ -98,7 +101,7 @@ do_UserThreadExit()
 {
 	currentThread->space->DecrementCounter();
 	currentThread->space->bitMapLock->P();
-	currentThread->space->stackMap->Clear(currentThread->stackSlot);
+	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
 	currentThread->space->bitMapLock->V();
 	// currentThread->space = NULL; // why this NULL?
 	currentThread->Finish();
