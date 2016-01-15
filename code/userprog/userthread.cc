@@ -35,8 +35,7 @@ StartUserThread(int myFuncAndArg)
 // initialize backups of registers
 	currentThread->RestoreUserState();
 
-// initialize the stack pointer 3 pages below the SP of the main program
-	
+// initialize the stack pointer of the thread program
 	machine->WriteRegister(StackReg, currentThread->SP);
 
 // pass the arguments
@@ -63,7 +62,10 @@ do_UserThreadCreate(int f, int arg)
 
 
 // finding out if we have enough resources to create a thread
-	if(currentThread->space->stackMap->NumClear() == 0)
+	currentThread->space->bitMapLock->P();
+	int freeStacksNb = currentThread->space->stackMap->NumClear();
+	currentThread->space->bitMapLock->V();
+	if(freeStacksNb == 0)
 	{
 		/* Cannot create new thread because of lack of free memory */
 		return -1;
@@ -73,10 +75,10 @@ do_UserThreadCreate(int f, int arg)
     Thread *newThread = new Thread ("Thread created by user");
     currentThread->space->IncrementCounter();
 
-    printf("counter value after thread creation %d\n", currentThread->space->GetCounterValue());
-
 // initializing it
+    currentThread->space->bitMapLock->P();
     newThread->stackSlot = currentThread->space->stackMap->Find();
+    currentThread->space->bitMapLock->V();
     newThread->SP = currentThread->space->mainStackTop - newThread->stackSlot * threadStackSize;
 // putting it in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
@@ -95,7 +97,9 @@ void
 do_UserThreadExit()
 {
 	currentThread->space->DecrementCounter();
+	currentThread->space->bitMapLock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlot);
+	currentThread->space->bitMapLock->V();
 	// currentThread->space = NULL; // why this NULL?
 	currentThread->Finish();
 }

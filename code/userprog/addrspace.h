@@ -47,6 +47,7 @@ class AddrSpace
     int GetCounterValue();
     Semaphore *mainthreadwait;
     Semaphore *lock;
+    Semaphore *bitMapLock;  // do we need two different locks on counter and bitMap?
 
     BitMap *stackMap; // bitMap for userThread's stack allocation
     int mainStackTop; // userThread's stacks are allocated below main stack, so we need

@@ -132,6 +132,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 #ifdef CHANGED
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
+    bitMapLock = new Semaphore("bit map lock", 1);
     counter = 1;
 #endif
 }
@@ -186,7 +187,7 @@ AddrSpace::InitRegisters ()
 	   numPages * PageSize - 16);
 #ifdef CHANGED
     mainStackTop = numPages * PageSize - 16;
-    stackMap->Mark(0);
+    stackMap->Mark(0);  // do we need to lock here?
 #endif    
 }
 
