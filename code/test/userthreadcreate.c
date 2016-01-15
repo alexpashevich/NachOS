@@ -5,9 +5,9 @@ void func(void *arg) {
 	PutString("The argument = ");
 	PutInt(myarg);
 	PutChar('\n');
-	char ch = GetChar();
+	// char ch = GetChar();
 	PutString("second thread get char ");
-	PutChar(ch);
+	// PutChar(ch);
 	PutChar('\n');
 	UserThreadExit();
 }
@@ -18,7 +18,10 @@ main()
 	PutString("main started to execute\n");
 	int a[1];
 	*a = 228;
-	UserThreadCreate(func, (void*)a);
+	if(UserThreadCreate(func, (void*)a) == -1)
+	{
+		PutString("Thread was not created!\n");
+	}
 	char ch = GetChar();
 	PutString("first thread get char ");
 	PutChar(ch);

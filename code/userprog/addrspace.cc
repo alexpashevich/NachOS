@@ -77,10 +77,20 @@ AddrSpace::AddrSpace (OpenFile * executable)
     numPages = divRoundUp (size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);	// check we're not trying
+    ASSERT (numPages <= NumPhysPages);  // check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory
+
+#ifdef CHANGED    
+
+    //  create a bitMap to manage userThread's stack allocation
+        // each bit corresponds to memory size big enough for UserStack?    
+    int stackPagesNb = divRoundUp(UserStackSize, PageSize);
+    int threadsNb = stackPagesNb / (threadStackSize / PageSize);
+    stackMap = new BitMap(threadsNb);
+    
+#endif
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
@@ -174,6 +184,10 @@ AddrSpace::InitRegisters ()
     machine->WriteRegister (StackReg, numPages * PageSize - 16);
     DEBUG ('a', "Initializing stack register to %d\n",
 	   numPages * PageSize - 16);
+#ifdef CHANGED
+    mainStackTop = numPages * PageSize - 16;
+    stackMap->Mark(0);
+#endif    
 }
 
 //----------------------------------------------------------------------

@@ -18,9 +18,13 @@
 
 #ifdef CHANGED
 #include "synch.h"
+#include "bitmap.h"
 #endif
 
-#define UserStackSize		1024	// increase this as necessary!
+#define UserStackSize		40 * PageSize //1024	// increase this as necessary!
+#ifdef CHANGED
+#define threadStackSize 512 // 4 * PageSize
+#endif
 
 class AddrSpace
 {
@@ -35,7 +39,7 @@ class AddrSpace
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
-
+    
 #ifdef CHANGED
   public:
     void IncrementCounter(); // in case one more thread started to use this addrspace
@@ -43,6 +47,10 @@ class AddrSpace
     int GetCounterValue();
     Semaphore *mainthreadwait;
     Semaphore *lock;
+
+    BitMap *stackMap; // bitMap for userThread's stack allocation
+    int mainStackTop; // userThread's stacks are allocated below main stack, so we need
+                      // to know where main stack ends
   private:
     int counter;
 #endif

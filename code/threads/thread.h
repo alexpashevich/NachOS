@@ -81,7 +81,6 @@ class Thread
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;		// the current stack pointer
     int machineState[MachineStateSize];	// all registers except for stackTop
-
   public:
       Thread (const char *debugName);	// initialize a Thread 
      ~Thread ();		// deallocate a Thread
@@ -112,7 +111,10 @@ class Thread
     {
 	printf ("%s, ", name);
     }
-
+#ifdef CHANGED
+    int stackSlot;
+    int SP;
+#endif
   private:
     // some of the private data for this class is listed above
 

@@ -123,6 +123,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, end of main function.\n");
+        printf("counter value on exit %d\n", currentThread->space->GetCounterValue());
         printf("main is finished with value %d\n", res);
         interrupt->Halt();
         break;

@@ -11,7 +11,7 @@ int main () {
 	UserThreadCreate(func, 0);
 	UserThreadCreate(func, 0);
 	UserThreadCreate(func, 0);
-	GetChar();
+	// GetChar();
 	PutString("Main is finishing executing\n");
 	return 0;
 }
