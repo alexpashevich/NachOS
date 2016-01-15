@@ -149,6 +149,7 @@ ExceptionHandler (ExceptionType which)
         int to = machine->ReadRegister(4);
         int n = machine->ReadRegister(5);
         char buf[n];
+        ++n; // make space for '\0' character added at the end of string
         synchconsole->SynchGetString(buf, n);
         int i;
         for (i = 0; i < n; ++i) {
