@@ -113,7 +113,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
-        printf("main is finished with value %d\n", res);
+        printf("Main program has finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
@@ -123,7 +123,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, end of main function.\n");
-        printf("main is finished with value %d\n", res);
+        printf("Main program has finished with value %d\n", res);
         interrupt->Halt();
         break;
       }

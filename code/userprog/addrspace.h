@@ -21,9 +21,9 @@
 #include "bitmap.h"
 #endif
 
-#define UserStackSize		40 * PageSize //1024	// increase this as necessary!
+#define UserStackSize		20 * PageSize //1024	// increase this as necessary!
 #ifdef CHANGED
-#define threadStackSize 512 // 4 * PageSize
+#define threadStackSize 4 * PageSize  // 512
 #endif
 
 class AddrSpace
