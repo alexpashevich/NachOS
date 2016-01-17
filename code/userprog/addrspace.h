@@ -52,6 +52,7 @@ class AddrSpace
     int mainStackTop; // userThread's stacks are allocated below main stack, so we need
                       // to know where main stack ends
     int threadsNb;    // make those private?
+    void** threadArray;
   private:
     int counter;
 #endif

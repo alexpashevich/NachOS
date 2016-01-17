@@ -45,6 +45,9 @@ Thread::Thread (const char *threadName)
     // user threads.
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
+#ifdef CHANGED
+    waitingList = new List;
+#endif      
 #endif
 }
 
@@ -309,7 +312,7 @@ SetupThreadState ()
 #endif // USER_PROGRAM
 
   // LB: The default level for interrupts is IntOn.
-  InterruptEnable (); 
+  InterruptEnable ();
 
 }
 

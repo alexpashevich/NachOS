@@ -16,26 +16,6 @@ public:
 	funcAndArg(int _f, int _arg) { f = _f; arg = _arg; }
 };
 
-struct join
-{
-	Thread* waitingThread;
-	int id;
-};
-
-void
-foo(int arg)
-{
-	join* item = (join*) arg;
-	if(item->id == currentThread->stackSlotNb)
-	{
-		IntStatus oldLevel = interrupt->SetLevel (IntOff);
-		// printf("test\n");
-		scheduler->ReadyToRun (item->waitingThread);
-		// scheduler->waitingList->Remove()
-		(void) interrupt->SetLevel (oldLevel);
-	}
-}
-
 //----------------------------------------------------------------------
 // StartUserThread
 //      Function called after user context-switched.
@@ -48,22 +28,22 @@ StartUserThread(int myFuncAndArg)
 {
 
 // // getting the real arguments at first
-	// int f = ((funcAndArg*) myFuncAndArg)->f;
-	// int arg = ((funcAndArg*) myFuncAndArg)->arg;
-	// delete (funcAndArg*)myFuncAndArg;
+	int f = ((funcAndArg*) myFuncAndArg)->f;
+	int arg = ((funcAndArg*) myFuncAndArg)->arg;
+	delete (funcAndArg*)myFuncAndArg;
 
 // initialize backups of registers
 	currentThread->RestoreUserState();
 // initialize the stack pointer of the thread program
-    // machine->WriteRegister(StackReg, 
-    // 			currentThread->space->mainStackTop - currentThread->stackSlotNb * threadStackSize);
+    machine->WriteRegister(StackReg, 
+    			currentThread->space->mainStackTop - currentThread->stackSlotNb * threadStackSize);
 
 // pass the arguments
-	// machine->WriteRegister(4, arg);
+	machine->WriteRegister(4, arg);
 
 // set PC (program counter) registers
-	// machine->WriteRegister(PCReg, f);
-	// machine->WriteRegister(NextPCReg, f + 4);
+	machine->WriteRegister(PCReg, f);
+	machine->WriteRegister(NextPCReg, f + 4);
 
 // and start the interpreter Machine::Run
 	machine->Run();
@@ -83,33 +63,32 @@ do_UserThreadCreate(int f, int arg)
 
 // finding out if we have enough resources to create a thread
 	int slotNb;
-	currentThread->space->lock->P();	
+	// currentThread->space->lock->P();	
 	if( (slotNb = currentThread->space->stackMap->Find()) == -1 )
 	{
 		/* Cannot create new thread because of lack of free memory */
-		currentThread->space->lock->V();
+		// currentThread->space->lock->V();
 		return -1;
 	}
-	currentThread->space->lock->V();
+	// currentThread->space->lock->V();
 
 // creating a new thread if there are enough resources
     Thread *newThread = new Thread ("Thread created by user");
     // currentThread->space->IncrementCounter();
 
-    // Thread::threads = currentThread;
-
 // finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
     newThread->stackSlotNb = slotNb; // need to set it to know which slot to free in do_UserThreadExit()
+    currentThread->space->threadArray[slotNb] = newThread;
 
-	//either save important regs values here and restore them in StartUserThread() or do it explicitly there
+/*
+//either save important regs values here and restore them in StartUserThread() or do it explicitly there
     newThread->SaveUserRegister(StackReg, 
     						currentThread->space->mainStackTop - newThread->stackSlotNb * threadStackSize);
 // save in userRegisters[] the address of function argument and first, second function instrucion
     newThread->SaveUserRegister(4, arg);
     newThread->SaveUserRegister(PCReg, f);
     newThread->SaveUserRegister(NextPCReg, f + 4);
-
-
+*/
 // putting new thread in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
@@ -131,10 +110,13 @@ do_UserThreadExit()
 	// currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
 	// currentThread->space->lock->V();
-	// printf("test\n");
-	scheduler->waitingList->Mapcar(foo);
-	// currentThread->space = NULL; // why this NULL?
-	
+	while(!currentThread->waitingList->IsEmpty())
+	{
+		IntStatus oldLevel = interrupt->SetLevel (IntOff);
+		scheduler->ReadyToRun ((Thread*) currentThread->waitingList->Remove());
+		(void) interrupt->SetLevel (oldLevel);
+	}
+	currentThread->space->threadArray[currentThread->stackSlotNb] = NULL;
 	currentThread->Finish();
 }
 
@@ -146,22 +128,23 @@ do_UserThreadExit()
 void
 do_UserThreadJoin(int threadId)
 {
-	currentThread->space->lock->P();
+	// currentThread->space->lock->P();
 	if (0 < threadId && threadId < currentThread->space->threadsNb)
 	{
 		if(currentThread->space->stackMap->Test(threadId))
 		{
-			join *wait = new join;
-			wait->waitingThread = currentThread;
-			wait->id = threadId; 
 
+			Thread *tmp = (Thread*) currentThread->space->threadArray[threadId];
+			if(tmp != NULL)
+			{
+				tmp->waitingList->Prepend(currentThread);	
+			}
 			IntStatus oldLevel = interrupt->SetLevel (IntOff);
-			scheduler->waitingList->Prepend(wait);
 			currentThread->Sleep();
 			(void) interrupt->SetLevel (oldLevel);
 		}
 		// currentThread->space->lock->V();
 	}
-	currentThread->space->lock->V();
+	// currentThread->space->lock->V();
 }
 #endif

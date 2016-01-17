@@ -89,7 +89,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
     ASSERT (threadStackSize <= UserStackSize);
     threadsNb = divRoundUp(UserStackSize, PageSize) / divRoundUp(threadStackSize, PageSize);
     stackMap = new BitMap(threadsNb);
-    
+    stackMap->Mark(0);
+    threadArray = new void*[threadsNb];
 #endif
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
@@ -186,7 +187,6 @@ AddrSpace::InitRegisters ()
 	   numPages * PageSize - 16);
 #ifdef CHANGED
     mainStackTop = numPages * PageSize - 16;
-    stackMap->Mark(0);  // do we need to lock here?
 #endif    
 }
 
@@ -227,12 +227,9 @@ void AddrSpace::IncrementCounter () {
 void AddrSpace::DecrementCounter () {
     this->lock->P();
     --this->counter;
-    if (this->counter == 1)
-    {
-        this->lock->V();
-        this->mainthreadwait->V();        
-    }
     this->lock->V();
+    if (this->counter == 1)
+        this->mainthreadwait->V();
 }
 
 int AddrSpace::GetCounterValue() {
