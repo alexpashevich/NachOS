@@ -21,9 +21,9 @@
 #include "bitmap.h"
 #endif
 
-#define UserStackSize		20 * PageSize //1024	// increase this as necessary!
+#define UserStackSize		40 * PageSize //1024	// increase this as necessary!
 #ifdef CHANGED
-#define threadStackSize 4 * PageSize  // 512
+#define threadStackSize 8 * PageSize  // 512
 #endif
 
 class AddrSpace
@@ -52,6 +52,7 @@ class AddrSpace
     BitMap *stackMap; // bitMap for userThread's stack allocation
     int mainStackTop; // userThread's stacks are allocated below main stack, so we need
                       // to know where main stack ends
+    // Thread *threads;
   private:
     int counter;
 #endif

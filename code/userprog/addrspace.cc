@@ -84,10 +84,10 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 #ifdef CHANGED    
 
-    //  create a bitMap to manage userThread's stack allocation
-        // each bit corresponds to memory size big enough for UserStack?    
-    int stackPagesNb = divRoundUp(UserStackSize, PageSize);
-    int threadsNb = stackPagesNb / (threadStackSize / PageSize);
+    //  create a bitMap to manage userThread stack allocation
+    // each bit corresponds to memory size big enough for threadStack - good solution?    
+    ASSERT (threadStackSize <= UserStackSize);
+    int threadsNb = divRoundUp(UserStackSize, PageSize) / divRoundUp(threadStackSize, PageSize);
     stackMap = new BitMap(threadsNb);
     
 #endif

@@ -111,10 +111,6 @@ class Thread
     {
 	printf ("%s, ", name);
     }
-#ifdef CHANGED
-    void SaveUserRegister (int reg, int val);
-    int stackSlotNb;    // need to know which slot did current thread take
-#endif
   private:
     // some of the private data for this class is listed above
 
@@ -132,7 +128,6 @@ class Thread
 // A thread running a user program actually has *two* sets of CPU registers -- 
 // one for its state while executing user code, one for its state 
 // while executing kernel code.
-
     int userRegisters[NumTotalRegs];	// user-level CPU register state
 
   public:
@@ -140,6 +135,10 @@ class Thread
     void RestoreUserState ();	// restore user-level register state
 
     AddrSpace *space;		// User code this thread is running.
+#ifdef CHANGED
+    void SaveUserRegister (int reg, int val);
+    int stackSlotNb;    // need to know which slot did current thread take
+#endif
 #endif
 };
 

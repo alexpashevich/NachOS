@@ -27,23 +27,23 @@ static void
 StartUserThread(int myFuncAndArg)
 {
 
-// getting the real arguments at first
-	int f = ((funcAndArg*) myFuncAndArg)->f;
-	int arg = ((funcAndArg*) myFuncAndArg)->arg;
-	delete (funcAndArg*)myFuncAndArg;
+// // getting the real arguments at first
+	// int f = ((funcAndArg*) myFuncAndArg)->f;
+	// int arg = ((funcAndArg*) myFuncAndArg)->arg;
+	// delete (funcAndArg*)myFuncAndArg;
 
 // initialize backups of registers
 	currentThread->RestoreUserState();
-
 // initialize the stack pointer of the thread program
-	// machine->WriteRegister(StackReg, currentThread->SP);
+    // machine->WriteRegister(StackReg, 
+    // 			currentThread->space->mainStackTop - currentThread->stackSlotNb * threadStackSize);
 
 // pass the arguments
-	machine->WriteRegister(4, arg);
+	// machine->WriteRegister(4, arg);
 
 // set PC (program counter) registers
-	machine->WriteRegister(PCReg, f);
-	machine->WriteRegister(NextPCReg, f + 4);
+	// machine->WriteRegister(PCReg, f);
+	// machine->WriteRegister(NextPCReg, f + 4);
 
 // and start the interpreter Machine::Run
 	machine->Run();
@@ -61,10 +61,10 @@ int
 do_UserThreadCreate(int f, int arg)
 {
 
-
 // finding out if we have enough resources to create a thread
+	int slotNb;
 	currentThread->space->bitMapLock->P();	
-	if(currentThread->space->stackMap->NumClear() == 0)
+	if( (slotNb = currentThread->space->stackMap->Find()) == -1 )
 	{
 		/* Cannot create new thread because of lack of free memory */
 		currentThread->space->bitMapLock->V();
@@ -76,17 +76,24 @@ do_UserThreadCreate(int f, int arg)
     Thread *newThread = new Thread ("Thread created by user");
     currentThread->space->IncrementCounter();
 
+    // Thread::threads = currentThread;
+
 // finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
-    currentThread->space->bitMapLock->P();
-    newThread->stackSlotNb = currentThread->space->stackMap->Find();
-    currentThread->space->bitMapLock->V();
+    newThread->stackSlotNb = slotNb; // need to set it to know which slot to free in do_UserThreadExit()
+
+	//either save important regs values here and restore them in StartUserThread() or do it explicitly there
     newThread->SaveUserRegister(StackReg, 
     						currentThread->space->mainStackTop - newThread->stackSlotNb * threadStackSize);
+// save in userRegisters[] the address of function argument and first, second function instrucion
+    newThread->SaveUserRegister(4, arg);
+    newThread->SaveUserRegister(PCReg, f);
+    newThread->SaveUserRegister(NextPCReg, f + 4);
 
-// putting it in the thread queue to execute
+
+// putting new thread in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
-    return 0;	
+    return slotNb;	
 }
 
 //----------------------------------------------------------------------
@@ -98,13 +105,31 @@ do_UserThreadCreate(int f, int arg)
 
 void
 do_UserThreadExit()
-{
+{	
 	currentThread->space->DecrementCounter();
 	currentThread->space->bitMapLock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
 	currentThread->space->bitMapLock->V();
 	// currentThread->space = NULL; // why this NULL?
 	currentThread->Finish();
+}
+
+//----------------------------------------------------------------------
+// UserThreadJoin
+// 		Wait for other thread to terminate.
+//----------------------------------------------------------------------
+
+void
+do_UserThreadJoin(int threadId)
+{
+	// printf("siema\n");
+	currentThread->space->bitMapLock->P();
+	if(currentThread->space->stackMap->Test(threadId))
+	{
+		currentThread->space->bitMapLock->V();
+		// currentThread->Sleep();
+	}
+	currentThread->space->bitMapLock->V();
 }
 
 #endif

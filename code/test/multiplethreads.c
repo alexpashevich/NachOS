@@ -13,7 +13,7 @@ void func (void *arg) {
 
 int main () {
 
-	int threadsNb = 16;
+	int threadsNb = 4;
 	int i;
 	
 	for (i = 0; i < threadsNb; ++i)
@@ -24,6 +24,6 @@ int main () {
 		}
 	}
 
-	PutString("Main is finishing executing\n");
+	PutString("Main has finished its job and waiting for threads to finish...\n");
 	return 0;
 }
