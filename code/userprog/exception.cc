@@ -183,12 +183,12 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadExit: {
+        // printf("Test\n");
         do_UserThreadExit();
         break;
       }
       case SC_UserThreadJoin: {
-        printf("Siema\n");
-        // do_UserThreadJoin(machine->ReadRegister(4));
+        do_UserThreadJoin(machine->ReadRegister(4));
         break;
       }
       default: {

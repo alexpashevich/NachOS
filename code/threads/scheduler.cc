@@ -29,7 +29,11 @@
 
 Scheduler::Scheduler ()
 {
-    readyList = new List;
+    readyList = new List;   
+#ifdef CHANGED
+    waitingList = new List;
+#endif    
+
 }
 
 //----------------------------------------------------------------------
@@ -40,6 +44,9 @@ Scheduler::Scheduler ()
 Scheduler::~Scheduler ()
 {
     delete readyList;
+#ifdef CHANGED
+    delete waitingList;
+#endif    
 }
 
 //----------------------------------------------------------------------

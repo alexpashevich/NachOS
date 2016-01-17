@@ -16,6 +16,26 @@ public:
 	funcAndArg(int _f, int _arg) { f = _f; arg = _arg; }
 };
 
+struct join
+{
+	Thread* waitingThread;
+	int id;
+};
+
+void
+foo(int arg)
+{
+	join* item = (join*) arg;
+	if(item->id == currentThread->stackSlotNb)
+	{
+		IntStatus oldLevel = interrupt->SetLevel (IntOff);
+		// printf("test\n");
+		scheduler->ReadyToRun (item->waitingThread);
+		// scheduler->waitingList->Remove()
+		(void) interrupt->SetLevel (oldLevel);
+	}
+}
+
 //----------------------------------------------------------------------
 // StartUserThread
 //      Function called after user context-switched.
@@ -63,18 +83,18 @@ do_UserThreadCreate(int f, int arg)
 
 // finding out if we have enough resources to create a thread
 	int slotNb;
-	currentThread->space->bitMapLock->P();	
+	currentThread->space->lock->P();	
 	if( (slotNb = currentThread->space->stackMap->Find()) == -1 )
 	{
 		/* Cannot create new thread because of lack of free memory */
-		currentThread->space->bitMapLock->V();
+		currentThread->space->lock->V();
 		return -1;
 	}
-	currentThread->space->bitMapLock->V();
+	currentThread->space->lock->V();
 
 // creating a new thread if there are enough resources
     Thread *newThread = new Thread ("Thread created by user");
-    currentThread->space->IncrementCounter();
+    // currentThread->space->IncrementCounter();
 
     // Thread::threads = currentThread;
 
@@ -106,11 +126,15 @@ do_UserThreadCreate(int f, int arg)
 void
 do_UserThreadExit()
 {	
-	currentThread->space->DecrementCounter();
-	currentThread->space->bitMapLock->P();
+
+	// currentThread->space->DecrementCounter();
+	// currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
-	currentThread->space->bitMapLock->V();
+	// currentThread->space->lock->V();
+	// printf("test\n");
+	scheduler->waitingList->Mapcar(foo);
 	// currentThread->space = NULL; // why this NULL?
+	
 	currentThread->Finish();
 }
 
@@ -122,14 +146,22 @@ do_UserThreadExit()
 void
 do_UserThreadJoin(int threadId)
 {
-	// printf("siema\n");
-	currentThread->space->bitMapLock->P();
-	if(currentThread->space->stackMap->Test(threadId))
+	currentThread->space->lock->P();
+	if (0 < threadId && threadId < currentThread->space->threadsNb)
 	{
-		currentThread->space->bitMapLock->V();
-		// currentThread->Sleep();
-	}
-	currentThread->space->bitMapLock->V();
-}
+		if(currentThread->space->stackMap->Test(threadId))
+		{
+			join *wait = new join;
+			wait->waitingThread = currentThread;
+			wait->id = threadId; 
 
+			IntStatus oldLevel = interrupt->SetLevel (IntOff);
+			scheduler->waitingList->Prepend(wait);
+			currentThread->Sleep();
+			(void) interrupt->SetLevel (oldLevel);
+		}
+		// currentThread->space->lock->V();
+	}
+	currentThread->space->lock->V();
+}
 #endif

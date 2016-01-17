@@ -21,9 +21,9 @@
 #include "bitmap.h"
 #endif
 
-#define UserStackSize		40 * PageSize //1024	// increase this as necessary!
+#define UserStackSize		20 * PageSize //1024	// increase this as necessary!
 #ifdef CHANGED
-#define threadStackSize 8 * PageSize  // 512
+#define threadStackSize 4 * PageSize  // 512
 #endif
 
 class AddrSpace
@@ -47,18 +47,17 @@ class AddrSpace
     int GetCounterValue();
     Semaphore *mainthreadwait;
     Semaphore *lock;
-    Semaphore *bitMapLock;  // do we need two different locks on counter and bitMap?
 
     BitMap *stackMap; // bitMap for userThread's stack allocation
     int mainStackTop; // userThread's stacks are allocated below main stack, so we need
                       // to know where main stack ends
-    // Thread *threads;
+    int threadsNb;    // make those private?
   private:
     int counter;
 #endif
 
   private:
-      TranslationEntry * pageTable;	// Assume linear page table translation
+    TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
     unsigned int numPages;	// Number of pages in the virtual 
     // address space

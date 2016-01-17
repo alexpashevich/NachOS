@@ -87,7 +87,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     //  create a bitMap to manage userThread stack allocation
     // each bit corresponds to memory size big enough for threadStack - good solution?    
     ASSERT (threadStackSize <= UserStackSize);
-    int threadsNb = divRoundUp(UserStackSize, PageSize) / divRoundUp(threadStackSize, PageSize);
+    threadsNb = divRoundUp(UserStackSize, PageSize) / divRoundUp(threadStackSize, PageSize);
     stackMap = new BitMap(threadsNb);
     
 #endif
@@ -132,7 +132,6 @@ AddrSpace::AddrSpace (OpenFile * executable)
 #ifdef CHANGED
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
-    bitMapLock = new Semaphore("bit map lock", 1);
     counter = 1;
 #endif
 }
@@ -228,9 +227,12 @@ void AddrSpace::IncrementCounter () {
 void AddrSpace::DecrementCounter () {
     this->lock->P();
     --this->counter;
-    this->lock->V();
     if (this->counter == 1)
-        this->mainthreadwait->V();
+    {
+        this->lock->V();
+        this->mainthreadwait->V();        
+    }
+    this->lock->V();
 }
 
 int AddrSpace::GetCounterValue() {
