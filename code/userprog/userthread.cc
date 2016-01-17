@@ -63,18 +63,18 @@ do_UserThreadCreate(int f, int arg)
 
 // finding out if we have enough resources to create a thread
 	int slotNb;
-	// currentThread->space->lock->P();	
+	currentThread->space->lock->P();	
 	if( (slotNb = currentThread->space->stackMap->Find()) == -1 )
 	{
 		/* Cannot create new thread because of lack of free memory */
-		// currentThread->space->lock->V();
+		currentThread->space->lock->V();
 		return -1;
 	}
-	// currentThread->space->lock->V();
+	currentThread->space->lock->V();
 
 // creating a new thread if there are enough resources
     Thread *newThread = new Thread ("Thread created by user");
-    // currentThread->space->IncrementCounter();
+    currentThread->space->IncrementCounter();
 
 // finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
     newThread->stackSlotNb = slotNb; // need to set it to know which slot to free in do_UserThreadExit()
@@ -106,10 +106,10 @@ void
 do_UserThreadExit()
 {	
 
-	// currentThread->space->DecrementCounter();
-	// currentThread->space->lock->P();
+	currentThread->space->DecrementCounter();
+	currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
-	// currentThread->space->lock->V();
+	currentThread->space->lock->V();
 	while(!currentThread->waitingList->IsEmpty())
 	{
 		IntStatus oldLevel = interrupt->SetLevel (IntOff);
@@ -128,7 +128,7 @@ do_UserThreadExit()
 void
 do_UserThreadJoin(int threadId)
 {
-	// currentThread->space->lock->P();
+	currentThread->space->lock->P();
 	if (0 < threadId && threadId < currentThread->space->threadsNb)
 	{
 		if(currentThread->space->stackMap->Test(threadId))
@@ -140,11 +140,11 @@ do_UserThreadJoin(int threadId)
 				tmp->waitingList->Prepend(currentThread);	
 			}
 			IntStatus oldLevel = interrupt->SetLevel (IntOff);
+			currentThread->space->lock->V();
 			currentThread->Sleep();
 			(void) interrupt->SetLevel (oldLevel);
 		}
-		// currentThread->space->lock->V();
 	}
-	// currentThread->space->lock->V();
+	currentThread->space->lock->V();
 }
 #endif
