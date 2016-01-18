@@ -1,0 +1,14 @@
+### TODO ###
+
+# Step 3 - THREADS #
+
+-	fix userthreadcreate test - check if nachos code is wrong or test checks different thing
+-	do step with thread join -> DO NOT KNOW WHAT THE PROBLEM IS
+
+-	do we need to implement thread's stack overflow?
+
+-	when StartUserThread() function is invoked? there is no difference when i update PCReg and NextPCReg in 	StartUserThread() and do_CreateUserThread()! is StartUserThread() invoked only once at thread creation and 		not every time thread is re-started? 
+
+# Step 4 - VM #
+
+-	start!
