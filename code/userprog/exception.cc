@@ -124,6 +124,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, end of main function.\n");
         printf("Main program has finished with value %d\n", res);
+        // should we here release Addrspace Object? - delete space?
         interrupt->Halt();
         break;
       }
