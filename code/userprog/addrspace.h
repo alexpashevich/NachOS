@@ -53,6 +53,7 @@ class AddrSpace
                       // to know where main stack ends
     int threadsNb;    // make those private?
     void** threadArray;
+    int threadId;     // unique thread iD
   private:
     int counter;
 #endif

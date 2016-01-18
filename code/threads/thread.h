@@ -142,6 +142,7 @@ class Thread
     void SaveUserRegister (int reg, int val);
     int stackSlotNb;        // need to know which slot did current thread take
     List *waitingList;      // list of threads waiting for this thread to terminate (threadJoin)
+    int threadId;           // unique threadId
 #endif
 #endif
 };

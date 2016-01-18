@@ -78,6 +78,15 @@ do_UserThreadCreate(int f, int arg)
 
 // finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
     newThread->stackSlotNb = slotNb; // need to set it to know which slot to free in do_UserThreadExit()
+    
+    currentThread->space->lock->P();
+    newThread->threadId = currentThread->space->threadId;
+    ++currentThread->space->threadId;
+    currentThread->space->lock->V();
+
+    /** need to add structure with threadID and thread addres slot, change return from int to *struct or
+    add another argument **/
+
     currentThread->space->threadArray[slotNb] = newThread;
 
 /*

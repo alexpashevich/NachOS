@@ -91,6 +91,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     stackMap = new BitMap(threadsNb);
     stackMap->Mark(0);
     threadArray = new void*[threadsNb];
+    threadId = 0;   // init thread counter
 #endif
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
