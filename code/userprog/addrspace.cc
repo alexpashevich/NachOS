@@ -236,4 +236,11 @@ void AddrSpace::DecrementCounter () {
 int AddrSpace::GetCounterValue() {
     return counter;
 }
+
+void 
+AddrSpace::ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
+                        TranslationEntry *pageTable,unsigned numPages)
+{
+    
+}
 #endif
