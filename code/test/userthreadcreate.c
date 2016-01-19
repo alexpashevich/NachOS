@@ -18,7 +18,12 @@ main()
 	PutString("main started to execute\n");
 	int a[1];
 	*a = 228;
-	UserThreadCreate(func, (void*)a);
+
+	if(UserThreadCreate(func, (void*)a) == -1)
+	{
+		PutString("Thread was not created!\n");
+	}
+
 	char ch = GetChar();
 	PutString("first thread get char ");
 	PutChar(ch);

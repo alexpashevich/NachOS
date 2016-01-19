@@ -39,6 +39,7 @@
 #define SC_GetInt			16
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit	18
+#define SC_UserThreadJoin	19
 #endif
 
 #ifdef IN_USER_MODE
@@ -163,6 +164,10 @@ int UserThreadCreate(void (*f)(void *), void *arg);
 
 /* Destroy the thread */
 void UserThreadExit();
+
+/* Wait for other thread */
+void UserThreadJoin(int threadId);
+
 #endif
 
 

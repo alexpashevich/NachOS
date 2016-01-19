@@ -45,6 +45,9 @@ Thread::Thread (const char *threadName)
     // user threads.
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
+#ifdef CHANGED
+    waitingList = new List;
+#endif      
 #endif
 }
 
@@ -67,6 +70,12 @@ Thread::~Thread ()
     ASSERT (this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+
+#ifdef USER_PROGRAM
+#ifdef CHANGED
+    delete waitingList;
+#endif
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -309,7 +318,7 @@ SetupThreadState ()
 #endif // USER_PROGRAM
 
   // LB: The default level for interrupts is IntOn.
-  InterruptEnable (); 
+  InterruptEnable ();
 
 }
 

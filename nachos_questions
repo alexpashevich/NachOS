@@ -1,0 +1,11 @@
+
+ctags -R -f .tags
+
+Threads:
+	Should we release address space on Exit sys call? (comment in progtest.cc ln:44)
+
+	newThread->SaveUserState() - why we save state here? i guess we need to know stack pointer and rest registers but what if we run thread much later after we created it? data in thread's register backup won't be outdated?
+
+	if so question is if value of oldSP should't be read before currentThread->RestoreUserState()? we could overwrite stack of other threads?
+
+	do we need to init all regs to 0 before giving them meaningful values? we only need to change PCReg, NextPCReg, StackReg, and reg #4 for argument. is restoreUserState not enough? and do we really need to restore user registers explicitly? doesn't scheduler do that for us while switching between threads?

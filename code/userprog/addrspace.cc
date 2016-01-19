@@ -45,6 +45,22 @@ SwapHeader (NoffHeader * noffH)
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
+static void 
+ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
+                        TranslationEntry *pageTable, unsigned numPages)
+{
+    char* buf = new char[numBytes];
+
+    executable->ReadAt(buf, numBytes, position);
+    int i;
+    for (i = 0; i < numBytes; ++i)
+    {
+        machine->WriteMem(virtualaddr, 1, buf[i]);
+        virtualaddr += sizeof(char);
+    }  
+    delete[] buf;  
+}
+
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
 //      Create an address space to run a user program.
@@ -77,7 +93,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     numPages = divRoundUp (size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);	// check we're not trying
+    ASSERT (numPages <= NumPhysPages);  // check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory
@@ -89,7 +105,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     for (i = 0; i < numPages; i++)
       {
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	  pageTable[i].physicalPage = i;
+	  pageTable[i].physicalPage = i + 1;
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
@@ -98,6 +114,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 	  // pages to be read-only
       }
 
+      RestoreState(); // then we do not need to do that in Start Process ?
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
     bzero (machine->mainMemory, size);
@@ -107,19 +124,31 @@ AddrSpace::AddrSpace (OpenFile * executable)
       {
 	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
 		 noffH.code.virtualAddr, noffH.code.size);
-	  executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-			      noffH.code.size, noffH.code.inFileAddr);
+	  // executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
+			//       noffH.code.size, noffH.code.inFileAddr);
+      ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, 
+                                    noffH.code.inFileAddr, pageTable, numPages);
       }
     if (noffH.initData.size > 0)
       {
 	  DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
 		 noffH.initData.virtualAddr, noffH.initData.size);
-	  executable->ReadAt (&
-			      (machine->mainMemory
-			       [noffH.initData.virtualAddr]),
-			      noffH.initData.size, noffH.initData.inFileAddr);
+	  // executable->ReadAt (&(machine->mainMemory[noffH.initData.virtualAddr]),
+			//       noffH.initData.size, noffH.initData.inFileAddr);
+      ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, 
+                                noffH.initData.inFileAddr, pageTable, numPages);
       }
+
 #ifdef CHANGED
+//  create a bitMap to manage userThread stack allocation
+// each bit corresponds to memory size big enough for threadStack - good solution?    
+    ASSERT (threadStackSize <= UserStackSize);
+    threadsNb = divRoundUp(UserStackSize, PageSize) / divRoundUp(threadStackSize, PageSize);
+    stackMap = new BitMap(threadsNb);
+    stackMap->Mark(0);
+    threadArray = new void*[threadsNb];
+    threadId = 0;   // init thread counter
+
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
     counter = 1;
@@ -140,6 +169,8 @@ AddrSpace::~AddrSpace ()
 #ifdef CHANGED
   delete lock;
   delete mainthreadwait;
+  delete[] threadArray;
+  delete stackMap;
 #endif
 }
 
@@ -174,6 +205,9 @@ AddrSpace::InitRegisters ()
     machine->WriteRegister (StackReg, numPages * PageSize - 16);
     DEBUG ('a', "Initializing stack register to %d\n",
 	   numPages * PageSize - 16);
+#ifdef CHANGED
+    mainStackTop = numPages * PageSize - 16;
+#endif    
 }
 
 //----------------------------------------------------------------------

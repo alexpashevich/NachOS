@@ -113,7 +113,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
-        printf("main is finished with value %d\n", res);
+        printf("Main program has finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
@@ -123,7 +123,8 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, end of main function.\n");
-        printf("main is finished with value %d\n", res);
+        printf("Main program has finished with value %d\n", res);
+        // should we here release Addrspace Object? - delete space?
         interrupt->Halt();
         break;
       }
@@ -149,6 +150,7 @@ ExceptionHandler (ExceptionType which)
         int to = machine->ReadRegister(4);
         int n = machine->ReadRegister(5);
         char buf[n];
+        ++n; // make space for '\0' character added at the end of string
         synchconsole->SynchGetString(buf, n);
         int i;
         for (i = 0; i < n; ++i) {
@@ -182,7 +184,12 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadExit: {
+        // printf("Test\n");
         do_UserThreadExit();
+        break;
+      }
+      case SC_UserThreadJoin: {
+        do_UserThreadJoin(machine->ReadRegister(4));
         break;
       }
       default: {
