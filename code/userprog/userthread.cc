@@ -33,7 +33,7 @@ StartUserThread(int myFuncAndArg)
 	delete (funcAndArg*)myFuncAndArg;
 
 // initialize backups of registers
-	currentThread->RestoreUserState();
+	// currentThread->RestoreUserState();
 // initialize the stack pointer of the thread program
     machine->WriteRegister(StackReg, 
     			currentThread->space->mainStackTop - currentThread->stackSlotNb * threadStackSize);
@@ -78,26 +78,8 @@ do_UserThreadCreate(int f, int arg)
 
 // finding newThread's stack pointer initial address (no additional 3*PageSize space between stacks)
     newThread->stackSlotNb = slotNb; // need to set it to know which slot to free in do_UserThreadExit()
-    
-    currentThread->space->lock->P();
-    newThread->threadId = currentThread->space->threadId;
-    ++currentThread->space->threadId;
-    currentThread->space->lock->V();
-
-    /** need to add structure with threadID and thread addres slot, change return from int to *struct or
-    add another argument **/
-
     currentThread->space->threadArray[slotNb] = newThread;
 
-/*
-//either save important regs values here and restore them in StartUserThread() or do it explicitly there
-    newThread->SaveUserRegister(StackReg, 
-    						currentThread->space->mainStackTop - newThread->stackSlotNb * threadStackSize);
-// save in userRegisters[] the address of function argument and first, second function instrucion
-    newThread->SaveUserRegister(4, arg);
-    newThread->SaveUserRegister(PCReg, f);
-    newThread->SaveUserRegister(NextPCReg, f + 4);
-*/
 // putting new thread in the thread queue to execute
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
@@ -114,7 +96,6 @@ do_UserThreadCreate(int f, int arg)
 void
 do_UserThreadExit()
 {	
-
 	currentThread->space->DecrementCounter();
 	currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);

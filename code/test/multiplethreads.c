@@ -23,7 +23,7 @@ int main () {
 			PutString("Could not create a new user thread.\n");
 		}
 	}
-	UserThreadJoin(1);
+	// UserThreadJoin(1);
 	PutString("Main has finished its job and waiting for threads to finish...\n");
 	return 0;
 }

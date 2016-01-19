@@ -70,6 +70,12 @@ Thread::~Thread ()
     ASSERT (this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+
+#ifdef USER_PROGRAM
+#ifdef CHANGED
+    delete waitingList;
+#endif
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -411,15 +417,6 @@ Thread::RestoreUserState ()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, userRegisters[i]);
 }
-
-#ifdef CHANGED
-void
-Thread::SaveUserRegister (int reg, int val)
-{
-    userRegisters[reg] = val; 
-}
-#endif
-
 #endif
 
 

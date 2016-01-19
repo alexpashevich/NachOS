@@ -45,8 +45,6 @@ class AddrSpace
     void IncrementCounter(); // in case one more thread started to use this addrspace
     void DecrementCounter(); // in case one thread using this addrspace was destroyed
     int GetCounterValue();
-    static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
-                int numBytes, int position, TranslationEntry *pageTable,unsigned numPages)
     Semaphore *mainthreadwait;
     Semaphore *lock;
 
