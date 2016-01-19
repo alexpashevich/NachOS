@@ -44,7 +44,7 @@ SwapHeader (NoffHeader * noffH)
     WordToHost (noffH->uninitData.virtualAddr);
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
-
+#ifdef CHANGED
 static void 
 ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
                         TranslationEntry *pageTable, unsigned numPages)
@@ -60,7 +60,7 @@ ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
     }  
     delete[] buf;  
 }
-
+#endif /* CHANGED */
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
 //      Create an address space to run a user program.
@@ -78,6 +78,11 @@ ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
 
 AddrSpace::AddrSpace (OpenFile * executable)
 {
+    
+#ifdef CHANGED
+    frameProvider = machine->frameProvider;
+#endif
+
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -97,7 +102,10 @@ AddrSpace::AddrSpace (OpenFile * executable)
     // to run anything too big --
     // at least until we have
     // virtual memory
-
+// check if there is room for new address space (is that enough or raise exception here?)
+#ifdef CHANGED
+    ASSERT ((int) numPages <= frameProvider->NumAvailFrames());
+#endif
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
        numPages, size);
 // first, set up the translation 
@@ -105,7 +113,11 @@ AddrSpace::AddrSpace (OpenFile * executable)
     for (i = 0; i < numPages; i++)
       {
       pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-      pageTable[i].physicalPage = i + 1;
+#ifndef CHANGED      
+      pageTable[i].physicalPage = 1;
+#else      
+      pageTable[i].physicalPage = frameProvider->GetEmptyFrame();
+#endif     
       pageTable[i].valid = TRUE;
       pageTable[i].use = FALSE;
       pageTable[i].dirty = FALSE;
@@ -124,19 +136,26 @@ AddrSpace::AddrSpace (OpenFile * executable)
       {
       DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
          noffH.code.virtualAddr, noffH.code.size);
-      // executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-            //       noffH.code.size, noffH.code.inFileAddr);
+#ifndef CHANGED      
+      executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
+                  noffH.code.size, noffH.code.inFileAddr);
+#else      
       ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, 
                                     noffH.code.inFileAddr, pageTable, numPages);
-      }
+#endif /* CHANGED */
+      }      
+
     if (noffH.initData.size > 0)
       {
       DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
          noffH.initData.virtualAddr, noffH.initData.size);
-      // executable->ReadAt (&(machine->mainMemory[noffH.initData.virtualAddr]),
-            //       noffH.initData.size, noffH.initData.inFileAddr);
+#ifndef CHANGED
+      executable->ReadAt (&(machine->mainMemory[noffH.initData.virtualAddr]),
+                  noffH.initData.size, noffH.initData.inFileAddr);
+#else      
       ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, 
                                 noffH.initData.inFileAddr, pageTable, numPages);
+#endif /* CHANGED */
       }
 
 #ifdef CHANGED
@@ -167,6 +186,13 @@ AddrSpace::~AddrSpace ()
   delete [] pageTable;
   // End of modification
 #ifdef CHANGED
+
+  unsigned i;
+  for (i = 0; i < numPages; ++i)
+  {
+     frameProvider->ReleaseFrame( pageTable[i].physicalPage );
+  }
+  
   delete lock;
   delete mainthreadwait;
   delete[] threadArray;

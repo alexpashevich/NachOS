@@ -70,7 +70,9 @@ Machine::Machine(bool debug)
     tlb = NULL;
     pageTable = NULL;
 #endif
-
+#ifdef CHANGED
+    frameProvider = new FrameProvider(NumPhysPages);
+#endif
     singleStep = debug;
     CheckEndian();
 }

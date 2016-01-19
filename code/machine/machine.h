@@ -25,6 +25,9 @@
 #include "utility.h"
 #include "translate.h"
 #include "disk.h"
+#ifdef CHANGED
+#include "frameprovider.h"
+#endif
 
 // Definitions related to the size, and format of user memory
 
@@ -157,7 +160,9 @@ class Machine {
 				// code and data, while executing
     int registers[NumTotalRegs]; // CPU registers, for executing user programs
 
-
+#ifdef CHANGED
+    FrameProvider *frameProvider;
+#endif /* CHANGED */
 // NOTE: the hardware translation of virtual addresses in the user program
 // to physical addresses (relative to the beginning of "mainMemory")
 // can be controlled by one of:
