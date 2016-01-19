@@ -5,50 +5,71 @@
 
 # UserThreadCreate()
 	
-To create new thread, user must use UserThreadCreate(void (*f)(void *), void *arg) function which takes two arguments - first is a pointer to the functin we want to execute in a new thread and second is thread's function argument.
+To create new thread, user must use UserThreadCreate(void (*f)(void *), void *arg) function which takes two arguments -
+first is a pointer to the functin we want to execute in a new thread and second is thread's function argument.
 
-On the system call UserThreadCreate(), first thing we do is reading values of registers #4 and #5 (addresses of thread's function and its argument). Next, we invoke do_UserThreadCreate(int foo, int arg), which is responsible for creating new user thread.
+On the system call UserThreadCreate(), first thing we do is reading values of registers #4 and #5 (addresses of thread's
+function and its argument). Next, we invoke do_UserThreadCreate(int foo, int arg), which is responsible for creating
+new user thread.
 
-Creating new user thread is fairly easy. All we need to do is create new Thread object, find free memory for new thread's stack and call Thread::Fork() function. Fork() is responsible for allocating somewhere (not in our main program's address space) new thread's function and its argument, initialize new thread's address space to the same address space of creating thread and at the end Fork() puts new thread to scheduler's READY list.
+Creating new user thread is fairly easy. All we need to do is create new Thread object, find free memory for new thread's
+stack and call Thread::Fork() function. Fork() is responsible for allocating somewhere (not in our main program's address
+space) new thread's function and its argument, initialize new thread's address space to the same address space of creating
+thread and at the end Fork() puts new thread to scheduler's READY list.
 
-All we need to handle is threads' stack management. As at this point of the project main program's address space consist of code, data and stack part, we used program's stack segment to put there all new stacks. For example, when UserStackSize equals 16 * PageSize and threadStackSize equals 4 * PageSize, then we can create maximum 3 (3 user threads + main prog) new user threads that run at one time.
+Now, we need to handle is threads' stack management. As at this point of the project main program's address space consist
+of code, data and stack part. We used program's stack segment to put there all new stacks. For example, when UserStackSize
+equals 16 * PageSize and threadStackSize equals 4 * PageSize, then we can create maximum 3 (3 user threads + main prog) new
+user threads that run at one time.
 
-To manage those stacks, we implemented a bit map, that keeps information which slot is currently available, if any. By slot, we mean number of consecutive memory pages of total size that equals threadStackSize. (note: this is easiest solution, so later we can make it better if necessary?).
+To manage those stacks, we implemented a bit map, that keeps information which slot is currently available, if any. By slot,
+we mean number of consecutive memory pages of total size that equals threadStackSize.
 
-Bit map was already implemented in bitmap.h, so we only created bit map object in addrspace.h. When main program is started by nachOS, i.e StartProcess() function in progtest.cc, main program's address space is created and initialized. Then, our bit map is also created and it has a size of maximum number of threads that we can create. The number of those threads depends on UserStackSize and threadStackSize that we define in addrspace.h file. All entries in bit map are initialized to 0 except for first one, which represents main program's thread (note: also we can changed it but it was easy and does not waste much memory). One last change is int mainStackTop variable in addrespace object which holds address of beginning of main program's stack. We need that to calculate position of new thread's stack. mainStackTop - stackSlot * threadStackSize, where stackSlot is a position of first free bit in our bit map. We save obtained stack address in currentThread->userRegisters[] array. Then, in StartUserThread() function, all we need to do is just call RestoreUserState() function on currentThread object to load all necessary values into CPU registers.
-// TODO: add part about threadJoin
+Bit map was already implemented in bitmap.h, so we only created bit map object in addrspace.h. When main program is started
+by nachOS, i.e StartProcess() function in progtest.cc, main program's address space is created and initialized. Then, our bit
+map is also created and it has a size of maximum number of threads that we can run at one time. The number of those threads
+depends on UserStackSize and threadStackSize that we define in addrspace.h file. All entries in bit map are initialized to 0
+except for first one, which represents main program's thread. One last change is mainStackTop variable in Addrspace object
+which holds address of beginning of main program's stack. We need that to calculate position of new thread's stack -
+mainStackTop - stackSlot * threadStackSize, where stackSlot is a position of first free bit in our bit map. We save obtained
+stack address in currentThread->stackSlotNb variable. Then, in StartUserThread() function, all we need to do is just load all
+necessary values into CPU registers (PCReg, NextPCReg and StackReg).
 
 # StartUserThread()
 
-// TODO: ask Alex if that is really true because I think it's not
-After creating new thread, it is waiting in READY list for scheduler to pick it and run it on nachOS machine. When it happens, StartUserTHread() function is invoked. Our duty is to initialize CPU registers with correct values and run new thread. (doesnt scheduler initialize CPU regs for us? and when thos function is invoked? every time thread is started/re-started or only at thread creation?).
+Here, our duty is to initialize CPU registers with correct values and run new thread. We set PCReg and NextPCReg registers to
+address of first and second instruction of thread's function. Also we set stack register StackReg to point to first address of
+thread's stack. 
 
 # do_UserThreadExit()
 
-Here, we need to clear a bit in the bit map representing stack memory that we do not need anymore. And call Finish() function on our current thread.
+Here, we need to clear a bit in the bit map representing stack memory that we do not need anymore. And call Finish() function
+on our current thread.
 // TODO: add part about threadJoin
 
 # Synchronization
 
-To avoid concurency problems, we use semaphore as a lock (addrspace.h) to synchronize threads when we access address space object.
+To avoid concurency problems, we use semaphore as a lock to synchronize threads when we access address space object.
 
 # Halt/Exit sync (Alex)
 
-To make main program wait for its threads, we added counter into address space object. At the begininnig counter is initialized to 0 and every time we create a new thread in do_UserThreadCreate() function, we increment that counter. When thread finishes its work, we decrement counter in do_UserThreadExit() function. Of course, function responsible for incrementin and decremeting counter protects it with semaphore lock (Semaphore lock in addrspace.h) while doing changes. On halt or exit exception, nachOS checks if counter > 1 and puts main program to sleep if condition is true and continues otherwise.
+To make main program wait for its threads, we added counter into address space object. At the begininnig counter is initialized
+to 0 and every time we create a new thread in do_UserThreadCreate() function, we increment that counter. When thread finishes its
+work, we decrement counter in do_UserThreadExit() function. Of course, function responsible for incrementin and decremeting counter
+protects it with semaphore lock (Semaphore lock in addrspace.h) while doing changes. On halt or exit exception, nachOS checks if
+counter > 1 and puts main program to sleep if condition is true and continues otherwise.
 
 	        while (currentThread->space->GetCounterValue() > 1) 
 	        {
           		currentThread->space->mainthreadwait->P();
         	}
 
-Here, mainthreadwait is a semaphore initialized with value 0 at address space creation. When no threads were created, counter will be unchanged and be equal to 1, so main program will never go to sleep and will exit normally. If we have created threads, main program will be woken up only when last thread will terminate and call mainthreadwait->V() (addrspace.cc ln:233).
+Here, mainthreadwait is a semaphore initialized with value 0 at address space creation. When no threads were created, counter will
+be unchanged and be equal to 1, so main program will never go to sleep and will exit normally. If we have created threads, main
+program will be woken up only when last thread will terminate and call mainthreadwait->V() (addrspace.cc ln:233).
 
 
 # do_UserThreadJoin
 	
 	// TODO
 
-# -
-I have written some description of what i have done so far with threads. If you have any questions, ask me and i will try to explain it. And it would be cool if you could think of some not obvious test cases to check if this implementation works as it should. 
-
-I have still one/two questions to how threads are created and the way i did some stuff, so we should talk and decide what to choose  ;)
