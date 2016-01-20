@@ -77,12 +77,7 @@ ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace (OpenFile * executable)
-{
-    
-#ifdef CHANGED
-    frameProvider = machine->frameProvider;
-#endif
-
+{   
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -102,10 +97,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
     // to run anything too big --
     // at least until we have
     // virtual memory
+
 // check if there is room for new address space (is that enough or raise exception here?)
 #ifdef CHANGED
+    frameProvider = machine->frameProvider;
     ASSERT ((int) numPages <= frameProvider->NumAvailFrames());
 #endif
+
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
        numPages, size);
 // first, set up the translation 
@@ -116,7 +114,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
 #ifndef CHANGED      
       pageTable[i].physicalPage = 1;
 #else      
-      pageTable[i].physicalPage = frameProvider->GetEmptyFrame();
+      int getFrame = frameProvider->GetEmptyFrame();
+      // if (getFrame > 0)
+      // {
+        printf("Frame value before: %d\n", getFrame);
+        pageTable[i].physicalPage = getFrame;  
+        printf("Frame value after: %d\n", pageTable[i].physicalPage);
+      // }
 #endif     
       pageTable[i].valid = TRUE;
       pageTable[i].use = FALSE;
@@ -166,7 +170,6 @@ AddrSpace::AddrSpace (OpenFile * executable)
     stackMap = new BitMap(threadsNb);
     stackMap->Mark(0);
     threadArray = new void*[threadsNb];
-    threadId = 0;   // init thread counter
 
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
@@ -181,16 +184,12 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
-  // LB: Missing [] for delete
-  // delete pageTable;
-  delete [] pageTable;
-  // End of modification
-#ifdef CHANGED
 
+#ifdef CHANGED
   unsigned i;
   for (i = 0; i < numPages; ++i)
   {
-     frameProvider->ReleaseFrame( pageTable[i].physicalPage );
+    frameProvider->ReleaseFrame( pageTable[i].physicalPage );
   }
   
   delete lock;
@@ -198,6 +197,11 @@ AddrSpace::~AddrSpace ()
   delete[] threadArray;
   delete stackMap;
 #endif
+
+  // LB: Missing [] for delete
+  // delete pageTable;
+  delete [] pageTable;
+  // End of modification
 }
 
 //----------------------------------------------------------------------

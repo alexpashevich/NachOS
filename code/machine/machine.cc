@@ -87,6 +87,9 @@ Machine::~Machine()
     delete [] mainMemory;
     if (tlb != NULL)
         delete [] tlb;
+#ifdef CHANGED
+    delete frameProvider;
+#endif
 }
 
 //----------------------------------------------------------------------

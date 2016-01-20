@@ -114,6 +114,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         printf("Main program has finished with value %d\n", res);
+        delete currentThread->space;
         interrupt->Halt();
         break;
       }
@@ -124,7 +125,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, end of main function.\n");
         printf("Main program has finished with value %d\n", res);
-        // should we here release Addrspace Object? - delete space?
+        delete currentThread->space;
         interrupt->Halt();
         break;
       }
@@ -192,6 +193,13 @@ ExceptionHandler (ExceptionType which)
         do_UserThreadJoin(machine->ReadRegister(4));
         break;
       }
+      case SC_ForkExec: {
+        // char* arg = (char*) machine->ReadRegister(4);
+        // int res = do_ForkExec((char*) arg);
+        // machine->WriteRegister(2, res);
+        // StartProcess(arg);
+        break;
+      }      
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
