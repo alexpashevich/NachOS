@@ -32,6 +32,7 @@
 #include "synchlist.h"
 
 #ifdef CHANGED
+#include <ctime>
 #include "thread.h"
 #endif
 
@@ -49,6 +50,19 @@ class MailHeader {
     MailBoxAddress from;	// Mail box to reply to
     unsigned length;		// Bytes of message data (excluding the 
 				// mail header)
+#ifdef CHANGED
+      MailHeader() {};
+      MailHeader(const MailHeader *mailHdr);
+      int GetId() const { return id; }
+      time_t GetTimestamp() const { return timestamp; }
+      bool GetConfirmation() const { return isConfirmation; }
+  friend class ReliableTransfer;
+  friend class PostOffice;
+  private:
+    time_t timestamp;
+    int id;
+    bool isConfirmation;
+#endif
 };
 
 // Maximum "payload" -- real data -- that can included in a single message
@@ -132,6 +146,11 @@ class PostOffice {
 				// off of network (i.e., time to call 
 				// PostalDelivery)
 
+#ifdef CHANGED
+    int GetNetworkName(); // Get network name
+    bool CheckConfirmation(PacketHeader pktHdr, MailHeader mailHdr);
+#endif
+
   private:
     Network *network;		// Physical network connection
     NetworkAddress netAddr;	// Network address of this machine
@@ -140,6 +159,30 @@ class PostOffice {
     Semaphore *messageAvailable;// V'ed when message has arrived from network
     Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
+#ifdef CHANGED
+    List *confirmationMails;
+    List *oldMessages;
+#endif
 };
+
+#ifdef CHANGED
+
+#define TEMPO 1
+#define MAXREEMISSIONS 5
+
+class ReliableTransfer {
+public:
+    ReliableTransfer(NetworkAddress addr, double reliability, int nBoxes);
+    ~ReliableTransfer();
+    int Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    void Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+
+private:
+    PostOffice *postOffice;
+};
+#endif
+
+
+
 
 #endif

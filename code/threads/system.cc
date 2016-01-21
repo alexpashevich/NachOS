@@ -38,7 +38,10 @@ Semaphore *bufferlock;
 
 #ifdef NETWORK
 PostOffice *postOffice;
-#endif
+#ifdef CHANGED
+ReliableTransfer *reliableTransfer;
+#endif // CHANGED
+#endif // NETWORK
 
 
 // External definition, to allow us to take a pointer to this function
@@ -179,7 +182,10 @@ Initialize (int argc, char **argv)
 
 #ifdef NETWORK
     postOffice = new PostOffice (netname, rely, 10);
-#endif
+#ifdef CHANGED
+    reliableTransfer = new ReliableTransfer(netname, rely, 10);
+#endif // CHANGED
+#endif // NETWORK
 }
 
 //----------------------------------------------------------------------
@@ -192,6 +198,7 @@ Cleanup ()
     printf ("\nCleaning up...\n");
 #ifdef NETWORK
     delete postOffice;
+    delete reliableTransfer;
 #endif
 
 #ifdef USER_PROGRAM

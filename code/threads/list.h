@@ -16,6 +16,12 @@
 #include "copyright.h"
 #include "utility.h"
 
+#ifdef NETWORK
+#ifdef CHANGED
+#include <ctime>
+#endif // CHANGED
+#endif // NETWORk
+
 // The following class defines a "list element" -- which is
 // used to keep track of one item on a list.  It is equivalent to a
 // LISP cell, with a "car" ("next") pointing to the next element on the list,
@@ -60,8 +66,24 @@ class List
     void SortedInsert (void *item, long long sortKey);	// Put item into list
     void *SortedRemove (long long *keyPtr);	// Remove first item from list
 
+#ifdef NETWORK
+#ifdef CHANGED
+    bool findElemAndDelete(bool (*comp) (int*, int*), int* elem); // Find the element 
+                                        // with the help of comp function and delete it
+    bool findElemAndClean(bool (*comp) (int*, int*), int* elem, time_t (*getTimestamp) (int*), time_t maxlag);
+                                        // Find the element
+                                        // with the help of comp function and delete all elements
+                                        // timestamp of which are outdated by more than maxlag
+    // void print(void (*p) (int*)) {
+    //     for (ListElement *ptr = first; ptr != NULL; ptr = ptr->next) {
+    //         (*p)((int*)ptr->item);
+    //     }
+    // }
+#endif // CHANGED
+#endif // NETWORK
+
   private:
-      ListElement * first;	// Head of the list, NULL if list is empty
+    ListElement * first;	// Head of the list, NULL if list is empty
     ListElement *last;		// Last element of list
 };
 

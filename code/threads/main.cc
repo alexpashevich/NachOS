@@ -39,6 +39,8 @@
 //    -n sets the network reliability
 //    -m sets this machine's host id (needed for the network)
 //    -o runs a simple test of the Nachos network software
+//	  -w runs a circle test of the Nachos network software
+//	  -or runs a test of reliable networks
 //
 //  NOTE -- flags are ignored until the relevant assignment.
 //  Some of the flags are interpreted here; some in system.cc.
@@ -62,6 +64,11 @@ extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out);
 extern void SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
+
+#ifdef CHANGED
+extern void MailCircleTest (int n);
+extern void ReliableMailTest (int networkID);
+#endif
 
 //----------------------------------------------------------------------
 // main
@@ -174,7 +181,24 @@ main (int argc, char **argv)
 		// start up another nachos
 		MailTest (atoi (*(argv + 1)));
 		argCount = 2;
-	    }
+	  }
+#ifdef CHANGED
+      else if (!strcmp (*argv, "-w")) {
+		ASSERT (argc > 1);
+		Delay (7);	// delay for 2 seconds
+		// to give the user time to 
+		// start up another nachos
+		MailCircleTest (atoi (*(argv + 1)));
+		argCount = 2;
+      } else if (!strcmp (*argv, "-or")) {
+		ASSERT (argc > 1);
+		Delay (2);	// delay for 2 seconds
+		// to give the user time to 
+		// start up another nachos
+		ReliableMailTest (atoi (*(argv + 1)));
+		argCount = 2;
+      }
+#endif // CHANGED
 #endif // NETWORK
       }
 

@@ -35,10 +35,11 @@ MailTest(int farAddr)
 {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
-    const char *data = "Hello there!";
-    const char *ack = "Got it!";
     char buffer[MaxMailSize];
 
+#ifndef CHANGED
+    const char *data = "Hello there!";
+    const char *ack = "Got it!";
     // construct packet, mail header for original message
     // To: destination machine, mailbox 0
     // From: our machine, reply to: mailbox 1
@@ -66,7 +67,117 @@ MailTest(int farAddr)
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
-
+#else
+    char data[20];
+    int times = 10, i;
+    for (i = 0; i < times; ++i) {
+        sprintf(data, "MESSAGE_%d", i);
+        outPktHdr.to = farAddr;     
+        outMailHdr.to = 0;
+        outMailHdr.from = 1;
+        outMailHdr.length = strlen(data) + 1;
+        postOffice->Send(outPktHdr, outMailHdr, data);
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
+        printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+        fflush(stdout);
+    }
+#endif
     // Then we're done!
     interrupt->Halt();
 }
+
+#ifdef CHANGED
+void MailCircleTest(int n) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    char buffer[MaxMailSize];
+    int farAddr = (postOffice->GetNetworkName() + 1) % n;
+    outPktHdr.to = farAddr;
+    outMailHdr.to = 0;
+    outMailHdr.from = 1;
+    char data[8] = "MESSAGE";
+    char data_final[8] = "FINAL  ";
+    if (farAddr == 1) {
+        outMailHdr.length = strlen(data) + 1;
+        printf("Sent \"%s\" to machine %d, box %d\n",data,outPktHdr.to,outPktHdr.to);
+        fflush(stdout);
+        postOffice->Send(outPktHdr, outMailHdr, data);
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
+        printf("Got \"%s\" from machine %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+        fflush(stdout);
+    } else {
+        outMailHdr.length = strlen(data) + 1;
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
+        printf("Got \"%s\" from machine %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+        fflush(stdout);
+        if (farAddr == 0) {
+            printf("Sent \"%s\" to machine %d, box %d\n",data_final,inPktHdr.to,inMailHdr.to);
+            fflush(stdout);
+            postOffice->Send(outPktHdr, outMailHdr, data_final);
+        } else {
+            printf("Sent \"%s\" to machine %d, box %d\n",data,inPktHdr.to,inMailHdr.to);
+            fflush(stdout);
+            postOffice->Send(outPktHdr, outMailHdr, data);
+        }
+    }
+    interrupt->Halt();
+}
+
+void ReliableMailTest(int farAddr) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    char buffer[MaxMailSize];
+
+    const char *data = "Hello there!";
+    const char *ack = "Got it!";
+    // construct packet, mail header for original message
+    // To: destination machine, mailbox 0
+    // From: our machine, reply to: mailbox 1
+    outPktHdr.to = farAddr;     
+    outMailHdr.to = 0;
+    outMailHdr.from = 1;
+    outMailHdr.length = strlen(data) + 1;
+
+    // Send the first message
+    if (reliableTransfer->Send(outPktHdr, outMailHdr, data) == -1) {
+        printf("Machine %d: can not send \"%s\"\n", postOffice->GetNetworkName(), data);
+        return;
+    }
+
+    // Wait for the first message from the other machine
+    reliableTransfer->Receive(0, &inPktHdr, &inMailHdr, buffer);
+    printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+    fflush(stdout);
+
+    // Send acknowledgement to the other machine (using "reply to" mailbox
+    // in the message that just arrived
+    outPktHdr.to = inPktHdr.from;
+    outMailHdr.to = inMailHdr.from;
+    outMailHdr.length = strlen(ack) + 1;
+    if (reliableTransfer->Send(outPktHdr, outMailHdr, ack) == -1) {
+        printf("Machine %d: can not send \"%s\"\n", postOffice->GetNetworkName(), ack);
+        return;
+    }
+
+    // Wait for the ack from the other machine to the first message we sent.
+    reliableTransfer->Receive(1, &inPktHdr, &inMailHdr, buffer);
+    printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+    fflush(stdout);
+    interrupt->Halt();
+}
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
