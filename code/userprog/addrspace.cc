@@ -50,16 +50,27 @@ static void
 ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
                         TranslationEntry *pageTable, unsigned numPages)
 {
+    TranslationEntry* oldPageTable = machine->pageTable;
+    unsigned int oldPageTableSize  = machine->pageTableSize;
+
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
+
     char* buf = new char[numBytes];
 
     executable->ReadAt(buf, numBytes, position);
+    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
     int i;
     for (i = 0; i < numBytes; ++i)
     {
         machine->WriteMem(virtualaddr, 1, buf[i]);
         virtualaddr += sizeof(char);
     }  
-    delete[] buf;  
+    delete[] buf;
+
+    machine->pageTable = oldPageTable;
+    machine->pageTableSize = oldPageTableSize;
+    // (void) interrupt->SetLevel (oldLevel);
 }
 #endif /* CHANGED */
 //----------------------------------------------------------------------
@@ -124,7 +135,6 @@ AddrSpace::AddrSpace (OpenFile * executable)
       // pages to be read-only
       }
 
-      RestoreState(); // then we do not need to do that in Start Process ?
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
     // bzero (machine->mainMemory, size);   // moved this to FrameProveider class

@@ -34,7 +34,7 @@ StartUserThread(int myFuncAndArg)
 
 // initialize backups of registers
 	currentThread->space->InitRegisters();
-	// currentThread->RestoreUserState();
+	currentThread->RestoreUserState();
 // initialize the stack pointer of the thread program
     machine->WriteRegister(StackReg, 
     			currentThread->space->mainStackTop - currentThread->stackSlotNb * threadStackSize);
@@ -46,6 +46,7 @@ StartUserThread(int myFuncAndArg)
 	machine->WriteRegister(PCReg, f);
 	machine->WriteRegister(NextPCReg, f + 4);
 
+	// machine->WriteRegister(NextPCReg, 0);
 // and start the interpreter Machine::Run
 	machine->Run();
 // function never reaches this point
@@ -82,6 +83,7 @@ do_UserThreadCreate(int f, int arg)
     currentThread->space->threadArray[slotNb] = newThread;
 
 // putting new thread in the thread queue to execute
+    newThread->space = currentThread->space;
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
     return slotNb;	
@@ -149,21 +151,20 @@ do_UserForkExec(char* exec)
 		printf ("Unable to open file %s\n", exec);
 	  	return -1;
     }
-
-    AddrSpace* space = new AddrSpace (executable);
-    delete executable;
-    currentThread->space->RestoreState();
+    
+    // currentThread->space->RestoreState();
     
     Thread* newThread = new Thread("process");
-    newThread->space = space;
-    
+    newThread->space = new AddrSpace (executable);
+    delete executable;
+
     funcAndArg *myfuncandarg = new funcAndArg(0, 0);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
-    newThread->space = space;
+    // newThread->space = space;
     
-    IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    scheduler->Run(currentThread);
-    (void) interrupt->SetLevel (oldLevel);
+    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    // scheduler->Run(currentThread);
+    // (void) interrupt->SetLevel (oldLevel);
 
     return 0;
 }
