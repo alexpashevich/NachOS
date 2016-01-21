@@ -164,6 +164,24 @@ main (int argc, char **argv)
 	    {			// performance test
 		PerformanceTest ();
 	    }
+        #ifdef CHANGED
+      else if (!strcmp (*argv, "-mk"))
+	    {			// Create a directory with argument as name
+		fileSystem->CreateDirectory(*(argv+1));
+        }/*
+      else if (!strcmp (*argv, "-del"))
+        {			// delete directory with argument name
+        del_Directory ((argv + 1));
+        }
+      else if (!strcmp (*argv, "-up"))
+        {			// moves to parent directory
+        directory_up ();
+        }
+      else if (!strcmp (*argv, "-cd"))
+        {			// move to directory with argument name
+        move_to ((argv+1));
+        }*/
+      #endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))

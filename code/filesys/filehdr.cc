@@ -148,3 +148,26 @@ FileHeader::Print()
     }
     delete [] data;
 }
+
+
+#ifdef CHANGED
+//----------------------------------------------------------------------
+// FileHeader::is_Directory
+// 	Sets and checks if a given file is a directory or not
+//----------------------------------------------------------------------
+
+int
+FileHeader::is_Directory(int check, int Setvalue)
+{
+  if(check == 0)
+  {//1 is directory, 0 is file
+    directory_value = Setvalue;
+    return directory_value;
+  }
+  else
+  {
+    return directory_value;
+  }
+}
+
+#endif

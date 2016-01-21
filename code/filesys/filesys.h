@@ -84,6 +84,10 @@ class FileSystem {
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+    
+    #ifdef CHANGED
+    bool CreateDirectory(const char *name);
+    #endif
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
