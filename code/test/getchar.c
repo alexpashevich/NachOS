@@ -11,5 +11,6 @@ main()
 	PutString("You have just typed: ");
 	PutString(s);
 	PutChar('\n');
-	Halt();
+	// Halt();
+	return 0;
 }

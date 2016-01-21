@@ -72,6 +72,7 @@ Machine::Machine(bool debug)
 #endif
 #ifdef CHANGED
     frameProvider = new FrameProvider(NumPhysPages, PageSize, mainMemory);
+    processCnt = 0;
 #endif
     singleStep = debug;
     CheckEndian();

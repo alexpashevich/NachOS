@@ -46,7 +46,7 @@ StartUserThread(int myFuncAndArg)
 	machine->WriteRegister(PCReg, f);
 	machine->WriteRegister(NextPCReg, f + 4);
 
-	// machine->WriteRegister(NextPCReg, 0);
+	// machine->WriteRegister(LastPCReg, 0);
 // and start the interpreter Machine::Run
 	machine->Run();
 // function never reaches this point
@@ -62,6 +62,8 @@ StartUserThread(int myFuncAndArg)
 int
 do_UserThreadCreate(int f, int arg)
 {
+
+	DEBUG('t', "Creating new User Thread.\n");
 
 // finding out if we have enough resources to create a thread
 	int slotNb;
@@ -99,6 +101,8 @@ do_UserThreadCreate(int f, int arg)
 void
 do_UserThreadExit()
 {	
+	DEBUG('t', "Terminating User Thread.\n");
+	// printf("Kasuje freda kurwulus!\n");
 	currentThread->space->DecrementCounter();
 	currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
@@ -121,6 +125,7 @@ do_UserThreadExit()
 void
 do_UserThreadJoin(int threadId)
 {
+	DEBUG('t', "Waiting for thread %d.\n", threadId);	
 	currentThread->space->lock->P();
 	if (0 < threadId && threadId < currentThread->space->threadsNb)
 	{
@@ -144,6 +149,8 @@ do_UserThreadJoin(int threadId)
 int 
 do_UserForkExec(char* exec)
 {
+	DEBUG('t', "Create new process %s.\n", exec);
+
 	OpenFile *executable = fileSystem->Open (exec);
 
     if (executable == NULL)
@@ -152,20 +159,13 @@ do_UserForkExec(char* exec)
 	  	return -1;
     }
     
-    // currentThread->space->RestoreState();
-    
     Thread* newThread = new Thread("process");
     newThread->space = new AddrSpace (executable);
     delete executable;
 
     funcAndArg *myfuncandarg = new funcAndArg(0, 0);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
-    // newThread->space = space;
-    
-    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    // scheduler->Run(currentThread);
-    // (void) interrupt->SetLevel (oldLevel);
-
+ 
     return 0;
 }
 #endif

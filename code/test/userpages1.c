@@ -1,9 +1,9 @@
 #include "syscall.h"
 
 #define THIS "aaa"
-#define THAT "bbb"
+#define THAT "ccc"
 
-const int N = 10; // Choose it large enough!
+const int N = 2; // Choose it large enough!
 
 void puts(char *s)
 {
@@ -16,11 +16,15 @@ void f(void *s)
 	UserThreadExit();
 }
 
+void b(void *s)
+{
+	int i; for (i = 0; i < N; i++) puts((char *)s);
+}
 int
 main()
 {
 	UserThreadCreate(f, (void *) THIS);
-	f((void*) THAT);
+	b((void*) THAT);	
 
 	PutString("UserPages1 has terminated...\n");
 	return 0;

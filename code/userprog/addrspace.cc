@@ -178,6 +178,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
     counter = 1;
+    ++machine->processCnt;
 #endif
 }
 
@@ -200,6 +201,7 @@ AddrSpace::~AddrSpace ()
   delete mainthreadwait;
   delete[] threadArray;
   delete stackMap;
+  --machine->processCnt;
 #endif
 
   // LB: Missing [] for delete

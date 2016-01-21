@@ -162,6 +162,7 @@ class Machine {
 
 #ifdef CHANGED
     FrameProvider *frameProvider;
+    unsigned processCnt;
 #endif /* CHANGED */
 // NOTE: the hardware translation of virtual addresses in the user program
 // to physical addresses (relative to the beginning of "mainMemory")
