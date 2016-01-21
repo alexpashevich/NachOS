@@ -22,6 +22,6 @@ main()
 	UserThreadCreate(f, (void *) THIS);
 	f((void*) THAT);
 
-	PutString("UserPages2 has terminated...\n");
+	PutString("UserPages1 has terminated...\n");
 	return 0;
 }

@@ -3,9 +3,11 @@
 #include "frameprovider.h"
 
 
-FrameProvider::FrameProvider(int NumPhysPages)
+FrameProvider::FrameProvider(int NumPhysPages, int PageSize, char* mainMemory)
 {
 	framesMap = new BitMap(NumPhysPages);
+	physPageSize = PageSize;
+	memory = mainMemory;
 	// RandomInit(NumPhysPages);	// Random page allocation
 }
 
@@ -18,7 +20,7 @@ int
 FrameProvider::GetEmptyFrame()
 {
 	int frameNb = framesMap->Find();	
-
+	bzero (memory + frameNb * physPageSize, physPageSize);
 	// int frameNb = Random()*100;
 	
 	// while(framesMap->Test(frameNb))	// while frameNbth bit is set, find next one

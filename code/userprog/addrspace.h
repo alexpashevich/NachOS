@@ -54,7 +54,6 @@ class AddrSpace
                       // to know where main stack ends
     int threadsNb;    // make those private?
     void** threadArray;
-    FrameProvider* frameProvider;
   private:
     int counter;
 #endif

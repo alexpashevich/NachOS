@@ -194,10 +194,12 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_ForkExec: {
-        // char* arg = (char*) machine->ReadRegister(4);
-        // int res = do_ForkExec((char*) arg);
-        // machine->WriteRegister(2, res);
-        // StartProcess(arg);
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserForkExec(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
         break;
       }      
       default: {

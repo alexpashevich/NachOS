@@ -33,6 +33,7 @@ StartUserThread(int myFuncAndArg)
 	delete (funcAndArg*)myFuncAndArg;
 
 // initialize backups of registers
+	currentThread->space->InitRegisters();
 	// currentThread->RestoreUserState();
 // initialize the stack pointer of the thread program
     machine->WriteRegister(StackReg, 
@@ -136,5 +137,34 @@ do_UserThreadJoin(int threadId)
 		}
 	}
 	currentThread->space->lock->V();
+}
+
+int 
+do_UserForkExec(char* exec)
+{
+	OpenFile *executable = fileSystem->Open (exec);
+
+    if (executable == NULL)
+    {
+		printf ("Unable to open file %s\n", exec);
+	  	return -1;
+    }
+
+    AddrSpace* space = new AddrSpace (executable);
+    delete executable;
+    currentThread->space->RestoreState();
+    
+    Thread* newThread = new Thread("process");
+    newThread->space = space;
+    
+    funcAndArg *myfuncandarg = new funcAndArg(0, 0);
+    newThread->Fork (StartUserThread, (int)myfuncandarg);
+    newThread->space = space;
+    
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    scheduler->Run(currentThread);
+    (void) interrupt->SetLevel (oldLevel);
+
+    return 0;
 }
 #endif

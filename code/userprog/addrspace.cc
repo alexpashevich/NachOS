@@ -44,6 +44,7 @@ SwapHeader (NoffHeader * noffH)
     WordToHost (noffH->uninitData.virtualAddr);
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
+
 #ifdef CHANGED
 static void 
 ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
@@ -100,8 +101,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 // check if there is room for new address space (is that enough or raise exception here?)
 #ifdef CHANGED
-    frameProvider = machine->frameProvider;
-    ASSERT ((int) numPages <= frameProvider->NumAvailFrames());
+    ASSERT ((int) numPages <= machine->frameProvider->NumAvailFrames());
 #endif
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
@@ -114,13 +114,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 #ifndef CHANGED      
       pageTable[i].physicalPage = 1;
 #else      
-      int getFrame = frameProvider->GetEmptyFrame();
-      // if (getFrame > 0)
-      // {
-        printf("Frame value before: %d\n", getFrame);
-        pageTable[i].physicalPage = getFrame;  
-        printf("Frame value after: %d\n", pageTable[i].physicalPage);
-      // }
+      pageTable[i].physicalPage = machine->frameProvider->GetEmptyFrame();
 #endif     
       pageTable[i].valid = TRUE;
       pageTable[i].use = FALSE;
@@ -133,7 +127,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
       RestoreState(); // then we do not need to do that in Start Process ?
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
-    bzero (machine->mainMemory, size);
+    // bzero (machine->mainMemory, size);   // moved this to FrameProveider class
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0)
@@ -189,7 +183,7 @@ AddrSpace::~AddrSpace ()
   unsigned i;
   for (i = 0; i < numPages; ++i)
   {
-    frameProvider->ReleaseFrame( pageTable[i].physicalPage );
+    machine->frameProvider->ReleaseFrame( pageTable[i].physicalPage );
   }
   
   delete lock;

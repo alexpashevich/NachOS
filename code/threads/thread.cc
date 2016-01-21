@@ -34,6 +34,7 @@
 
 Thread::Thread (const char *threadName)
 {
+    DEBUG ('t', "Creating thread \"%s\"\n", threadName);
     name = threadName;
     stackTop = NULL;
     stack = NULL;
@@ -46,6 +47,7 @@ Thread::Thread (const char *threadName)
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
 #ifdef CHANGED
+    stackSlotNb = 0;
     waitingList = new List;
 #endif      
 #endif

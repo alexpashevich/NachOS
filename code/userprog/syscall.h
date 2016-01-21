@@ -170,7 +170,7 @@ void UserThreadExit();
 void UserThreadJoin(int threadId);
 
 /*  Create new process */
-int ForkExec(char *s);
+int ForkExec(char *exec);
 
 #endif
 
