@@ -90,7 +90,12 @@ Initialize (int argc, char **argv)
     bool debugUserProg = FALSE;	// single step user program
 #endif
 #ifdef FILESYS_NEEDED
-    bool format = FALSE;    //format disk
+
+#ifndef CHANGED    
+    bool format = FALSE;	// format disk
+#else
+    bool format = FALSE;    //TRUE
+#endif    
 #endif
 #ifdef NETWORK
     double rely = 1;		// network reliability

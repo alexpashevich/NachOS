@@ -113,7 +113,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
-        printf("Main program has finished with value %d\n", res);
+        printf("\nMain program has finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
@@ -123,9 +123,13 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, end of main function.\n");
-        printf("Main program has finished with value %d\n", res);
-        // should we here release Addrspace Object? - delete space?
-        interrupt->Halt();
+        printf("\nMain program has finished with value %d\n", res);
+        delete currentThread->space;
+        // --machine->processCnt;
+        if( machine->processCnt == 0)
+        {
+          interrupt->Halt();  
+        }
         break;
       }
       case SC_PutChar: {
@@ -192,6 +196,15 @@ ExceptionHandler (ExceptionType which)
         do_UserThreadJoin(machine->ReadRegister(4));
         break;
       }
+      case SC_ForkExec: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserForkExec(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }      
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

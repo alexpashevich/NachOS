@@ -381,7 +381,8 @@ FileSystem::CreateDirectory(const char *name)
     else
     {
         hdr = new FileHeader;
-        if (!hdr->Allocate(freeMap, 12))
+
+        if (!hdr->Allocate(freeMap, 2)) // 2 is magic number size of folder?
           {success = FALSE;}	// no space on disk for data
         else
         {

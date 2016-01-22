@@ -31,6 +31,8 @@
 class Directory;
 
 
+class Directory;
+
 class DirectoryEntry {
   public:
     bool inUse;				// Is this directory entry in use?
@@ -39,7 +41,9 @@ class DirectoryEntry {
     #ifdef CHANGED
     int parentSector;
     int isDirectory;
+
     Directory *myDirectory;
+    //int directoryEmpty;
     #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
@@ -92,6 +96,9 @@ class Directory {
     
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
+    #ifdef CHANGED
+    unsigned cnt;
+    #endif
 };
 
 #endif // DIRECTORY_H

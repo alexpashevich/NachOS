@@ -19,6 +19,7 @@
 #ifdef CHANGED
 #include "synch.h"
 #include "bitmap.h"
+// #include "frameprovider.h"
 #endif
 
 #define UserStackSize		24 * PageSize //1024	// increase this as necessary!
@@ -48,12 +49,11 @@ class AddrSpace
     Semaphore *mainthreadwait;
     Semaphore *lock;
 
-    BitMap *stackMap; // bitMap for userThread's stack allocation
+    BitMap* stackMap; // bitMap for userThread's stack allocation
     int mainStackTop; // userThread's stacks are allocated below main stack, so we need
                       // to know where main stack ends
     int threadsNb;    // make those private?
     void** threadArray;
-    int threadId;     // unique thread iD
   private:
     int counter;
 #endif

@@ -40,6 +40,7 @@
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit	18
 #define SC_UserThreadJoin	19
+#define SC_ForkExec			20
 #endif
 
 #ifdef IN_USER_MODE
@@ -167,6 +168,9 @@ void UserThreadExit();
 
 /* Wait for other thread */
 void UserThreadJoin(int threadId);
+
+/*  Create new process */
+int ForkExec(char *exec);
 
 #endif
 

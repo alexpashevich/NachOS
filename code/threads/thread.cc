@@ -34,6 +34,7 @@
 
 Thread::Thread (const char *threadName)
 {
+    DEBUG ('t', "Creating thread \"%s\"\n", threadName);
     name = threadName;
     stackTop = NULL;
     stack = NULL;
@@ -46,6 +47,7 @@ Thread::Thread (const char *threadName)
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
 #ifdef CHANGED
+    stackSlotNb = 0;
     waitingList = new List;
 #endif      
 #endif
@@ -114,7 +116,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // an already running program, as in the "fork" Unix system call. 
     
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
+    // this->space = currentThread->space;
 
 #endif // USER_PROGRAM
 
