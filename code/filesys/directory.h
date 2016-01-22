@@ -38,6 +38,7 @@ class DirectoryEntry {
     int parentSector;
     int isDirectory;
     DirectoryEntry *myDirectory;
+    //int directoryEmpty;
     #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
@@ -80,7 +81,7 @@ class Directory {
     #ifdef CHANGED
     //Add directory into table
     bool AddDir(const char *name, int newSector, int isDirectory);  
-    //bool RemoveDir(const char *name);	// Remove a directory from the directory
+    int isEmpty(const char *name);
     #endif //CHANGED
 
   private:
