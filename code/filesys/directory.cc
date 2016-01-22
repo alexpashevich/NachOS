@@ -241,7 +241,7 @@ int
 Directory::isEmpty(const char *name)
 {
     int count;
-    DirectoryEntry *direc;
+   // DirectoryEntry direc;
     int ind = FindIndex(name);
     if(ind == -1)
         return 0; //doesn't exist
@@ -249,11 +249,11 @@ Directory::isEmpty(const char *name)
     if(table[ind].isDirectory == 0)
         return 0; //not a directory
     
-    direc = table[ind].myDirectory;
+     
     
     for(int c = 0; c < NumDirEntries; c++)
     {
-        if(direc[c].inUse)
+        if(table[ind].myDirectory[c].inUse)
         {
             count++;
         }

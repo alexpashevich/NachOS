@@ -28,6 +28,8 @@
 //
 // Internal data structures kept public so that Directory operations can
 // access them directly.
+class Directory;
+
 
 class DirectoryEntry {
   public:
@@ -37,8 +39,7 @@ class DirectoryEntry {
     #ifdef CHANGED
     int parentSector;
     int isDirectory;
-    DirectoryEntry *myDirectory;
-    //int directoryEmpty;
+    Directory *myDirectory;
     #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'

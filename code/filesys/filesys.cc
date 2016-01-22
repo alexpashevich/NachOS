@@ -381,7 +381,7 @@ FileSystem::CreateDirectory(const char *name)
     else
     {
         hdr = new FileHeader;
-        if (!hdr->Allocate(freeMap, 2))
+        if (!hdr->Allocate(freeMap, 12))
           {success = FALSE;}	// no space on disk for data
         else
         {
@@ -427,19 +427,17 @@ FileSystem::delDirectory(const char *name)
     fileHdr = new FileHeader;
     fileHdr->FetchFrom(sector);
     
-    //openfile->OpenFile(sector);
-    /*
+    
     if(fileHdr->is_Directory(1,1) != 1)
     {
         printf("Name does not correspond to a Directory \n");
         return FALSE;
-    }*/
+    }
     
     
      if(!(directory->isEmpty(name)))
     {
-        printf("Directory cannot be removed \n");
-        printf("It is either not a directory, or it is not empty\n");
+        printf("Directory is not empty, cannot be removed \n");
         return FALSE; 
     }
     
