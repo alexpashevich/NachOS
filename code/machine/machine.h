@@ -35,7 +35,7 @@
 					// the disk sector size, for
 					// simplicity
 
-#define NumPhysPages    200//32
+#define NumPhysPages    2000//32
 #define MemorySize 	(NumPhysPages * PageSize)
 #define TLBSize		4		// if there is a TLB, make it small
 

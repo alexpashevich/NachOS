@@ -101,8 +101,7 @@ do_UserThreadCreate(int f, int arg)
 void
 do_UserThreadExit()
 {	
-	DEBUG('t', "Terminating User Thread.\n");
-	// printf("Kasuje freda kurwulus!\n");
+	DEBUG('t', "Cleaning up after User Thread.\n");
 	currentThread->space->DecrementCounter();
 	currentThread->space->lock->P();
 	currentThread->space->stackMap->Clear(currentThread->stackSlotNb);
@@ -125,7 +124,7 @@ do_UserThreadExit()
 void
 do_UserThreadJoin(int threadId)
 {
-	DEBUG('t', "Waiting for thread %d.\n", threadId);	
+	DEBUG('t', "Waiting for user thread %d.\n", threadId);	
 	currentThread->space->lock->P();
 	if (0 < threadId && threadId < currentThread->space->threadsNb)
 	{

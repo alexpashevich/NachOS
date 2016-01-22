@@ -1,9 +1,9 @@
 #include "syscall.h"
 
 #define THIS "aaa"
-#define THAT "ccc"
+#define THAT "bbb"
 
-const int N = 2; // Choose it large enough!
+const int N = 10; // Choose it large enough!
 
 void puts(char *s)
 {
@@ -24,8 +24,15 @@ int
 main()
 {
 	UserThreadCreate(f, (void *) THIS);
+	UserThreadCreate(f, (void *) THIS);
+	UserThreadCreate(f, (void *) THIS);
+	UserThreadCreate(f, (void *) THIS);
+	UserThreadCreate(f, (void *) THIS);
+	
 	b((void*) THAT);	
-
-	PutString("UserPages1 has terminated...\n");
-	return 0;
+	b((void*) THAT);
+	b((void*) THAT);
+	
+	PutString("\nUserPages1 has terminated...\n");
+	return 1;
 }
