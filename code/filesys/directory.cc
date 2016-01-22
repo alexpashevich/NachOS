@@ -42,6 +42,7 @@ Directory::Directory(int size)
 {
     table = new DirectoryEntry[size];
     tableSize = size;
+    cnt = 0;
     for (int i = 0; i < tableSize; i++)
 	{
         #ifdef CHANGED
@@ -220,19 +221,23 @@ bool
 Directory::AddDir(const char *name, int newSector, int isDirectory)
 { 
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
 
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+    {
+        if (!table[i].inUse) 
+        {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
             table[i].isDirectory = isDirectory;
-            table[i].myDirectory = new DirectoryEntry[NumDirEntries]; //create new directory for new folder
-            table[i].myDirectory[0].parentSector = newSector; //set parent to actual folder
-            
-        return TRUE;
-	}
+            table[i].myDirectory = new Directory (NumDirEntries); //create new directory for new folder
+
+            // table[i].myDirectory->table[0].parentSector = newSector; //set parent to actual folder
+            ++cnt;
+            return TRUE;
+	   }
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
@@ -240,8 +245,8 @@ Directory::AddDir(const char *name, int newSector, int isDirectory)
 int 
 Directory::isEmpty(const char *name)
 {
-    int count;
-    DirectoryEntry *direc;
+    // int count;
+    // DirectoryEntry *direc;
     int ind = FindIndex(name);
     if(ind == -1)
         return 0; //doesn't exist
@@ -249,20 +254,22 @@ Directory::isEmpty(const char *name)
     if(table[ind].isDirectory == 0)
         return 0; //not a directory
     
-    direc = table[ind].myDirectory;
+    // direc = table[ind].myDirectory.isEmpty();
     
-    for(int c = 0; c < NumDirEntries; c++)
-    {
-        if(direc[c].inUse)
-        {
-            count++;
-        }
-    }
+    // for(int c = 0; c < NumDirEntries; c++)
+    // {
+    //     if(direc[c].inUse)
+    //     {
+    //         count++;
+    //     }
+    // }
     
-    if(count > 1)
-        return 0; //not empty
-    else
-        return 1; //empty
+    // if(count > 1)
+    //     return 0; //not empty
+    // else
+    //     return 1; //empty
+
+        return cnt == 0 ? TRUE : FALSE;
 }
 
 
