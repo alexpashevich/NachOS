@@ -17,6 +17,10 @@
 #include "disk.h"
 #include "bitmap.h"
 
+#ifdef CHANGED
+#include "directory.h"
+#endif //CHANGED
+
 #define NumDirect 	((SectorSize - 2 * sizeof(int)) / sizeof(int))
 #define MaxFileSize 	(NumDirect * SectorSize)
 
@@ -55,12 +59,22 @@ class FileHeader {
 					// in bytes
 
     void Print();			// Print the contents of the file.
+   
+    #ifdef CHANGED
+    int is_Directory(int check, int Setvalue);
+    //char set_Name(char name_in);
+    #endif
 
   private:
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     int dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
+                    
+    #ifdef CHANGED
+    int directory_value;
+    //char *name;
+    #endif
 };
 
 #endif // FILEHDR_H

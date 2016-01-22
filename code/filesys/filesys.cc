@@ -105,6 +105,9 @@ FileSystem::FileSystem(bool format)
     // on it!).
 
         DEBUG('f', "Writing headers back to disk.\n");
+    #ifdef CHANGED
+    dirHdr->is_Directory(0,1); //Set as a directory
+    #endif //CHANGED
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
 
@@ -339,3 +342,59 @@ FileSystem::Print()
     delete freeMap;
     delete directory;
 } 
+
+
+#ifdef CHANGED
+//----------------------------------------------------------------------
+// FileSystem::Create Directory
+//----------------------------------------------------------------------
+
+bool
+FileSystem::CreateDirectory(const char *name)
+{
+  Directory *directory;
+  BitMap *freeMap;
+  FileHeader *hdr;
+  int sector;
+  bool success;
+
+  DEBUG('f', "Creating directory %s \n", name);
+
+  directory = new Directory(NumDirEntries);
+  directory->FetchFrom(directoryFile);
+
+  if (directory->Find(name) != -1)
+    success = FALSE;			// file is already in directory
+  else
+  {
+    freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+    sector = freeMap->Find();	// find a sector to hold the file header
+    if (sector == -1)
+        {success = FALSE;}		// no free block for file header
+    else if (!directory->AddDir(name, sector, 1))//set directory as directory
+        {success = FALSE;}	// no space in directory
+    else
+    {
+        hdr = new FileHeader;
+        if (!hdr->Allocate(freeMap, 2))
+          {success = FALSE;}	// no space on disk for data
+        else
+        {
+          success = TRUE;
+      // everthing worked, flush all changes back to disk
+              hdr->is_Directory(0,1); //we write in the header that this is a directory
+              hdr->WriteBack(sector);
+              directory->WriteBack(directoryFile);
+              freeMap->WriteBack(freeMapFile);
+        }
+              delete hdr;
+    }
+      delete freeMap;
+  }
+  delete directory;
+  return success;
+  DEBUG('f', "Created Directory %s \n", name);
+}
+
+#endif
