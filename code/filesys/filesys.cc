@@ -51,6 +51,10 @@
 #include "filehdr.h"
 #include "filesys.h"
 
+#ifdef CHANGED
+#include "openfile.h"
+#endif //CHANGED
+
 // Sectors containing the file headers for the bitmap of free sectors,
 // and the directory of files.  These file headers are placed in well-known 
 // sectors, so that they can be located on boot-up.
@@ -61,7 +65,7 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
+#define NumDirEntries 		10 //remember to change numdirEntries in directory.cc
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -396,5 +400,63 @@ FileSystem::CreateDirectory(const char *name)
   return success;
   DEBUG('f', "Created Directory %s \n", name);
 }
+
+
+//----------------------------------------------------------------------
+// FileSystem::delDirectory
+// 	Delete directory from the file system.
+//----------------------------------------------------------------------
+
+bool
+FileSystem::delDirectory(const char *name)
+{ 
+    Directory *directory;
+    BitMap *freeMap;
+    FileHeader *fileHdr;
+    int sector;
+    
+    directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name);
+    if (sector == -1) {
+       delete directory;
+       return FALSE;			 // file not found 
+    }
+    
+    
+    fileHdr = new FileHeader;
+    fileHdr->FetchFrom(sector);
+    
+    //openfile->OpenFile(sector);
+    /*
+    if(fileHdr->is_Directory(1,1) != 1)
+    {
+        printf("Name does not correspond to a Directory \n");
+        return FALSE;
+    }*/
+    
+    
+     if(!(directory->isEmpty(name)))
+    {
+        printf("Directory cannot be removed \n");
+        printf("It is either not a directory, or it is not empty\n");
+        return FALSE; 
+    }
+    
+    
+    freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+
+    fileHdr->Deallocate(freeMap);  		// remove data blocks
+    freeMap->Clear(sector);			// remove header block
+    directory->Remove(name);
+
+    freeMap->WriteBack(freeMapFile);		// flush to disk
+    directory->WriteBack(directoryFile);        // flush to disk
+    delete fileHdr;
+    delete directory;
+    delete freeMap;
+    return TRUE;
+} 
 
 #endif
