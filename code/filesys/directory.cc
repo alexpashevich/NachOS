@@ -42,11 +42,14 @@ Directory::Directory(int size)
 {
     table = new DirectoryEntry[size];
     tableSize = size;
-    cnt = 0;
+#ifdef CHANGED
+    occupiedEntries = 0;
+#endif
     for (int i = 0; i < tableSize; i++)
 	{
+        // Mauricio
         #ifdef CHANGED
-        table[i].isDirectory = 0;
+        table[i].isDirectory = FALSE;
         table[i].myDirectory = NULL;
         table[i].parentSector = 1;
         #endif //CHANGED
@@ -122,7 +125,7 @@ Directory::Find(const char *name)
     int i = FindIndex(name);
 
     if (i != -1)
-	return table[i].sector;
+	   return table[i].sector;
     return -1;
 }
 
@@ -136,23 +139,49 @@ Directory::Find(const char *name)
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
-
+#ifndef CHANGED
 bool
 Directory::Add(const char *name, int newSector)
 {   
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
     
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+    {
+        if (!table[i].inUse)
+        {
             table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
+            strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;
-        return TRUE;
-	}
+            return TRUE;
+	   }  
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+#else
+
+bool
+Directory::Add(const char *name, int newSector, bool isDirectory)
+{   
+    if (FindIndex(name) != -1)
+       return FALSE;
+    
+    for (int i = 0; i < tableSize; i++)
+    {
+        if (!table[i].inUse)
+        {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen);
+            table[i].sector = newSector;
+            table[i].isDirectory = isDirectory ? TRUE : FALSE;
+            ++occupiedEntries;
+            return TRUE;
+       }  
+    }
+    return FALSE;   // no space.  Fix when we have extensible files.
+}
+#endif
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -167,8 +196,11 @@ Directory::Remove(const char *name)
     int i = FindIndex(name);
 
     if (i == -1)
-	return FALSE; 		// name not in directory
+	   return FALSE; 		// name not in directory
     table[i].inUse = FALSE;
+#ifdef CHANGED
+    --occupiedEntries;
+#endif    
     return TRUE;	
 }
 
@@ -218,7 +250,7 @@ Directory::Print()
 
 #ifdef CHANGED
 bool
-Directory::AddDir(const char *name, int newSector, int isDirectory)
+Directory::AddDir(const char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
 	   return FALSE;
@@ -230,11 +262,11 @@ Directory::AddDir(const char *name, int newSector, int isDirectory)
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-            table[i].isDirectory = isDirectory;
+            table[i].isDirectory = TRUE;
             table[i].myDirectory = new Directory (NumDirEntries); //create new directory for new folder
 
             // table[i].myDirectory->table[0].parentSector = newSector; //set parent to actual folder
-            ++cnt;
+            ++occupiedEntries;
             return TRUE;
 	   }
     }
@@ -269,7 +301,7 @@ Directory::isEmpty(const char *name)
     // else
     //     return 1; //empty
 
-        return cnt == 0 ? TRUE : FALSE;
+        return occupiedEntries == 0 ? TRUE : FALSE;
 }
 
 

@@ -110,7 +110,7 @@ FileSystem::FileSystem(bool format)
 
         DEBUG('f', "Writing headers back to disk.\n");
     #ifdef CHANGED
-    dirHdr->is_Directory(0,1); //Set as a directory
+    dirHdr->is_Directory(TRUE); //Set as a directory
     #endif //CHANGED
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
@@ -137,9 +137,9 @@ FileSystem::FileSystem(bool format)
 	    directory->Print();
 
         delete freeMap; 
-	delete directory; 
-	delete mapHdr; 
-	delete dirHdr;
+	    delete directory; 
+	    delete mapHdr; 
+	    delete dirHdr;
 	}
     } else {
     // if we are not formatting the disk, just open the files representing
@@ -200,7 +200,11 @@ FileSystem::Create(const char *name, int initialSize)
         sector = freeMap->Find();	// find a sector to hold the file header
     	if (sector == -1) 		
             success = FALSE;		// no free block for file header 
+#ifndef CHANGED       
         else if (!directory->Add(name, sector))
+#else            
+        else if (!directory->Add(name, sector, FALSE))
+#endif    
             success = FALSE;	// no space in directory
 	else {
     	    hdr = new FileHeader;
@@ -242,7 +246,7 @@ FileSystem::Open(const char *name)
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
-	openFile = new OpenFile(sector);	// name was found in directory 
+	   openFile = new OpenFile(sector);	// name was found in directory 
     delete directory;
     return openFile;				// return NULL if not found
 }
@@ -268,7 +272,7 @@ FileSystem::Remove(const char *name)
     BitMap *freeMap;
     FileHeader *fileHdr;
     int sector;
-    
+        
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
@@ -376,7 +380,7 @@ FileSystem::CreateDirectory(const char *name)
     sector = freeMap->Find();	// find a sector to hold the file header
     if (sector == -1)
         {success = FALSE;}		// no free block for file header
-    else if (!directory->AddDir(name, sector, 1))//set directory as directory
+    else if (!directory->Add(name, sector, TRUE))   //set directory as directory TRUE means creating directory
         {success = FALSE;}	// no space in directory
     else
     {
@@ -387,7 +391,7 @@ FileSystem::CreateDirectory(const char *name)
         {
           success = TRUE;
       // everthing worked, flush all changes back to disk
-              hdr->is_Directory(0,1); //we write in the header that this is a directory
+              hdr->is_Directory(TRUE); //we write in the header that this is a directory
               hdr->WriteBack(sector);
               directory->WriteBack(directoryFile);
               freeMap->WriteBack(freeMapFile);

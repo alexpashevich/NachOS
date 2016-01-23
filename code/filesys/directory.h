@@ -38,7 +38,7 @@ class DirectoryEntry {
 					//   FileHeader for this file 
     #ifdef CHANGED
     int parentSector;
-    int isDirectory;
+    bool isDirectory;
     Directory *myDirectory;
     //int directoryEmpty;
     #endif //CHANGED
@@ -69,9 +69,11 @@ class Directory {
 
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-
+#ifndef CHANGED
     bool Add(const char *name, int newSector);  // Add a file name into the directory
-
+#else    
+    bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
+#endif
     bool Remove(const char *name);	// Remove a file from the directory
 
     void List();			// Print the names of all the files
@@ -82,7 +84,7 @@ class Directory {
                     
     #ifdef CHANGED
     //Add directory into table
-    bool AddDir(const char *name, int newSector, int isDirectory);  
+    bool AddDir(const char *name, int newSector);  
     int isEmpty(const char *name);
     #endif //CHANGED
 
@@ -94,7 +96,7 @@ class Directory {
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
     #ifdef CHANGED
-    unsigned cnt;
+    unsigned occupiedEntries; // occupied directory entries counter
     #endif
 };
 

@@ -165,13 +165,17 @@ main (int argc, char **argv)
 		PerformanceTest ();
 	    }
         #ifdef CHANGED
-      else if (!strcmp (*argv, "-mk"))
+      else if (!strcmp (*argv, "-mkdir"))
 	    {			// Create a directory with argument as name
+	    ASSERT (argc > 1);
 		fileSystem->CreateDirectory(*(argv+1));
+		argCount = 2;
         }
-      else if (!strcmp (*argv, "-del"))
+      else if (!strcmp (*argv, "-rm"))
         {			// delete directory with argument name
+        ASSERT (argc > 1);	
         fileSystem->delDirectory(*(argv+1));
+        argCount = 2;
         }/*
       else if (!strcmp (*argv, "-up"))
         {			// moves to parent directory 
