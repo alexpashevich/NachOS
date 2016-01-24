@@ -25,6 +25,9 @@
 #include "filehdr.h"
 #include "directory.h"
 
+#ifdef CHANGED
+#define NumDirEntries   10 //same as NumDirEntries in filesys.cc
+#endif //CHANGED
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely
@@ -39,10 +42,14 @@ Directory::Directory(int size)
 {
     table = new DirectoryEntry[size];
     tableSize = size;
+#ifdef CHANGED
+    occupiedEntries = 0;
+#endif
     for (int i = 0; i < tableSize; i++)
 	{
+        // Mauricio
         #ifdef CHANGED
-        table[i].isDirectory = 0;
+        table[i].isDirectory = FALSE;
         table[i].myDirectory = NULL;
         table[i].parentSector = 1;
         #endif //CHANGED
@@ -118,7 +125,7 @@ Directory::Find(const char *name)
     int i = FindIndex(name);
 
     if (i != -1)
-	return table[i].sector;
+	   return table[i].sector;
     return -1;
 }
 
@@ -132,23 +139,49 @@ Directory::Find(const char *name)
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
-
+#ifndef CHANGED
 bool
 Directory::Add(const char *name, int newSector)
-{ 
+{   
     if (FindIndex(name) != -1)
-	return FALSE;
-
+	   return FALSE;
+    
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+    {
+        if (!table[i].inUse)
+        {
             table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
+            strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;
-        return TRUE;
-	}
+            return TRUE;
+	   }  
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+#else
+
+bool
+Directory::Add(const char *name, int newSector, bool isDirectory)
+{   
+    if (FindIndex(name) != -1)
+       return FALSE;
+    
+    for (int i = 0; i < tableSize; i++)
+    {
+        if (!table[i].inUse)
+        {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen);
+            table[i].sector = newSector;
+            table[i].isDirectory = isDirectory ? TRUE : FALSE;
+            ++occupiedEntries;
+            return TRUE;
+       }  
+    }
+    return FALSE;   // no space.  Fix when we have extensible files.
+}
+#endif
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -163,8 +196,11 @@ Directory::Remove(const char *name)
     int i = FindIndex(name);
 
     if (i == -1)
-	return FALSE; 		// name not in directory
+	   return FALSE; 		// name not in directory
     table[i].inUse = FALSE;
+#ifdef CHANGED
+    --occupiedEntries;
+#endif    
     return TRUE;	
 }
 
@@ -182,7 +218,7 @@ Directory::List()
         #ifdef CHANGED
         if(table[i].isDirectory == 1)
         {
-            printf("d->");
+            printf("/");
         }
         #endif //CHANGED
          printf("%s\n", table[i].name);  
@@ -214,24 +250,59 @@ Directory::Print()
 
 #ifdef CHANGED
 bool
-Directory::AddDir(const char *name, int newSector, int isDirectory)
+Directory::AddDir(const char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
 
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+    {
+        if (!table[i].inUse) 
+        {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-            table[i].isDirectory = isDirectory;
-            table[i].myDirectory = new DirectoryEntry; //create new directory for new folder
-            table[i].myDirectory->parentSector = newSector; //set parent to actual folder
-        return TRUE;
-	}
+            table[i].isDirectory = TRUE;
+            table[i].myDirectory = new Directory (NumDirEntries); //create new directory for new folder
+
+            // table[i].myDirectory->table[0].parentSector = newSector; //set parent to actual folder
+            ++occupiedEntries;
+            return TRUE;
+	   }
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+
+int 
+Directory::isEmpty(const char *name)
+{
+    // int count;
+    // DirectoryEntry *direc;
+    int ind = FindIndex(name);
+    if(ind == -1)
+        return 0; //doesn't exist
+    
+    if(table[ind].isDirectory == 0)
+        return 0; //not a directory
+    
+    // direc = table[ind].myDirectory.isEmpty();
+    
+    // for(int c = 0; c < NumDirEntries; c++)
+    // {
+    //     if(direc[c].inUse)
+    //     {
+    //         count++;
+    //     }
+    // }
+    
+    // if(count > 1)
+    //     return 0; //not empty
+    // else
+    //     return 1; //empty
+
+        return occupiedEntries == 0 ? TRUE : FALSE;
+}
 
 
 

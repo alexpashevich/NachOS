@@ -87,6 +87,7 @@ class FileSystem {
     
     #ifdef CHANGED
     bool CreateDirectory(const char *name);
+    bool delDirectory(const char *name);
     #endif
 
   private:

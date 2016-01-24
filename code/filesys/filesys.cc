@@ -51,6 +51,10 @@
 #include "filehdr.h"
 #include "filesys.h"
 
+#ifdef CHANGED
+#include "openfile.h"
+#endif //CHANGED
+
 // Sectors containing the file headers for the bitmap of free sectors,
 // and the directory of files.  These file headers are placed in well-known 
 // sectors, so that they can be located on boot-up.
@@ -61,7 +65,7 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
+#define NumDirEntries 		10 //remember to change numdirEntries in directory.cc
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -106,7 +110,7 @@ FileSystem::FileSystem(bool format)
 
         DEBUG('f', "Writing headers back to disk.\n");
     #ifdef CHANGED
-    dirHdr->is_Directory(0,1); //Set as a directory
+    dirHdr->is_Directory(TRUE); //Set as a directory
     #endif //CHANGED
 	mapHdr->WriteBack(FreeMapSector);    
 	dirHdr->WriteBack(DirectorySector);
@@ -133,9 +137,9 @@ FileSystem::FileSystem(bool format)
 	    directory->Print();
 
         delete freeMap; 
-	delete directory; 
-	delete mapHdr; 
-	delete dirHdr;
+	    delete directory; 
+	    delete mapHdr; 
+	    delete dirHdr;
 	}
     } else {
     // if we are not formatting the disk, just open the files representing
@@ -196,7 +200,11 @@ FileSystem::Create(const char *name, int initialSize)
         sector = freeMap->Find();	// find a sector to hold the file header
     	if (sector == -1) 		
             success = FALSE;		// no free block for file header 
+#ifndef CHANGED       
         else if (!directory->Add(name, sector))
+#else            
+        else if (!directory->Add(name, sector, FALSE))
+#endif    
             success = FALSE;	// no space in directory
 	else {
     	    hdr = new FileHeader;
@@ -238,7 +246,7 @@ FileSystem::Open(const char *name)
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
-	openFile = new OpenFile(sector);	// name was found in directory 
+	   openFile = new OpenFile(sector);	// name was found in directory 
     delete directory;
     return openFile;				// return NULL if not found
 }
@@ -264,7 +272,7 @@ FileSystem::Remove(const char *name)
     BitMap *freeMap;
     FileHeader *fileHdr;
     int sector;
-    
+        
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
@@ -372,18 +380,18 @@ FileSystem::CreateDirectory(const char *name)
     sector = freeMap->Find();	// find a sector to hold the file header
     if (sector == -1)
         {success = FALSE;}		// no free block for file header
-    else if (!directory->AddDir(name, sector, 1))//set directory as directory
+    else if (!directory->Add(name, sector, TRUE))   //set directory as directory TRUE means creating directory
         {success = FALSE;}	// no space in directory
     else
     {
         hdr = new FileHeader;
-        if (!hdr->Allocate(freeMap, 2))
+        if (!hdr->Allocate(freeMap, 2)) // 2 is magic number size of folder?
           {success = FALSE;}	// no space on disk for data
         else
         {
           success = TRUE;
       // everthing worked, flush all changes back to disk
-              hdr->is_Directory(0,1); //we write in the header that this is a directory
+              hdr->is_Directory(TRUE); //we write in the header that this is a directory
               hdr->WriteBack(sector);
               directory->WriteBack(directoryFile);
               freeMap->WriteBack(freeMapFile);
@@ -396,5 +404,63 @@ FileSystem::CreateDirectory(const char *name)
   return success;
   DEBUG('f', "Created Directory %s \n", name);
 }
+
+
+//----------------------------------------------------------------------
+// FileSystem::delDirectory
+// 	Delete directory from the file system.
+//----------------------------------------------------------------------
+
+bool
+FileSystem::delDirectory(const char *name)
+{ 
+    Directory *directory;
+    BitMap *freeMap;
+    FileHeader *fileHdr;
+    int sector;
+    
+    directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name);
+    if (sector == -1) {
+       delete directory;
+       return FALSE;			 // file not found 
+    }
+    
+    
+    fileHdr = new FileHeader;
+    fileHdr->FetchFrom(sector);
+    
+    //openfile->OpenFile(sector);
+    /*
+    if(fileHdr->is_Directory(1,1) != 1)
+    {
+        printf("Name does not correspond to a Directory \n");
+        return FALSE;
+    }*/
+    
+    
+     if(!(directory->isEmpty(name)))
+    {
+        printf("Directory cannot be removed \n");
+        printf("It is either not a directory, or it is not empty\n");
+        return FALSE; 
+    }
+    
+    
+    freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+
+    fileHdr->Deallocate(freeMap);  		// remove data blocks
+    freeMap->Clear(sector);			// remove header block
+    directory->Remove(name);
+
+    freeMap->WriteBack(freeMapFile);		// flush to disk
+    directory->WriteBack(directoryFile);        // flush to disk
+    delete fileHdr;
+    delete directory;
+    delete freeMap;
+    return TRUE;
+} 
 
 #endif

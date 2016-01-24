@@ -29,6 +29,8 @@
 // Internal data structures kept public so that Directory operations can
 // access them directly.
 
+class Directory;
+
 class DirectoryEntry {
   public:
     bool inUse;				// Is this directory entry in use?
@@ -36,8 +38,9 @@ class DirectoryEntry {
 					//   FileHeader for this file 
     #ifdef CHANGED
     int parentSector;
-    int isDirectory;
-    DirectoryEntry *myDirectory;
+    bool isDirectory;
+    Directory *myDirectory;
+    //int directoryEmpty;
     #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
@@ -66,9 +69,11 @@ class Directory {
 
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-
+#ifndef CHANGED
     bool Add(const char *name, int newSector);  // Add a file name into the directory
-
+#else    
+    bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
+#endif
     bool Remove(const char *name);	// Remove a file from the directory
 
     void List();			// Print the names of all the files
@@ -79,8 +84,8 @@ class Directory {
                     
     #ifdef CHANGED
     //Add directory into table
-    bool AddDir(const char *name, int newSector, int isDirectory);  
-    //bool RemoveDir(const char *name);	// Remove a directory from the directory
+    bool AddDir(const char *name, int newSector);  
+    int isEmpty(const char *name);
     #endif //CHANGED
 
   private:
@@ -90,6 +95,9 @@ class Directory {
     
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
+    #ifdef CHANGED
+    unsigned occupiedEntries; // occupied directory entries counter
+    #endif
 };
 
 #endif // DIRECTORY_H
