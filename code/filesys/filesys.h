@@ -87,7 +87,8 @@ class FileSystem {
     
     #ifdef CHANGED
     bool CreateDirectory(const char *name);
-    bool delDirectory(const char *name);
+    bool RemoveDirectory(const char *name);
+    bool MoveToDirectory(const char *path);
     #endif
 
   private:
@@ -95,6 +96,12 @@ class FileSystem {
 					// represented as a file
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
+#ifdef CHANGED
+   OpenFile* currDirFile;   // current directory
+   // OpenFile* parentDirFile;   // parent directory
+
+   int currentDirSector;
+#endif
 };
 
 #endif // FILESYS

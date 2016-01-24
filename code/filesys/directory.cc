@@ -25,9 +25,7 @@
 #include "filehdr.h"
 #include "directory.h"
 
-#ifdef CHANGED
-#define NumDirEntries   10 //same as NumDirEntries in filesys.cc
-#endif //CHANGED
+
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely
@@ -44,14 +42,13 @@ Directory::Directory(int size)
     tableSize = size;
 #ifdef CHANGED
     occupiedEntries = 0;
+    root = FALSE;
 #endif
     for (int i = 0; i < tableSize; i++)
 	{
         // Mauricio
         #ifdef CHANGED
         table[i].isDirectory = FALSE;
-        table[i].myDirectory = NULL;
-        table[i].parentSector = 1;
         #endif //CHANGED
         table[i].inUse = FALSE;
     }
@@ -173,7 +170,7 @@ Directory::Add(const char *name, int newSector, bool isDirectory)
         {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen);
-            table[i].sector = newSector;
+            table[i].sector = newSector;      
             table[i].isDirectory = isDirectory ? TRUE : FALSE;
             ++occupiedEntries;
             return TRUE;
@@ -263,9 +260,6 @@ Directory::AddDir(const char *name, int newSector)
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
             table[i].isDirectory = TRUE;
-            table[i].myDirectory = new Directory (NumDirEntries); //create new directory for new folder
-
-            // table[i].myDirectory->table[0].parentSector = newSector; //set parent to actual folder
             ++occupiedEntries;
             return TRUE;
 	   }
@@ -305,6 +299,29 @@ Directory::isEmpty(const char *name)
 }
 
 
+void
+Directory::Initialize(int currSector, int parentSector)
+{
+    table[0].inUse = TRUE;
+    strncpy(table[0].name, ".", FileNameMaxLen);
+    table[0].sector = currSector;
+    table[0].isDirectory = TRUE;
 
-//Directory::MoveIn(const char *name)
+    table[1].inUse = TRUE;
+    strncpy(table[1].name, "..", FileNameMaxLen);
+    table[1].sector = parentSector;
+    table[1].isDirectory = TRUE;      
+}
+
+bool
+Directory::isRoot() { return this->root; }
+
+void
+Directory::setRoot(void) { this->root = TRUE; }
+
+int
+Directory::getSector(void)
+{
+    return table[0].sector;
+}
 #endif //CHANGED

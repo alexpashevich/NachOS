@@ -167,24 +167,22 @@ main (int argc, char **argv)
         #ifdef CHANGED
       else if (!strcmp (*argv, "-mkdir"))
 	    {			// Create a directory with argument as name
-	    ASSERT (argc > 1);
-		fileSystem->CreateDirectory(*(argv+1));
-		argCount = 2;
-        }
+	    	ASSERT (argc > 1);
+			fileSystem->CreateDirectory(*(argv + 1));
+			argCount = 2;
+        }     
       else if (!strcmp (*argv, "-rm"))
         {			// delete directory with argument name
-        ASSERT (argc > 1);	
-        fileSystem->delDirectory(*(argv+1));
-        argCount = 2;
-        }/*
-      else if (!strcmp (*argv, "-up"))
-        {			// moves to parent directory 
-        fileSystem->directory_up ();
+        	ASSERT (argc > 1);	
+        	fileSystem->RemoveDirectory(*(argv + 1));
+        	argCount = 2;
         }
       else if (!strcmp (*argv, "-cd"))
         {			// move to directory with argument name
-        fileSystem->move_to ((argv+1));
-        }*/
+        	ASSERT (argc > 1);
+        	fileSystem->MoveToDirectory(*(argv + 1));
+        	argCount = 2;
+        }
         interrupt->Halt();
       #endif//CHANGED
 #endif // FILESYS
