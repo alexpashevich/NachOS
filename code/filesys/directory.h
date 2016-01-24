@@ -34,17 +34,22 @@
 
 class Directory;
 
+class DirectoryInfo {
+  public:
+    bool isDirectory;
+    int occupiedEntries;
+};
+
 class DirectoryEntry {
   public:
     bool inUse;				// Is this directory entry in use?
     int sector;				// Location on disk to find the 
 					//   FileHeader for this file 
-    #ifdef CHANGED
-    bool isDirectory;
-    int occupiedEntries;
-    #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
+#ifdef CHANGED
+    bool isDirectory;
+#endif
 };
 
 
@@ -85,24 +90,19 @@ class Directory {
                     
     #ifdef CHANGED
     //Add directory into table
-    bool AddDir(const char *name, int newSector);  
-    bool isEmpty(const char *name);
     void Initialize(int currSector, int parentSector);
-    bool isRoot();
-    void setRoot(void);
-    int getSector();
+    bool AddDir(const char *name, int newSector);  
+    bool isEmpty(void);
+    bool isDirectory();
     #endif //CHANGED
 
   private:
     int tableSize;			// Number of directory entries
     DirectoryEntry *table;		// Table of pairs: 
 					// <file name, file header location> 
-    
+    DirectoryInfo *info;
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
-    #ifdef CHANGED
-    bool root;
-    #endif
 };
 
 #endif // DIRECTORY_H

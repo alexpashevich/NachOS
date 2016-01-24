@@ -68,7 +68,7 @@
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
 #define NumDirEntries 		10 //remember to change numdirEntries in directory.cc
-#define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
+#define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries + sizeof(DirectoryInfo))
 
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
@@ -100,7 +100,6 @@ FileSystem::FileSystem(bool format)
     // FileHeader *parentDirHdr = new FileHeader;
 
     directory->Initialize(DirectorySector, DirectorySector);
-    directory->setRoot();
     // currentDirSector = DirectorySector;    
 #endif
 
@@ -444,7 +443,6 @@ FileSystem::CreateDirectory(const char *name)
         
             Directory *myDirectory = new Directory(NumDirEntries);
             myDirectory->Initialize(sector, directory->Find("."));
-            printf("Sector : %d\n", directory->Find("."));
             success = TRUE;
       // everthing worked, flush all changes back to disk
             hdr->is_Directory(TRUE); //we write in the header that this is a directory
@@ -491,16 +489,36 @@ FileSystem::RemoveDirectory(const char *name)
     directory->FetchFrom(currDirFile);
 
     sector = directory->Find(name);
+    printf("Sektor: %d\n", sector);
     if (sector == -1) {
        delete directory;
        printf("File or directory not found!\n");
        return FALSE;			 // file not found 
     }
     
-    if( !(directory->isEmpty(name)) )
+    Directory *dirToRemove = new Directory(NumDirEntries);
+    OpenFile *file = new OpenFile(sector);
+    dirToRemove->FetchFrom(file);
+
+
+    if( !dirToRemove->isDirectory() )
+    {
+        printf("It is not a directory!\n");
+
+        delete dirToRemove;
+        delete file;
+        return FALSE;
+    }
+
+    if( !(dirToRemove->isEmpty()) )
     {
         printf("Directory %s cannot be removed!\n", name);
         printf("It is either not a directory, or it is not empty\n");
+        
+        delete dirToRemove;
+        delete file;    
+        delete directory;
+
         return FALSE; 
     }
     
@@ -519,6 +537,9 @@ FileSystem::RemoveDirectory(const char *name)
 // update current folder in its own file on the disk
     OpenFile *updateDir = new OpenFile(directory->Find("."));   // '.' has current folder sector
     directory->WriteBack(updateDir);
+
+    delete dirToRemove;
+    delete file;
 
     delete fileHdr;
     delete directory;

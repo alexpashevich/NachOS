@@ -38,20 +38,15 @@
 
 Directory::Directory(int size)
 {
+    info  = new DirectoryInfo();
     table = new DirectoryEntry[size];
     tableSize = size;
-#ifdef CHANGED
-    root = FALSE;
-#endif
     for (int i = 0; i < tableSize; i++)
 	{
-        // Mauricio
-        #ifdef CHANGED
-        table[i].isDirectory = FALSE;
-        table[i].occupiedEntries = 0;
-        #endif //CHANGED
         table[i].inUse = FALSE;
-        table[i].directory = NULL;
+ #ifdef CHANGED
+        table[i].isDirectory = FALSE;
+ #endif       
     }
 }
 
@@ -63,6 +58,7 @@ Directory::Directory(int size)
 Directory::~Directory()
 { 
     delete [] table;
+    delete info;
 } 
 
 //----------------------------------------------------------------------
@@ -76,6 +72,8 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+ // marcin   
+    (void) file->ReadAt((char *)info,  sizeof(DirectoryInfo), tableSize * sizeof(DirectoryEntry));
 }
 
 //----------------------------------------------------------------------
@@ -89,6 +87,8 @@ void
 Directory::WriteBack(OpenFile *file)
 {
     (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+ // marcin   
+    (void) file->WriteAt((char *)info,  sizeof(DirectoryInfo), tableSize * sizeof(DirectoryEntry));
 }
 
 //----------------------------------------------------------------------
@@ -160,7 +160,7 @@ Directory::Add(const char *name, int newSector)
 #else
 
 bool
-Directory::Add(const char *name, int newSector, bool isDirectory)
+Directory::Add(const char *name, int newSector, bool dir)
 {   
     if (FindIndex(name) != -1)
        return FALSE;
@@ -172,8 +172,7 @@ Directory::Add(const char *name, int newSector, bool isDirectory)
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;      
-            table[i].isDirectory = isDirectory ? TRUE : FALSE;
-            ++occupiedEntries;
+            table[i].isDirectory = dir ? TRUE : FALSE;
             return TRUE;
        }  
     }
@@ -196,9 +195,7 @@ Directory::Remove(const char *name)
     if (i == -1)
 	   return FALSE; 		// name not in directory
     table[i].inUse = FALSE;
-#ifdef CHANGED
-    --this->occupiedEntries;
-#endif    
+    this->info->occupiedEntries--;
     return TRUE;	
 }
 
@@ -238,7 +235,7 @@ Directory::Print()
     printf("Directory contents:\n");
     for (int i = 0; i < tableSize; i++)
 	if (table[i].inUse) {
-	    printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+	    printf("Name: %s, Sector: %d\n", table[0].name, table[i].sector);
 	    hdr->FetchFrom(table[i].sector);
 	    hdr->Print();
 	}
@@ -261,8 +258,7 @@ Directory::AddDir(const char *name, int newSector)
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
             table[i].isDirectory = TRUE;
-            table[i].directory = new Directory(NumDirEntries);
-            ++this->occupiedEntries;
+            this->info->occupiedEntries++;
             return TRUE;
 	   }
     }
@@ -270,21 +266,17 @@ Directory::AddDir(const char *name, int newSector)
 }
 
 bool
-Directory::isEmpty(const char *name)
-{
-    int id = FindIndex(name);
-    if(id == -1)
-        return FALSE; //doesn't exist
-    
-    if( !table[id].isDirectory )
-        return FALSE; //not a directory
+Directory::isEmpty(void) { return this->info->occupiedEntries == 0 ? TRUE : FALSE; }
 
-    return table[id].directory->occupiedEntries == 0 ? TRUE : FALSE;
-}
+bool
+Directory::isDirectory() { return this->info[0].isDirectory; }
 
 void
 Directory::Initialize(int currSector, int parentSector)
 {
+    info->occupiedEntries = 0;
+    info->isDirectory = TRUE;
+
     table[0].inUse = TRUE;
     strncpy(table[0].name, ".", FileNameMaxLen);
     table[0].sector = currSector;
@@ -294,17 +286,5 @@ Directory::Initialize(int currSector, int parentSector)
     strncpy(table[1].name, "..", FileNameMaxLen);
     table[1].sector = parentSector;
     table[1].isDirectory = TRUE;      
-}
-
-bool
-Directory::isRoot() { return this->root; }
-
-void
-Directory::setRoot(void) { this->root = TRUE; }
-
-int
-Directory::getSector(void)
-{
-    return table[0].sector;
 }
 #endif //CHANGED
