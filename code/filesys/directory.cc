@@ -41,7 +41,6 @@ Directory::Directory(int size)
     table = new DirectoryEntry[size];
     tableSize = size;
 #ifdef CHANGED
-    occupiedEntries = 0;
     root = FALSE;
 #endif
     for (int i = 0; i < tableSize; i++)
@@ -49,8 +48,10 @@ Directory::Directory(int size)
         // Mauricio
         #ifdef CHANGED
         table[i].isDirectory = FALSE;
+        table[i].occupiedEntries = 0;
         #endif //CHANGED
         table[i].inUse = FALSE;
+        table[i].directory = NULL;
     }
 }
 
@@ -196,7 +197,7 @@ Directory::Remove(const char *name)
 	   return FALSE; 		// name not in directory
     table[i].inUse = FALSE;
 #ifdef CHANGED
-    --occupiedEntries;
+    --this->occupiedEntries;
 #endif    
     return TRUE;	
 }
@@ -213,7 +214,7 @@ Directory::List()
 	if (table[i].inUse)
     {   
         #ifdef CHANGED
-        if(table[i].isDirectory == 1)
+        if(table[i].isDirectory)
         {
             printf("/");
         }
@@ -260,44 +261,26 @@ Directory::AddDir(const char *name, int newSector)
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
             table[i].isDirectory = TRUE;
-            ++occupiedEntries;
+            table[i].directory = new Directory(NumDirEntries);
+            ++this->occupiedEntries;
             return TRUE;
 	   }
     }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
-
-int 
+bool
 Directory::isEmpty(const char *name)
 {
-    // int count;
-    // DirectoryEntry *direc;
-    int ind = FindIndex(name);
-    if(ind == -1)
-        return 0; //doesn't exist
+    int id = FindIndex(name);
+    if(id == -1)
+        return FALSE; //doesn't exist
     
-    if(table[ind].isDirectory == 0)
-        return 0; //not a directory
-    
-    // direc = table[ind].myDirectory.isEmpty();
-    
-    // for(int c = 0; c < NumDirEntries; c++)
-    // {
-    //     if(direc[c].inUse)
-    //     {
-    //         count++;
-    //     }
-    // }
-    
-    // if(count > 1)
-    //     return 0; //not empty
-    // else
-    //     return 1; //empty
+    if( !table[id].isDirectory )
+        return FALSE; //not a directory
 
-        return occupiedEntries == 0 ? TRUE : FALSE;
+    return table[id].directory->occupiedEntries == 0 ? TRUE : FALSE;
 }
-
 
 void
 Directory::Initialize(int currSector, int parentSector)

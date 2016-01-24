@@ -449,20 +449,20 @@ FileSystem::CreateDirectory(const char *name)
       // everthing worked, flush all changes back to disk
             hdr->is_Directory(TRUE); //we write in the header that this is a directory
             hdr->WriteBack(sector);
-            
-            OpenFile *dir = new OpenFile(sector);
-            myDirectory->WriteBack(dir);     
-            
+        // save new directory in new file to the disk    
+            OpenFile *newDir = new OpenFile(sector);
+            myDirectory->WriteBack(newDir);     
+        // update current folder in global current folder file on the disk    
             directory->WriteBack(currDirFile);
-
-            OpenFile *asd = new OpenFile(directory->Find("."));
-            directory->WriteBack(asd);
+        // update current folder in its own file on the disk
+            OpenFile *updateDir = new OpenFile(directory->Find("."));   // '.' has current folder sector
+            directory->WriteBack(updateDir);
 
             freeMap->WriteBack(freeMapFile);
 
             delete myDirectory;
-            delete dir;
-            delete asd;
+            delete newDir;
+            delete updateDir;
         }
         delete hdr;
     }
@@ -488,24 +488,25 @@ FileSystem::RemoveDirectory(const char *name)
     int sector;
     
     directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(currDirFile);
+
     sector = directory->Find(name);
     if (sector == -1) {
        delete directory;
+       printf("File or directory not found!\n");
        return FALSE;			 // file not found 
     }
     
-    
-    fileHdr = new FileHeader;
-    fileHdr->FetchFrom(sector);
-    
-    if(!(directory->isEmpty(name)))
+    if( !(directory->isEmpty(name)) )
     {
-        printf("Directory cannot be removed \n");
+        printf("Directory %s cannot be removed!\n", name);
         printf("It is either not a directory, or it is not empty\n");
         return FALSE; 
     }
     
+    fileHdr = new FileHeader;
+    fileHdr->FetchFrom(sector);
+
     freeMap = new BitMap(NumSectors);
     freeMap->FetchFrom(freeMapFile);
 
@@ -514,10 +515,16 @@ FileSystem::RemoveDirectory(const char *name)
     directory->Remove(name);
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
-    directory->WriteBack(directoryFile);        // flush to disk
+    directory->WriteBack(currDirFile);        // flush to disk
+// update current folder in its own file on the disk
+    OpenFile *updateDir = new OpenFile(directory->Find("."));   // '.' has current folder sector
+    directory->WriteBack(updateDir);
+
     delete fileHdr;
     delete directory;
     delete freeMap;
+    delete updateDir;
+
     return TRUE;
 } 
 
@@ -543,7 +550,6 @@ FileSystem::MoveToDirectory(const char *name)
     Directory *newDir = new Directory(NumDirEntries);
     OpenFile *newDirFile = new OpenFile(sector);
     newDir->FetchFrom(newDirFile);
-    // currentDirSector = sector;
     newDir->WriteBack(currDirFile);
 
     delete newDir;

@@ -41,6 +41,7 @@ class DirectoryEntry {
 					//   FileHeader for this file 
     #ifdef CHANGED
     bool isDirectory;
+    int occupiedEntries;
     #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
@@ -85,7 +86,7 @@ class Directory {
     #ifdef CHANGED
     //Add directory into table
     bool AddDir(const char *name, int newSector);  
-    int isEmpty(const char *name);
+    bool isEmpty(const char *name);
     void Initialize(int currSector, int parentSector);
     bool isRoot();
     void setRoot(void);
@@ -100,7 +101,6 @@ class Directory {
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
     #ifdef CHANGED
-    unsigned occupiedEntries; // occupied directory entries counter
     bool root;
     #endif
 };
