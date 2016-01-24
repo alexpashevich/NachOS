@@ -59,7 +59,7 @@ ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
     char* buf = new char[numBytes];
 
     executable->ReadAt(buf, numBytes, position);
-    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
     int i;
     for (i = 0; i < numBytes; ++i)
     {
@@ -70,7 +70,7 @@ ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position,
 
     machine->pageTable = oldPageTable;
     machine->pageTableSize = oldPageTableSize;
-    // (void) interrupt->SetLevel (oldLevel);
+    (void) interrupt->SetLevel (oldLevel);
 }
 #endif /* CHANGED */
 //----------------------------------------------------------------------
@@ -178,7 +178,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
     lock = new Semaphore("address space lock", 1);
     mainthreadwait = new Semaphore("address space condition", 0);
     counter = 1;
+    machine->lock->P();
     ++machine->processCnt;
+    machine->lock->V();
 #endif
 }
 
@@ -201,7 +203,6 @@ AddrSpace::~AddrSpace ()
   delete mainthreadwait;
   delete[] threadArray;
   delete stackMap;
-  --machine->processCnt;
 #endif
 
   // LB: Missing [] for delete

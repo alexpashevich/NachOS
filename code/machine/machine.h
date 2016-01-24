@@ -27,6 +27,7 @@
 #include "disk.h"
 #ifdef CHANGED
 #include "frameprovider.h"
+#include "synch.h"
 #endif
 
 // Definitions related to the size, and format of user memory
@@ -161,6 +162,7 @@ class Machine {
     int registers[NumTotalRegs]; // CPU registers, for executing user programs
 
 #ifdef CHANGED
+    Semaphore *lock;
     FrameProvider *frameProvider;
     unsigned processCnt;
 #endif /* CHANGED */

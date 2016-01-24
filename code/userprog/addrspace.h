@@ -19,7 +19,7 @@
 #ifdef CHANGED
 #include "synch.h"
 #include "bitmap.h"
-// #include "frameprovider.h"
+#include "frameprovider.h"
 #endif
 
 #define UserStackSize		24 * PageSize //1024	// increase this as necessary!
