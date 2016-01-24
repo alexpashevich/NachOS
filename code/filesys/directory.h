@@ -34,9 +34,15 @@ class DirectoryEntry {
     bool inUse;				// Is this directory entry in use?
     int sector;				// Location on disk to find the 
 					//   FileHeader for this file 
+    #ifdef CHANGED
+    int parentSector;
+    int isDirectory;
+    DirectoryEntry *myDirectory;
+    #endif //CHANGED
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
 };
+
 
 // The following class defines a UNIX-like "directory".  Each entry in
 // the directory describes a file, and where to find it on disk.
@@ -70,12 +76,18 @@ class Directory {
     void Print();			// Verbose print of the contents
 					//  of the directory -- all the file
 					//  names and their contents.
+                    
+    #ifdef CHANGED
+    //Add directory into table
+    bool AddDir(const char *name, int newSector, int isDirectory);  
+    //bool RemoveDir(const char *name);	// Remove a directory from the directory
+    #endif //CHANGED
 
   private:
     int tableSize;			// Number of directory entries
     DirectoryEntry *table;		// Table of pairs: 
 					// <file name, file header location> 
-
+    
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
 };

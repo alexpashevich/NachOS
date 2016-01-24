@@ -40,7 +40,14 @@ Directory::Directory(int size)
     table = new DirectoryEntry[size];
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
-	table[i].inUse = FALSE;
+	{
+        #ifdef CHANGED
+        table[i].isDirectory = 0;
+        table[i].myDirectory = NULL;
+        table[i].parentSector = 1;
+        #endif //CHANGED
+        table[i].inUse = FALSE;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -171,7 +178,16 @@ Directory::List()
 {
    for (int i = 0; i < tableSize; i++)
 	if (table[i].inUse)
-	    printf("%s\n", table[i].name);
+    {   
+        #ifdef CHANGED
+        if(table[i].isDirectory == 1)
+        {
+            printf("d->");
+        }
+        #endif //CHANGED
+         printf("%s\n", table[i].name);  
+    }
+	   
 }
 
 //----------------------------------------------------------------------
@@ -195,3 +211,29 @@ Directory::Print()
     printf("\n");
     delete hdr;
 }
+
+#ifdef CHANGED
+bool
+Directory::AddDir(const char *name, int newSector, int isDirectory)
+{ 
+    if (FindIndex(name) != -1)
+	return FALSE;
+
+    for (int i = 0; i < tableSize; i++)
+        if (!table[i].inUse) {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDirectory = isDirectory;
+            table[i].myDirectory = new DirectoryEntry; //create new directory for new folder
+            table[i].myDirectory->parentSector = newSector; //set parent to actual folder
+        return TRUE;
+	}
+    return FALSE;	// no space.  Fix when we have extensible files.
+}
+
+
+
+
+//Directory::MoveIn(const char *name)
+#endif //CHANGED
