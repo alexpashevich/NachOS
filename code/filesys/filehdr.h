@@ -62,7 +62,6 @@ class FileHeader {
    
     #ifdef CHANGED
     void is_Directory(bool isDir);
-    //char set_Name(char name_in);
     #endif
 
   private:
@@ -73,7 +72,8 @@ class FileHeader {
                     
     #ifdef CHANGED
     bool isDirectory;
-    //char *name;
+    
+    
     #endif
 };
 

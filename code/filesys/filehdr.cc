@@ -161,16 +161,6 @@ FileHeader::Print()
 void
 FileHeader::is_Directory(bool isDir)
 {
-  // if(check == 0)
-  // {//1 is directory, 0 is file
-  //   directory_value = Setvalue;
-  //   return directory_value;
-  // }
-  // else
-  // {
-  //   return directory_value;
-  // }
-
   isDirectory = isDir;  
 }
 
