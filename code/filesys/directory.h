@@ -23,6 +23,7 @@
 					// file names are <= 9 characters long
 #ifdef CHANGED
 #define NumDirEntries   10 //same as NumDirEntries in filesys.cc
+ #define PathMaxLen 30
 #endif //CHANGED
 
 // The following class defines a "directory entry", representing a file
@@ -47,13 +48,6 @@ class DirectoryEntry {
     bool inUse;				// Is this directory entry in use?
     int sector;				// Location on disk to find the 
 					//   FileHeader for this file 
-    #ifdef CHANGED
-    int parentSector;
-    int isDirectory;
-    Directory *myDirectory;
-    //int directoryEmpty;
-    #endif //CHANGED
-    
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
 #ifdef CHANGED

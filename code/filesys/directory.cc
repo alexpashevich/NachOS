@@ -268,33 +268,6 @@ Directory::AddDir(const char *name, int newSector)
 bool
 Directory::isEmpty(void) { return this->info->occupiedEntries == 0 ? TRUE : FALSE; }
 
-int 
-Directory::isEmpty(const char *name)
-{
-    // int count;
-    // DirectoryEntry *direc;
-    int ind = FindIndex(name);
-    if(ind == -1)
-        return 0; //doesn't exist
-    
-    if(table[ind].isDirectory == 0)
-        return 0; //not a directory
-    
-    // direc = table[ind].myDirectory.isEmpty();
-    
-    // for(int c = 0; c < NumDirEntries; c++)
-    // {
-    //     if(direc[c].inUse)
-    //     {
-    //         count++;
-    //     }
-    // }
-    
-    // if(count > 1)
-    //     return 0; //not empty
-    // else
-    //     return 1; //empty
-
 bool
 Directory::isDirectory() { return this->info[0].isDirectory; }
 

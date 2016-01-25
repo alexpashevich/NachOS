@@ -52,6 +52,10 @@
 #include "filesys.h"
 
 #ifdef CHANGED
+//#include <iostream>
+//#include <string>
+#include <stdio.h>
+#include <string.h>
 #include "openfile.h"
 #endif //CHANGED
 
@@ -436,6 +440,7 @@ FileSystem::CreateDirectory(const char *name)
     else
     {
         hdr = new FileHeader;
+
         if (!hdr->Allocate(freeMap, DirectoryFileSize))
           {success = FALSE;}	// no space on disk for data
         else
@@ -496,13 +501,6 @@ FileSystem::RemoveDirectory(const char *name)
        return FALSE;			 // file not found 
     }
     
-<<<<<<< HEAD
-    
-    fileHdr = new FileHeader;
-    fileHdr->FetchFrom(sector);
-    
-    
-  /*  if(fileHdr->is_Directory(1,1) != 1)
     Directory *dirToRemove = new Directory(NumDirEntries);
     OpenFile *file = new OpenFile(sector);
     dirToRemove->FetchFrom(file);
@@ -563,11 +561,24 @@ FileSystem::RemoveDirectory(const char *name)
 bool
 FileSystem::MoveToDirectory(const char *name)
 {   
-
+    char name1[PathMaxLen];
+    strcpy(name1,name);
+    
+    char * token;
+    const char s[2] = "/";
+   token = strtok(name1, s);
+   while( token != NULL )
+   {
+    
+    // if(token == NULL)
+    // {
+    //  break;  
+    // }
+    
     Directory *directory = new Directory(NumDirEntries);
     directory->FetchFrom(currDirFile);    
     
-    int sector = directory->Find(name);
+    int sector = directory->Find(token);
     if (sector == -1) {
        delete directory;
        printf("No such file or directory!\n");
@@ -582,6 +593,12 @@ FileSystem::MoveToDirectory(const char *name)
     delete newDir;
     delete directory;
     delete newDirFile;
+    
+    token = strtok(NULL, s);
+   // printf("moving to directory: %s \n", token);
+   
+    
+   }//while;
 
     return TRUE;
 }
