@@ -25,9 +25,7 @@
 #include "filehdr.h"
 #include "directory.h"
 
-#ifdef CHANGED
-#define NumDirEntries   10 //same as NumDirEntries in filesys.cc
-#endif //CHANGED
+
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely
@@ -40,17 +38,15 @@
 
 Directory::Directory(int size)
 {
+    info  = new DirectoryInfo();
     table = new DirectoryEntry[size];
     tableSize = size;
-    cnt = 0;
     for (int i = 0; i < tableSize; i++)
 	{
-        #ifdef CHANGED
-        table[i].isDirectory = 0;
-        table[i].myDirectory = NULL;
-        table[i].parentSector = 1;
-        #endif //CHANGED
         table[i].inUse = FALSE;
+ #ifdef CHANGED
+        table[i].isDirectory = FALSE;
+ #endif       
     }
 }
 
@@ -62,6 +58,7 @@ Directory::Directory(int size)
 Directory::~Directory()
 { 
     delete [] table;
+    delete info;
 } 
 
 //----------------------------------------------------------------------
@@ -75,6 +72,8 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+ // marcin   
+    (void) file->ReadAt((char *)info,  sizeof(DirectoryInfo), tableSize * sizeof(DirectoryEntry));
 }
 
 //----------------------------------------------------------------------
@@ -88,6 +87,8 @@ void
 Directory::WriteBack(OpenFile *file)
 {
     (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+ // marcin   
+    (void) file->WriteAt((char *)info,  sizeof(DirectoryInfo), tableSize * sizeof(DirectoryEntry));
 }
 
 //----------------------------------------------------------------------
@@ -122,7 +123,7 @@ Directory::Find(const char *name)
     int i = FindIndex(name);
 
     if (i != -1)
-	return table[i].sector;
+	   return table[i].sector;
     return -1;
 }
 
@@ -136,23 +137,48 @@ Directory::Find(const char *name)
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
-
+#ifndef CHANGED
 bool
 Directory::Add(const char *name, int newSector)
 {   
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
     
     for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
+    {
+        if (!table[i].inUse)
+        {
             table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
+            strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;
-        return TRUE;
-	}
+            return TRUE;
+	   }  
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+#else
+
+bool
+Directory::Add(const char *name, int newSector, bool dir)
+{   
+    if (FindIndex(name) != -1)
+       return FALSE;
+    
+    for (int i = 0; i < tableSize; i++)
+    {
+        if (!table[i].inUse)
+        {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen);
+            table[i].sector = newSector;      
+            table[i].isDirectory = dir ? TRUE : FALSE;
+            return TRUE;
+       }  
+    }
+    return FALSE;   // no space.  Fix when we have extensible files.
+}
+#endif
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -167,8 +193,9 @@ Directory::Remove(const char *name)
     int i = FindIndex(name);
 
     if (i == -1)
-	return FALSE; 		// name not in directory
+	   return FALSE; 		// name not in directory
     table[i].inUse = FALSE;
+    this->info->occupiedEntries--;
     return TRUE;	
 }
 
@@ -184,7 +211,7 @@ Directory::List()
 	if (table[i].inUse)
     {   
         #ifdef CHANGED
-        if(table[i].isDirectory == 1)
+        if(table[i].isDirectory)
         {
             printf("/");
         }
@@ -208,7 +235,7 @@ Directory::Print()
     printf("Directory contents:\n");
     for (int i = 0; i < tableSize; i++)
 	if (table[i].inUse) {
-	    printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+	    printf("Name: %s, Sector: %d\n", table[0].name, table[i].sector);
 	    hdr->FetchFrom(table[i].sector);
 	    hdr->Print();
 	}
@@ -218,7 +245,7 @@ Directory::Print()
 
 #ifdef CHANGED
 bool
-Directory::AddDir(const char *name, int newSector, int isDirectory)
+Directory::AddDir(const char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
 	   return FALSE;
@@ -230,25 +257,22 @@ Directory::AddDir(const char *name, int newSector, int isDirectory)
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-            table[i].isDirectory = isDirectory;
-            table[i].myDirectory = new Directory (NumDirEntries); //create new directory for new folder
-
-            // table[i].myDirectory->table[0].parentSector = newSector; //set parent to actual folder
-            ++cnt;
+            table[i].isDirectory = TRUE;
+            this->info->occupiedEntries++;
             return TRUE;
 	   }
     }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+bool
+Directory::isEmpty(void) { return this->info->occupiedEntries == 0 ? TRUE : FALSE; }
 
 int 
 Directory::isEmpty(const char *name)
 {
-
     // int count;
     // DirectoryEntry *direc;
-
     int ind = FindIndex(name);
     if(ind == -1)
         return 0; //doesn't exist
@@ -256,11 +280,8 @@ Directory::isEmpty(const char *name)
     if(table[ind].isDirectory == 0)
         return 0; //not a directory
     
-
     // direc = table[ind].myDirectory.isEmpty();
-
     
-
     // for(int c = 0; c < NumDirEntries; c++)
     // {
     //     if(direc[c].inUse)
@@ -274,10 +295,23 @@ Directory::isEmpty(const char *name)
     // else
     //     return 1; //empty
 
-        return cnt == 0 ? TRUE : FALSE;
+bool
+Directory::isDirectory() { return this->info[0].isDirectory; }
+
+void
+Directory::Initialize(int currSector, int parentSector)
+{
+    info->occupiedEntries = 0;
+    info->isDirectory = TRUE;
+
+    table[0].inUse = TRUE;
+    strncpy(table[0].name, ".", FileNameMaxLen);
+    table[0].sector = currSector;
+    table[0].isDirectory = TRUE;
+
+    table[1].inUse = TRUE;
+    strncpy(table[1].name, "..", FileNameMaxLen);
+    table[1].sector = parentSector;
+    table[1].isDirectory = TRUE;      
 }
-
-
-
-//Directory::MoveIn(const char *name)
 #endif //CHANGED

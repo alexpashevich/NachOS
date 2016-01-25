@@ -75,6 +75,8 @@ Thread::~Thread ()
 
 #ifdef USER_PROGRAM
 #ifdef CHANGED
+    if(this->stackSlotNb == 0)
+      delete this->space;
     delete waitingList;
 #endif
 #endif

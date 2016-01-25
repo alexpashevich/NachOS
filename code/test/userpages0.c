@@ -30,6 +30,8 @@ main()
 	UserThreadCreate(f, (void *) THIS);
 	UserThreadCreate(f, (void *) THIS);
 	
+	ForkExec("multiplethreads");
+
 	b((void*) THAT);
 	b((void*) THAT);
 	b((void*) THAT);

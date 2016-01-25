@@ -124,11 +124,22 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, end of main function.\n");
         printf("\nMain program has finished with value %d\n", res);
-        delete currentThread->space;
-        // --machine->processCnt;
-        if( machine->processCnt == 0)
+        
+        
+        if(currentThread->stackSlotNb == 0)
         {
-          interrupt->Halt();  
+            machine->lock->P();
+            --machine->processCnt;
+            machine->lock->V();  
+
+            if( machine->processCnt == 0)
+            {
+              interrupt->Halt();  
+            }
+            else
+            {
+              currentThread->Finish();
+            }
         }
         break;
       }

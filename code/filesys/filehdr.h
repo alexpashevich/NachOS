@@ -61,7 +61,7 @@ class FileHeader {
     void Print();			// Print the contents of the file.
    
     #ifdef CHANGED
-    int is_Directory(int check, int Setvalue);
+    void is_Directory(bool isDir);
     //char set_Name(char name_in);
     #endif
 
@@ -72,7 +72,7 @@ class FileHeader {
 					// block in the file
                     
     #ifdef CHANGED
-    int directory_value;
+    bool isDirectory;
     //char *name;
     #endif
 };

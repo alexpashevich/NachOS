@@ -44,10 +44,10 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
     if (freeMap->NumClear() < numSectors)
-	return FALSE;		// not enough space
+	   return FALSE;		// not enough space
 
     for (int i = 0; i < numSectors; i++)
-	dataSectors[i] = freeMap->Find();
+	   dataSectors[i] = freeMap->Find();
     return TRUE;
 }
 
@@ -134,16 +134,18 @@ FileHeader::Print()
 
     printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
     for (i = 0; i < numSectors; i++)
-	printf("%d ", dataSectors[i]);
+	   printf("%d ", dataSectors[i]);
+    
     printf("\nFile contents:\n");
     for (i = k = 0; i < numSectors; i++) {
-	synchDisk->ReadSector(dataSectors[i], data);
+	   synchDisk->ReadSector(dataSectors[i], data);
+       
         for (j = 0; (j < SectorSize) && (k < numBytes); j++, k++) {
-	    if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
-		printf("%c", data[j]);
-            else
-		printf("\\%x", (unsigned char)data[j]);
-	}
+           if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
+		      printf("%c", data[j]);
+           else
+		      printf("\\%x", (unsigned char)data[j]);
+	   }
         printf("\n"); 
     }
     delete [] data;
@@ -156,18 +158,20 @@ FileHeader::Print()
 // 	Sets and checks if a given file is a directory or not
 //----------------------------------------------------------------------
 
-int
-FileHeader::is_Directory(int check, int Setvalue)
+void
+FileHeader::is_Directory(bool isDir)
 {
-  if(check == 0)
-  {//1 is directory, 0 is file
-    directory_value = Setvalue;
-    return directory_value;
-  }
-  else
-  {
-    return directory_value;
-  }
+  // if(check == 0)
+  // {//1 is directory, 0 is file
+  //   directory_value = Setvalue;
+  //   return directory_value;
+  // }
+  // else
+  // {
+  //   return directory_value;
+  // }
+
+  isDirectory = isDir;  
 }
 
 #endif

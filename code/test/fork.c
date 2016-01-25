@@ -20,7 +20,7 @@ main () {
 
 	ForkExec("userpages0");
 	ForkExec("userpages1");
-
+GetChar();
 	ForkExec("userpages0");
 	ForkExec("userpages1");
 
@@ -30,6 +30,8 @@ main () {
 	ForkExec("userpages0");
 	ForkExec("userpages1");
 
+GetChar();
+	ForkExec("getstring");	
 	PutString("Main Fork has terminated...\n");
 	return 5;
 }

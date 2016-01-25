@@ -21,6 +21,9 @@
 
 #define FileNameMaxLen 		9	// for simplicity, we assume 
 					// file names are <= 9 characters long
+#ifdef CHANGED
+#define NumDirEntries   10 //same as NumDirEntries in filesys.cc
+#endif //CHANGED
 
 // The following class defines a "directory entry", representing a file
 // in the directory.  Each entry gives the name of the file, and where
@@ -33,6 +36,12 @@ class Directory;
 
 class Directory;
 
+class DirectoryInfo {
+  public:
+    bool isDirectory;
+    int occupiedEntries;
+};
+
 class DirectoryEntry {
   public:
     bool inUse;				// Is this directory entry in use?
@@ -41,12 +50,15 @@ class DirectoryEntry {
     #ifdef CHANGED
     int parentSector;
     int isDirectory;
-
     Directory *myDirectory;
     //int directoryEmpty;
     #endif //CHANGED
+    
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
+#ifdef CHANGED
+    bool isDirectory;
+#endif
 };
 
 
@@ -72,9 +84,11 @@ class Directory {
 
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-
+#ifndef CHANGED
     bool Add(const char *name, int newSector);  // Add a file name into the directory
-
+#else    
+    bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
+#endif
     bool Remove(const char *name);	// Remove a file from the directory
 
     void List();			// Print the names of all the files
@@ -85,20 +99,19 @@ class Directory {
                     
     #ifdef CHANGED
     //Add directory into table
-    bool AddDir(const char *name, int newSector, int isDirectory);  
-    int isEmpty(const char *name);
+    void Initialize(int currSector, int parentSector);
+    bool AddDir(const char *name, int newSector);  
+    bool isEmpty(void);
+    bool isDirectory();
     #endif //CHANGED
 
   private:
     int tableSize;			// Number of directory entries
     DirectoryEntry *table;		// Table of pairs: 
 					// <file name, file header location> 
-    
+    DirectoryInfo *info;
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
-    #ifdef CHANGED
-    unsigned cnt;
-    #endif
 };
 
 #endif // DIRECTORY_H

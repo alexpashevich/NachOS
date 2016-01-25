@@ -71,6 +71,7 @@ Machine::Machine(bool debug)
     pageTable = NULL;
 #endif
 #ifdef CHANGED
+    lock = new Semaphore("Machine lock", 1);
     frameProvider = new FrameProvider(NumPhysPages, PageSize, mainMemory);
     processCnt = 0;
 #endif
