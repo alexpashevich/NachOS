@@ -183,3 +183,37 @@ PerformanceTest()
     stats->Print();
 }
 
+// #include "string.h"
+void
+shell(char** cmd)
+{
+    char tmp[100];
+    printf("nachOS > ");
+    // fgets(cmd, sizeof(cmd), stdin);
+    fgets(tmp, sizeof(tmp), stdin);
+
+    int i;
+    for (i = 0; i < 100; ++i)
+    {
+        cmd[0][i] = 0;
+        cmd[1][i] = 0; 
+    }
+    i = 0;
+    for (i = 0; i < 100; ++i)
+    {
+        if ( tmp[i] == '\n')
+        {
+            strncpy(cmd[0], tmp, i);
+            break;
+        }
+        if ( tmp[i] == ' ')
+        {
+            printf("%d\n", i);
+            strncpy(cmd[0], tmp, i);
+            ++i;
+            strncpy(cmd[1], tmp+i, 100-i);
+            break;
+        }
+    }
+
+}
