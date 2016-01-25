@@ -31,7 +31,7 @@
 #include "network.h"
 #include "synchlist.h"
 
-#ifdef CHANGED
+#ifndef CHANGED
 #include <ctime>
 #include "thread.h"
 #include "maillist.h"
@@ -116,7 +116,7 @@ class PostOffice {
 				//   get dropped by the underlying network
     virtual ~PostOffice();		// De-allocate Post Office data
 
-#ifdef CHANGED
+#ifndef CHANGED
 void Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data);
 #else
 void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
@@ -141,7 +141,7 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
 				// off of network (i.e., time to call 
 				// PostalDelivery)
 
-#ifdef CHANGED
+#ifndef CHANGED
     int GetNetworkName(); // Get network name
 #endif
 
@@ -155,7 +155,7 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
     Lock *sendLock;		// Only one outgoing message at a time
 };
 
-#ifdef CHANGED
+#ifndef CHANGED
 
 #define TEMPO 1
 #define MAXREEMISSIONS 5

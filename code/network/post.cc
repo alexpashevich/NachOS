@@ -18,7 +18,7 @@
 
 #include "copyright.h"
 #include "post.h"
-#ifdef CHANGED
+#ifndef CHANGED
 #include  "system.h"
 #endif
 
@@ -213,7 +213,7 @@ PostOffice::~PostOffice()
     delete sendLock;
 }
 
-#ifdef CHANGED
+#ifndef CHANGED
 // void p (int * item) {
 //     MailHeader *hdr = (MailHeader *) item;
 //     printf("id = %d, timestamp = %li\n", hdr->GetId(), hdr->GetTimestamp());
@@ -231,7 +231,7 @@ PostOffice::~PostOffice()
 void
 PostOffice::PostalDelivery()
 {
-#ifdef CHANGED
+#ifndef CHANGED
     PacketHeader pktHdr;
     MailHeader *mailHdr;
     char *buffer = new char[MaxPacketSize];
@@ -344,7 +344,7 @@ PostOffice::PostalDelivery()
 //	"data" -- payload message data
 //----------------------------------------------------------------------
 
-#ifdef CHANGED
+#ifndef CHANGED
 void PostOffice::Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data) {
     char* buffer = new char[MaxPacketSize]; // space to hold concatenated
                         // mailHdr + data
@@ -472,7 +472,7 @@ PostOffice::PacketSent()
     messageSent->V();
 }
 
-#ifdef CHANGED
+#ifndef CHANGED
 //----------------------------------------------------------------------
 // PostOffice::GetNetworkName
 //  Get network name
@@ -575,7 +575,7 @@ bool PostOfficeReliable::CheckConfirmation(PacketHeader pktHdr, MailHeaderReliab
 
 
 
-#ifdef NOTDEFINED
+#ifndef NOTDEFINED
 
 
 PostOfficeAnySize::PostOfficeAnySize(NetworkAddress addr, double reliability, int nBoxes) {
