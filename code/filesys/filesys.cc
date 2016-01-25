@@ -429,11 +429,11 @@ FileSystem::delDirectory(const char *name)
     fileHdr->FetchFrom(sector);
     
     
-    if(fileHdr->is_Directory(1,1) != 1)
+  /*  if(fileHdr->is_Directory(1,1) != 1)
     {
         printf("Name does not correspond to a Directory \n");
         return FALSE;
-    }
+    }*/
     
     
      if(!(directory->isEmpty(name)))
