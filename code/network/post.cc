@@ -24,17 +24,6 @@
 
 #include <strings.h> /* for bzero */
 
-#ifdef CHANGED
-MailHeader::MailHeader(const MailHeader *mailHdr) {
-    to = mailHdr->to;
-    from = mailHdr->from;
-    length = mailHdr->from;
-    id = mailHdr->GetId();
-    timestamp = mailHdr->GetTimestamp();
-    isConfirmation = mailHdr->GetConfirmation();
-}
-#endif
-
 //----------------------------------------------------------------------
 // Mail::Mail
 //      Initialize a single mail message, by concatenating the headers to
@@ -198,10 +187,6 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes)
     netAddr = addr; 
     numBoxes = nBoxes;
     boxes = new MailBox[nBoxes];
-#ifdef CHANGED
-    confirmationMails = new List;
-    oldMessages = new List;
-#endif
 
 // Third, initialize the network; tell it which interrupt handlers to call
     network = new Network(addr, reliability, ReadAvail, WriteDone, (int) this);
@@ -226,24 +211,9 @@ PostOffice::~PostOffice()
     delete messageAvailable;
     delete messageSent;
     delete sendLock;
-#ifdef CHANGED
-    delete confirmationMails;
-    delete oldMessages;
-#endif
 }
 
 #ifdef CHANGED
-bool confComparator (int *aconf, int *theconf) {
-    MailHeader *aheader = (MailHeader*) aconf;
-    MailHeader *theheader = (MailHeader*) theconf;
-    bool res = (aheader->GetId() == theheader->GetId()) && (aheader->GetTimestamp() == theheader->GetTimestamp());
-    // printf("%d and %d\n", aheader->GetId(), theheader->GetId());
-    return res;
-}
-time_t getTimestamp (int *item) {
-    MailHeader *hdr = (MailHeader *) item;
-    return hdr->GetTimestamp();
-}
 // void p (int * item) {
 //     MailHeader *hdr = (MailHeader *) item;
 //     printf("id = %d, timestamp = %li\n", hdr->GetId(), hdr->GetTimestamp());
@@ -261,70 +231,104 @@ time_t getTimestamp (int *item) {
 void
 PostOffice::PostalDelivery()
 {
+#ifdef CHANGED
+    PacketHeader pktHdr;
+    MailHeader *mailHdr;
+    char *buffer = new char[MaxPacketSize];
+
+    for (;;) {
+        // first, wait for a message
+        messageAvailable->P();  
+        pktHdr = network->Receive(buffer);
+
+        MailHeaderReliable* hdr = NULL;
+        mailHdr = (MailHeader *)buffer;
+        if (pktHdr.length == mailHdr->length + sizeof(MailHeaderReliable)) {
+            hdr = (MailHeaderReliable *)buffer;
+        }
+        if (DebugIsEnabled('n')) {
+            printf("Putting mail into mailbox: ");
+            PrintHeader(pktHdr, *mailHdr);
+        }
+
+        // check that arriving message is legal!
+        ASSERT(0 <= mailHdr->to && mailHdr->to < numBoxes);
+        ASSERT(mailHdr->length <= MaxMailSize);
+
+        // put into mailbox
+        try {
+            if (hdr != NULL) {
+                PostOfficeReliable* p = static_cast<PostOfficeReliable*>(this);
+                // it means that we are PostOfficeReliable
+                if (hdr->isConfirmation) {
+                    // confirmation mail was received
+
+                    printf("confirmation received, id = %d\n", hdr->id);
+                    MailHeaderReliable *hdrRel = new MailHeaderReliable(hdr);
+                    p->confirmationMails->Append(hdrRel);
+                } else {
+                    // normal mail was received
+
+                    printf("normal mail received, text = \"%s\", ", buffer + sizeof(MailHeaderReliable));
+                    time_t maxlag = TEMPO * (MAXREEMISSIONS + 1);
+                    
+                    // TODO: check from here
+                    if (!p->oldMessages->CheckOldMessages(hdr, maxlag, false)) {
+                        // if mailHdr is NOT in oldMessages
+                        printf("NOT repeated\n");
+                        boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeaderReliable));
+                        MailHeaderReliable *newMailHdr = new MailHeaderReliable(hdr);
+                        p->oldMessages->Append(newMailHdr);
+                    } else {
+                        printf("repeated\n");
+                    }
+
+                    // but send the confirmation anyway
+
+                    // setting headers to send the confirmation
+                    MailHeaderReliable mailHdrConf(hdr);
+                    mailHdrConf.length = 0;
+                    mailHdrConf.isConfirmation = true;
+
+                    PacketHeader pktHdrConf;
+                    pktHdrConf.to = pktHdr.from;
+                    pktHdrConf.from = pktHdr.to;
+                    pktHdrConf.length = mailHdrConf.length + sizeof(MailHeaderReliable);
+
+                // sending the confirmation
+                    this->Send(pktHdrConf, &mailHdrConf, NULL);
+                }
+            } else
+                boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeader));
+        }
+        catch (...) {
+            printf("catched the exception\n");
+        }
+    }
+#else
     PacketHeader pktHdr;
     MailHeader mailHdr;
     char *buffer = new char[MaxPacketSize];
 
     for (;;) {
         // first, wait for a message
-        messageAvailable->P();	
+        messageAvailable->P();  
         pktHdr = network->Receive(buffer);
 
         mailHdr = *(MailHeader *)buffer;
         if (DebugIsEnabled('n')) {
-    	    printf("Putting mail into mailbox: ");
-    	    PrintHeader(pktHdr, mailHdr);
+            printf("Putting mail into mailbox: ");
+            PrintHeader(pktHdr, mailHdr);
         }
 
-    	// check that arriving message is legal!
-    	ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
-    	ASSERT(mailHdr.length <= MaxMailSize);
+        // check that arriving message is legal!
+        ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
+        ASSERT(mailHdr.length <= MaxMailSize);
 
-        // put into mailbox
-#ifdef CHANGED
-        if (mailHdr.isConfirmation) {
-            printf("confirmation received, id = %d\n", mailHdr.id);
-            confirmationMails->Append((int*) &mailHdr);
-        }
-        else {
-            // printf("normal mail received, text = \"%s\"\n", buffer + sizeof(MailHeader));
-            time_t maxlag = TEMPO * (MAXREEMISSIONS + 1);
-            // printf("Printing oldMessages\n");
-            // oldMessages->print(p); // delete
-            // if mailHdr is NOT in oldMessages
-            if (!oldMessages->findElemAndClean(confComparator, (int*) &mailHdr, getTimestamp, maxlag)) {
-                // printf("was not found in previous mails\n");
-                boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
-                // printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAppending oldMessages with %d\n", mailHdr.id);
-                MailHeader *newMailHdr = new MailHeader(mailHdr);
-                oldMessages->Append((int*) newMailHdr);
-            } else {
-                // printf("the mail is repeated\n");
-            }
-
-            // but send the confirmation anyway
-
-            // setting headers to send the confirmation
-            MailHeader mailHdrConf;
-            mailHdrConf.length = 0;
-            mailHdrConf.to = 0;
-            mailHdrConf.from = 0;
-            mailHdrConf.timestamp = mailHdr.timestamp;
-            mailHdrConf.isConfirmation = true;
-            mailHdrConf.id = mailHdr.id;
-
-            PacketHeader pktHdrConf;
-            pktHdrConf.to = pktHdr.from;
-            pktHdrConf.from = pktHdr.to;
-            pktHdrConf.length = mailHdrConf.length + sizeof(MailHeader);
-
-        // sending the confirmation
-            this->Send(pktHdrConf, mailHdrConf, NULL);
-        }
-#else
+        
         boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
-#endif
     }
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -340,21 +344,62 @@ PostOffice::PostalDelivery()
 //	"data" -- payload message data
 //----------------------------------------------------------------------
 
-void
-PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
+#ifdef CHANGED
+void PostOffice::Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data) {
+    char* buffer = new char[MaxPacketSize]; // space to hold concatenated
+                        // mailHdr + data
+
+    if (DebugIsEnabled('n')) {
+        printf("Post send: ");
+        PrintHeader(pktHdr, *mailHdr);
+    }
+    ASSERT(mailHdr->length <= MaxMailSize);
+    ASSERT(0 <= mailHdr->to && mailHdr->to < numBoxes);
+    
+    // fill in pktHdr, for the Network layer
+    pktHdr.from = netAddr;
+    if (MailHeaderReliable *p = dynamic_cast<MailHeaderReliable*>(const_cast<MailHeader*>(mailHdr))) {
+        pktHdr.length = p->length + sizeof(MailHeaderReliable);
+
+        // concatenate MailHeader and data
+        memcpy(buffer, p, sizeof(MailHeaderReliable));
+        memcpy(buffer + sizeof(MailHeaderReliable), data, p->length);
+    } else {
+        pktHdr.length = mailHdr->length + sizeof(MailHeader);
+
+        // concatenate MailHeader and data
+        bcopy(mailHdr, buffer, sizeof(MailHeader));
+        bcopy(data, buffer + sizeof(MailHeader), mailHdr->length);
+    }
+
+    sendLock->Acquire();        // only one message can be sent
+                    // to the network at any one time
+
+    printf("Sending from old post office %s\n", buffer);
+    network->Send(pktHdr, buffer);
+    messageSent->P();           // wait for interrupt to tell us
+                    // ok to send the next message
+    sendLock->Release();
+
+    delete [] buffer;           // we've sent the message, so
+                    // we can delete our buffer
+}
+#else
+void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 {
     char* buffer = new char[MaxPacketSize];	// space to hold concatenated
 						// mailHdr + data
 
     if (DebugIsEnabled('n')) {
-	printf("Post send: ");
-	PrintHeader(pktHdr, mailHdr);
+    	printf("Post send: ");
+    	PrintHeader(pktHdr, mailHdr);
     }
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
     
     // fill in pktHdr, for the Network layer
     pktHdr.from = netAddr;
+
     pktHdr.length = mailHdr.length + sizeof(MailHeader);
 
     // concatenate MailHeader and data
@@ -371,6 +416,7 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     delete [] buffer;			// we've sent the message, so
 					// we can delete our buffer
 }
+#endif
 
 //----------------------------------------------------------------------
 // PostOffice::Receive
@@ -435,47 +481,61 @@ int PostOffice::GetNetworkName() {
     return (int) netAddr;
 }
 
-bool PostOffice::CheckConfirmation(PacketHeader pktHdr, MailHeader mailHdr) {
-    // printf("I m inside the CheckConfirmation\n");
-// TODO:
-    // Clean the list when confirmations are expired
-    bool res = confirmationMails->findElemAndDelete(confComparator, (int*) &mailHdr);
-    return res;
+PostOfficeReliable::PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes):
+                    PostOffice(addr, reliability, nBoxes) {
+    confirmationMails = new ListOfMails;
+    oldMessages = new ListOfMails;
 }
 
-ReliableTransfer::ReliableTransfer(NetworkAddress addr, double reliability, int nBoxes) {
-    postOffice = new PostOffice(addr, reliability, nBoxes);
+PostOfficeReliable::~PostOfficeReliable() {
+    delete confirmationMails;
+    delete oldMessages;
 }
 
-ReliableTransfer::~ReliableTransfer() {
-    delete postOffice;
-}
-
-int ReliableTransfer::Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
+int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data) {
 // setting internal fields
-    mailHdr.isConfirmation = false;
-    mailHdr.id = (int) data;
-    time(&mailHdr.timestamp);
+    MailHeaderReliable *mailHdrReliable = new MailHeaderReliable(mailHdr);
+    mailHdrReliable->isConfirmation = false;
+    mailHdrReliable->id = Random() + (int) data;
+    time(&mailHdrReliable->timestamp);
 
+    printf("Sending from reliable\n");
 // sending the mail
-    postOffice->Send(pktHdr, mailHdr, data);
-    printf("I sent the data\n");
+    this->Send(pktHdr, mailHdrReliable, data);
+    printf("Sending \"%s\" the first time\n", data);
 
 // waiting for some time to give the other machine chance to send the confirmation
+
+// TODO: change
+
+    // time_t now, curr_now;
+    // time(&now);
+    // time(&curr_now);
+    // while (curr_now - now < TEMPO) {
+    //     currentThread->Yield();
+    //     time(&curr_now);
+    // }
+
+    // currentThread->Sleep(TEMPO);
+    Delay(TEMPO);
     currentThread->Yield();
-    Delay(TEMPO);                                                   // change???
     int counter = 1;
-    while (!postOffice->CheckConfirmation(pktHdr, mailHdr) && counter < MAXREEMISSIONS) {
-        printf("Didn't receive the confirmation\n");
+    printf("I am awaken\n");
+    while (!this->CheckConfirmation(pktHdr, *mailHdrReliable) && counter < MAXREEMISSIONS) {
+        printf("Didn't receive the confirmation, sending \"%s\" again\n", data);
 // if the confirmation is not received then we think that our message was not delivered
 // so send it again
-        postOffice->Send(pktHdr, mailHdr, data);
+        this->Send(pktHdr, mailHdrReliable, data);
         ++counter;
 
 // and wait again
+        // currentThread->Sleep(TEMPO);
+        Delay(TEMPO);
         currentThread->Yield();
-        Delay(TEMPO);                                               // change???
     }
+
+    printf("[SUCCESS] Confirmation was received\n");
+    delete mailHdrReliable;
     // printf("Received the confirmation? counter = %d\n", counter);
 // return the result
     if (counter == MAXREEMISSIONS)
@@ -483,17 +543,114 @@ int ReliableTransfer::Send(PacketHeader pktHdr, MailHeader mailHdr, const char *
     return 0;
 }
 
-void ReliableTransfer::Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
+void PostOfficeReliable::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
 // receiving the mail
-    postOffice->Receive(box, pktHdr, mailHdr, data);
+    // TODO:
+    printf("Trying to receive a mail\n");
+    this->Receive(box, pktHdr, mailHdr, data); // or change to MailHeaderReliable  ???
 }
 
+bool PostOfficeReliable::CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr) {
+    printf("Checking confirmation\n");
+    int maxlag = TEMPO * MAXREEMISSIONS;
+    bool res = confirmationMails->CheckOldMessages(&mailHdr, maxlag, true);
+    return res;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef NOTDEFINED
+
+
+PostOfficeAnySize::PostOfficeAnySize(NetworkAddress addr, double reliability, int nBoxes) {
+    postOffice = new PostOffice(addr, reliability, nBoxes);
+}
+
+PostOfficeAnySize::~PostOfficeAnySize() {
+    delete postOffice;
+}
+
+void PostOfficeAnySize::Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
+    int length = mailHdr.length;
+
+    for (int p = 0; p < length; p += MaxMailSize) {
+        MailHeader tempMailHdr(&mailHdr);
+        tempMailHdr.length = (length - p < (int) MaxMailSize ? length - p : MaxMailSize);
+        tempMailHdr.theLast = (p + (int) MaxMailSize >= length ? true : false);
+        char tempData[tempMailHdr.length];
+        memcpy(tempData, data + p, tempMailHdr.length);
+        postOffice->Send(pktHdr, tempMailHdr, tempData);
+        printf("send it\n");
+    }
+    printf("done with sending\n");
+}
+
+void PostOfficeAnySize::Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
+    PacketHeader tempPktHdr;
+    MailHeader tempMailHdr;
+    char *firstData = new char[MaxMailSize];
+    List dataList;
+    int size = 0;
+    printf("trying to receive\n");
+    postOffice->Receive(box, &tempPktHdr, &tempMailHdr, firstData);
+    printf("can not receive\n");
+    size += tempMailHdr.length;
+    dataList.Append((int*) firstData);
+    while (!tempMailHdr.theLast) {
+        char *tempData = new char[MaxMailSize];
+        postOffice->Receive(box, &tempPktHdr, &tempMailHdr, tempData);
+        size += tempMailHdr.length;
+        dataList.Append((int*) tempData);
+        printf("received one\n");
+    }
+
+    printf("received everything\n");
+    pktHdr->to = tempPktHdr.to;
+    pktHdr->from = tempPktHdr.from;
+    pktHdr->length = size + sizeof(MailHeader);
+
+    mailHdr->to = tempMailHdr.to;
+    mailHdr->from = tempMailHdr.from;
+    mailHdr->length = size;
+
+    char *tempData;
+    int bytescopied = 0;
+    while ((tempData = (char*) dataList.Remove()) != NULL) {
+        memcpy(data + bytescopied, tempData, (bytescopied + (int) MaxMailSize >= size ? size - bytescopied : MaxMailSize));
+        delete[] tempData;
+        bytescopied += MaxMailSize;
+    }
+}
+
+int PostOfficeAnySize::GetNetworkName() {
+    return postOffice->GetNetworkName();
+}
+#endif // NOTDEFINED
 #endif
 
 
+// put some code in threads/system.cc
+// TimerInterrputHandler
 
 
 
+// add Random to id
 
 
 

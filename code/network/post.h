@@ -34,8 +34,10 @@
 #ifdef CHANGED
 #include <ctime>
 #include "thread.h"
+#include "maillist.h"
 #endif
 
+#ifndef CHANGED
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
 typedef int MailBoxAddress;
@@ -50,20 +52,9 @@ class MailHeader {
     MailBoxAddress from;	// Mail box to reply to
     unsigned length;		// Bytes of message data (excluding the 
 				// mail header)
-#ifdef CHANGED
-      MailHeader() {};
-      MailHeader(const MailHeader *mailHdr);
-      int GetId() const { return id; }
-      time_t GetTimestamp() const { return timestamp; }
-      bool GetConfirmation() const { return isConfirmation; }
-  friend class ReliableTransfer;
-  friend class PostOffice;
-  private:
-    time_t timestamp;
-    int id;
-    bool isConfirmation;
-#endif
 };
+#endif
+
 
 // Maximum "payload" -- real data -- that can included in a single message
 // Excluding the MailHeader and the PacketHeader
@@ -123,9 +114,13 @@ class PostOffice {
 				// Allocate and initialize Post Office
 				//   "reliability" is how many packets
 				//   get dropped by the underlying network
-    ~PostOffice();		// De-allocate Post Office data
-    
-    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    virtual ~PostOffice();		// De-allocate Post Office data
+
+#ifdef CHANGED
+void Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data);
+#else
+void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
+#endif
     				// Send a message to a mailbox on a remote 
 				// machine.  The fromBox in the MailHeader is 
 				// the return box for ack's.
@@ -148,7 +143,6 @@ class PostOffice {
 
 #ifdef CHANGED
     int GetNetworkName(); // Get network name
-    bool CheckConfirmation(PacketHeader pktHdr, MailHeader mailHdr);
 #endif
 
   private:
@@ -159,10 +153,6 @@ class PostOffice {
     Semaphore *messageAvailable;// V'ed when message has arrived from network
     Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
-#ifdef CHANGED
-    List *confirmationMails;
-    List *oldMessages;
-#endif
 };
 
 #ifdef CHANGED
@@ -170,16 +160,33 @@ class PostOffice {
 #define TEMPO 1
 #define MAXREEMISSIONS 5
 
-class ReliableTransfer {
-public:
-    ReliableTransfer(NetworkAddress addr, double reliability, int nBoxes);
-    ~ReliableTransfer();
-    int Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-    void Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+class PostOfficeReliable: protected PostOffice {
+friend PostOffice;
+  public:
+    PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes);
+    virtual ~PostOfficeReliable();
+    int SendReliable(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
+    void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+  private:
+    bool CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr);
 
+    ListOfMails *confirmationMails;
+    ListOfMails *oldMessages;
+};
+
+#ifdef NOTDEFINED
+class PostOfficeAnySize {
+public:
+    PostOfficeAnySize(NetworkAddress addr, double reliability, int nBoxes);
+    ~PostOfficeAnySize();
+    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    void Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+    int GetNetworkName();
 private:
     PostOffice *postOffice;
 };
+#endif // NOTDEFINED
+
 #endif
 
 

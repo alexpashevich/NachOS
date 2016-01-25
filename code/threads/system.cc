@@ -37,11 +37,17 @@ Semaphore *bufferlock;
 #endif
 
 #ifdef NETWORK
+#ifndef CHANGED
 PostOffice *postOffice;
-#ifdef CHANGED
-ReliableTransfer *reliableTransfer;
+#else
+PostOfficeReliable *reliableTransfer;
+// PostOfficeAnySize *postOfficeAnySize;
 #endif // CHANGED
 #endif // NETWORK
+
+#ifdef CHANGED
+// time_t thetime;
+#endif
 
 
 // External definition, to allow us to take a pointer to this function
@@ -181,9 +187,11 @@ Initialize (int argc, char **argv)
 #endif
 
 #ifdef NETWORK
+#ifndef CHANGED
     postOffice = new PostOffice (netname, rely, 10);
-#ifdef CHANGED
-    reliableTransfer = new ReliableTransfer(netname, rely, 10);
+#else
+    reliableTransfer = new PostOfficeReliable(netname, rely, 10);
+    // postOfficeAnySize = new PostOfficeAnySize(netname, rely, 10);
 #endif // CHANGED
 #endif // NETWORK
 }
@@ -197,9 +205,13 @@ Cleanup ()
 {
     printf ("\nCleaning up...\n");
 #ifdef NETWORK
+#ifndef CHANGED
     delete postOffice;
+#else
     delete reliableTransfer;
-#endif
+#endif // CHANGED
+    // delete postOfficeAnySize;
+#endif // NETWORK
 
 #ifdef USER_PROGRAM
     delete machine;
