@@ -29,5 +29,12 @@ class MailHeaderReliable: public MailHeader {
     int id;
     bool isConfirmation;
 };
+
+class MailHeaderReliableAnySize: public MailHeader { // ???
+  public:
+    MailHeaderReliableAnySize() {}
+    // MailHeaderReliableAnySize(const MailHeader *mailHdr);
+    bool theLast;
+};
 #endif // CHANGED
 #endif // NETWORK

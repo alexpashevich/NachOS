@@ -20,6 +20,10 @@
 #include "synch.h"
 #include "system.h"
 
+#ifdef CHANGED
+#include <ctime>
+#endif
+
 #define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
 					// execution stack, for detecting 
 					// stack overflows
@@ -243,10 +247,28 @@ Thread::Sleep ()
 
     status = BLOCKED;
     while ((nextThread = scheduler->FindNextToRun ()) == NULL)
-	interrupt->Idle ();	// no one to run, wait for an interrupt
+      	interrupt->Idle ();	// no one to run, wait for an interrupt
 
     scheduler->Run (nextThread);	// returns when we've been signalled
 }
+
+#ifdef CHANGED
+//----------------------------------------------------------------------
+// Thread::Sleep (int sec)
+//  Relinquish the processor, put the thread to sleep and awake it in defined time.
+//----------------------------------------------------------------------
+void Thread::Sleep(int sec) {
+    interrupt->SetLevel (IntOff);
+    ASSERT (this == currentThread);
+    DEBUG ('t', "Sleeping thread \"%s\" for %d seconds\n", getName(), sec);
+
+    time_t now;
+    time(&now);
+    listOfSleepingThreads->SortedInsert((void*) currentThread, sec + now);
+
+    this->Sleep();
+}
+#endif
 
 //----------------------------------------------------------------------
 // ThreadFinish, InterruptEnable, ThreadPrint

@@ -8,6 +8,10 @@
 #include "copyright.h"
 #include "system.h"
 
+#ifdef CHANGED
+#include <ctime>
+#endif
+
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
@@ -37,17 +41,16 @@ Semaphore *bufferlock;
 #endif
 
 #ifdef NETWORK
-#ifndef CHANGED
-PostOffice *postOffice;
-#else
-PostOfficeReliable *reliableTransfer;
+#ifdef CHANGED
+PostOfficeReliable *postOffice;
+// PostOffice *postOffice;
 // PostOfficeAnySize *postOfficeAnySize;
 #endif // CHANGED
 #endif // NETWORK
 
 #ifdef CHANGED
-// time_t thetime;
-#endif
+List *listOfSleepingThreads;
+#endif // CHANGED
 
 
 // External definition, to allow us to take a pointer to this function
@@ -74,8 +77,26 @@ extern void Cleanup ();
 static void
 TimerInterruptHandler (int dummy)
 {
-    if (interrupt->getStatus () != IdleMode)
-	interrupt->YieldOnReturn ();
+    // printf("TimerInterruptHandler\n");
+    if (interrupt->getStatus() != IdleMode)
+        interrupt->YieldOnReturn();
+#ifdef CHANGED
+    time_t now;
+    time(&now);
+    while (!listOfSleepingThreads->IsEmpty()) {
+        long long wakeupTime;
+        Thread *st = (Thread*) listOfSleepingThreads->SortedRemove(&wakeupTime);
+        if (wakeupTime > now) {
+            // it means that it is time to wake up the thread
+            scheduler->SetFirstToRun(st);
+        } else {
+            // return the thread to the list
+            // and break as the rest of threads have greater wakeupTime (list is sorted)
+            listOfSleepingThreads->SortedInsert((void*) st, wakeupTime);
+            break;
+        }
+    }
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -91,6 +112,7 @@ TimerInterruptHandler (int dummy)
 void
 Initialize (int argc, char **argv)
 {
+    printf("Initializing...\n");
     int argCount;
     const char *debugArgs = "";
     bool randomYield = FALSE;
@@ -144,6 +166,7 @@ Initialize (int argc, char **argv)
 	    }
 	  else if (!strcmp (*argv, "-m"))
 	    {
+            printf("Setting netname\n");
 		ASSERT (argc > 1);
 		netname = atoi (*(argv + 1));
 		argCount = 2;
@@ -156,7 +179,7 @@ Initialize (int argc, char **argv)
     interrupt = new Interrupt;	// start up interrupt handling
     scheduler = new Scheduler ();	// initialize the ready queue
     if (randomYield)		// start the timer (if needed)
-	timer = new Timer (TimerInterruptHandler, 0, randomYield);
+    	timer = new Timer (TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
 
@@ -175,6 +198,7 @@ Initialize (int argc, char **argv)
     synchconsole = new SynchConsole(NULL, NULL);
     stringbuffer = new char[MAX_STRING_SIZE];
     bufferlock = new Semaphore("buffer lock semaphore", 1);
+    listOfSleepingThreads = new List;
 #endif
 #endif
 
@@ -187,10 +211,9 @@ Initialize (int argc, char **argv)
 #endif
 
 #ifdef NETWORK
-#ifndef CHANGED
-    postOffice = new PostOffice (netname, rely, 10);
-#else
-    reliableTransfer = new PostOfficeReliable(netname, rely, 10);
+#ifdef CHANGED
+    postOffice = new PostOfficeReliable(netname, rely, 10);
+    // postOffice = new PostOffice(netname, rely, 10);
     // postOfficeAnySize = new PostOfficeAnySize(netname, rely, 10);
 #endif // CHANGED
 #endif // NETWORK
@@ -205,12 +228,10 @@ Cleanup ()
 {
     printf ("\nCleaning up...\n");
 #ifdef NETWORK
-#ifndef CHANGED
+#ifdef CHANGED
     delete postOffice;
-#else
-    delete reliableTransfer;
-#endif // CHANGED
     // delete postOfficeAnySize;
+#endif // CHANGED
 #endif // NETWORK
 
 #ifdef USER_PROGRAM
@@ -221,6 +242,10 @@ Cleanup ()
     delete bufferlock;
 #endif
 #endif
+
+#ifdef CHANGED
+    delete listOfSleepingThreads;
+#endif // CHANGED
 
 #ifdef FILESYS_NEEDED
     delete fileSystem;

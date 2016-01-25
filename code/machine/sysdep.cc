@@ -382,12 +382,43 @@ ReadFromSocket(int sockID, char *buffer, int packetSize)
 void
 SendToSocket(int sockID, const char *buffer, int packetSize, const char *toName)
 {
+    // int error = 0;
+    // socklen_t len = sizeof (error);
+    // int retval = getsockopt (sockID, SOL_SOCKET, SO_ERROR, &error, &len);
+    // printf("sockID = %d\n", sockID);
+    // if (retval != 0) {
+         // there was a problem getting the error code 
+        // fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+        // return;
+    // }
+
+    // if (error != 0) {
+        /* socket has a non zero error status */
+        // fprintf(stderr, "socket error: %s\n", strerror(error));
+    // }
+
     struct sockaddr_un uName;
     int retVal;
-
+    int errno;
     InitSocketName(&uName, toName);
     retVal = sendto(sockID, buffer, packetSize, 0,
 			  (sockaddr *) &uName, sizeof(uName));
+    printf("errno = %d\n", errno);
+
+    int error = 0;
+    socklen_t len = sizeof (error);
+    int retval2 = getsockopt (sockID, SOL_SOCKET, SO_ERROR, &error, &len);
+    printf("sockID = %d\n", sockID);
+    if (retval2 != 0) {
+         // there was a problem getting the error code 
+        fprintf(stderr, "error getting socket error code: %s\n", strerror(retval2));
+        // return;
+    }
+
+    if (error != 0) {
+        /* socket has a non zero error status */
+        fprintf(stderr, "socket error: %s\n", strerror(error));
+    }
     ASSERT(retVal == packetSize);
 }
 

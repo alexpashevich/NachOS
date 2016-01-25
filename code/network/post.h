@@ -31,7 +31,7 @@
 #include "network.h"
 #include "synchlist.h"
 
-#ifndef CHANGED
+#ifdef CHANGED
 #include <ctime>
 #include "thread.h"
 #include "maillist.h"
@@ -116,7 +116,7 @@ class PostOffice {
 				//   get dropped by the underlying network
     virtual ~PostOffice();		// De-allocate Post Office data
 
-#ifndef CHANGED
+#ifdef CHANGED
 void Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data);
 #else
 void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
@@ -141,7 +141,7 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
 				// off of network (i.e., time to call 
 				// PostalDelivery)
 
-#ifndef CHANGED
+#ifdef CHANGED
     int GetNetworkName(); // Get network name
 #endif
 
@@ -155,12 +155,12 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
     Lock *sendLock;		// Only one outgoing message at a time
 };
 
-#ifndef CHANGED
+#ifdef CHANGED
 
 #define TEMPO 1
 #define MAXREEMISSIONS 5
 
-class PostOfficeReliable: protected PostOffice {
+class PostOfficeReliable: public PostOffice {
 friend PostOffice;
   public:
     PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes);
@@ -174,19 +174,13 @@ friend PostOffice;
     ListOfMails *oldMessages;
 };
 
-#ifdef NOTDEFINED
-class PostOfficeAnySize {
+class PostOfficeReliableAnySize: public PostOfficeReliable {
 public:
-    PostOfficeAnySize(NetworkAddress addr, double reliability, int nBoxes);
-    ~PostOfficeAnySize();
-    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-    void Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
-    int GetNetworkName();
-private:
-    PostOffice *postOffice;
+    PostOfficeReliableAnySize(NetworkAddress addr, double reliability, int nBoxes);
+    virtual ~PostOfficeReliableAnySize();
+    void SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
+    void ReceiveReliableAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
 };
-#endif // NOTDEFINED
-
 #endif
 
 

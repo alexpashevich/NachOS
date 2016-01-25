@@ -11,6 +11,9 @@
 #include "copyright.h"
 #include "system.h"
 
+#include <sys/types.h> // TODO: delete
+#include <sys/socket.h> // TODO: delete
+
 #include <strings.h> /* for bzero */
 
 // Dummy functions because C++ can't call member functions indirectly 
@@ -122,8 +125,9 @@ Network::Send(PacketHeader hdr, char* data)
     *(PacketHeader *)buffer = hdr;
     bcopy(data, buffer + sizeof(PacketHeader), hdr.length);
     printf("sending %s\n", data);
+
     SendToSocket(sock, buffer, MaxWireSize, toName);
-    delete []buffer;
+    delete [] buffer;
 }
 
 // read a packet, if one is buffered

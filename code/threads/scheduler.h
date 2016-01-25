@@ -29,6 +29,10 @@ class Scheduler
     void Run (Thread * nextThread);	// Cause nextThread to start running
     void Print ();		// Print contents of ready list
 
+#ifdef CHANGED
+    void SetFirstToRun (Thread * thread); // Set thread to be runned first
+#endif
+
   private:
       List * readyList;		// queue of threads that are ready to run,
     // but not running

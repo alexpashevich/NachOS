@@ -33,7 +33,7 @@
 void
 MailTest(int farAddr)
 {
-#ifdef CHAGNED_AGAIN
+// #ifdef CHAGNED_AGAIN
 
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
@@ -51,7 +51,7 @@ MailTest(int farAddr)
     outMailHdr.length = strlen(data) + 1;
 
     // Send the first message
-    postOffice->Send(outPktHdr, outMailHdr, data); 
+    postOffice->Send(outPktHdr, &outMailHdr, data); 
 
     // Wait for the first message from the other machine
     postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
@@ -63,7 +63,7 @@ MailTest(int farAddr)
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
     outMailHdr.length = strlen(ack) + 1;
-    postOffice->Send(outPktHdr, outMailHdr, ack); 
+    postOffice->Send(outPktHdr, &outMailHdr, ack); 
 
     // Wait for the ack from the other machine to the first message we sent.
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
@@ -85,7 +85,7 @@ MailTest(int farAddr)
     }
 #endif
 
-#endif
+// #endif
     // Then we're done!
     interrupt->Halt();
 }
@@ -129,7 +129,8 @@ void MailCircleTest(int n) {
 }
 
 void ReliableMailTest(int farAddr) {
-    printf("We are in the ReliableMailTest\n");
+#ifdef CHANGED
+    printf("We are in the ReliableMailTest, farAddr = %d, network = %d\n", farAddr, postOffice->GetNetworkName());
     PacketHeader outPktHdr, inPktHdr;
     MailHeader *outMailHdr, inMailHdr;
     outMailHdr = new MailHeader;
@@ -140,13 +141,14 @@ void ReliableMailTest(int farAddr) {
     // construct packet, mail header for original message
     // To: destination machine, mailbox 0
     // From: our machine, reply to: mailbox 1
+    outPktHdr.from = postOffice->GetNetworkName();
     outPktHdr.to = farAddr;     
     outMailHdr->to = 0;
     outMailHdr->from = 1;
     outMailHdr->length = strlen(data) + 1;
 
     // Send the first message
-    if (reliableTransfer->SendReliable(outPktHdr, outMailHdr, data) == -1) {
+    if (postOffice->SendReliable(outPktHdr, outMailHdr, data) == -1) {
         printf("[NETTEST FUNCTION] Can not send \"%s\"\n", data);
         interrupt->Halt();
     } else {
@@ -154,7 +156,7 @@ void ReliableMailTest(int farAddr) {
     }
 
     // Wait for the first message from the other machine
-    reliableTransfer->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+    postOffice->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 
@@ -163,7 +165,7 @@ void ReliableMailTest(int farAddr) {
     outPktHdr.to = inPktHdr.from;
     outMailHdr->to = inMailHdr.from;
     outMailHdr->length = strlen(ack) + 1;
-    if (reliableTransfer->SendReliable(outPktHdr, outMailHdr, ack) == -1) {
+    if (postOffice->SendReliable(outPktHdr, outMailHdr, ack) == -1) {
         printf("[NETTEST FUNCTION] Can not send \"%s\"\n", ack);
         interrupt->Halt();
     } else {
@@ -171,9 +173,10 @@ void ReliableMailTest(int farAddr) {
     }
 
     // Wait for the ack from the other machine to the first message we sent.
-    reliableTransfer->ReceiveReliable(1, &inPktHdr, &inMailHdr, buffer);
+    postOffice->ReceiveReliable(1, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
+#endif
     interrupt->Halt();
 }
 

@@ -43,9 +43,8 @@ extern SynchConsole *synchconsole; // user program console
 #define MAX_STRING_SIZE 100
 extern char *stringbuffer;
 extern Semaphore *bufferlock;
-#endif
-
-#endif
+#endif // CHANGED
+#endif // USER_PROGRAM
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB
 #include "filesys.h"
@@ -57,12 +56,15 @@ extern FileSystem *fileSystem;
 extern SynchDisk *synchDisk;
 #endif
 
+#ifdef CHANGED
+extern List *listOfSleepingThreads;
+#endif // CHANGED
+
 #ifdef NETWORK
 #include "post.h"
-#ifndef CHANGED
-extern PostOffice *postOffice;
-#else
-extern PostOfficeReliable *reliableTransfer;
+#ifdef CHANGED
+// extern PostOffice *postOffice;
+extern PostOfficeReliable *postOffice;
 // extern PostOfficeAnySize *postOfficeAnySize;
 #endif // CHANGED
 #endif // NETWORK
