@@ -183,37 +183,33 @@ PerformanceTest()
     stats->Print();
 }
 
-// #include "string.h"
 void
 shell(char** cmd)
 {
-    char tmp[100];
+    char input[100];
+    
     printf("nachOS > ");
-    // fgets(cmd, sizeof(cmd), stdin);
-    fgets(tmp, sizeof(tmp), stdin);
+    fgets(input, sizeof(input), stdin);
 
-    int i;
+    int i;  // clear buffers
     for (i = 0; i < 100; ++i)
     {
         cmd[0][i] = 0;
-        cmd[1][i] = 0; 
-    }
-    i = 0;
-    for (i = 0; i < 100; ++i)
-    {
-        if ( tmp[i] == '\n')
-        {
-            strncpy(cmd[0], tmp, i);
-            break;
-        }
-        if ( tmp[i] == ' ')
-        {
-            printf("%d\n", i);
-            strncpy(cmd[0], tmp, i);
-            ++i;
-            strncpy(cmd[1], tmp+i, 100-i);
-            break;
-        }
+        cmd[1][i] = 0;
+        cmd[2][i] = 0;
     }
 
+    const char s[2] = " ";  // space seperates input args
+    char* token;
+    token = strtok( input, s );
+    int pos;
+    i = 0; 
+    while( token != NULL && i < 3)
+    {
+        // printf( "%s\n", token );
+        pos = strcspn(token, "\n"); // get position of new line symbol to remove it
+        strncpy(cmd[i], token, pos);
+        token = strtok( NULL, s );
+        ++i;
+    }    
 }

@@ -216,7 +216,7 @@ Directory::List()
             printf("/");
         }
         #endif //CHANGED
-         printf("%s\n", table[i].name);  
+        printf("%s\n", table[i].name);  
     }
 	   
 }
