@@ -44,7 +44,12 @@
 #endif
 
 #ifdef IN_USER_MODE
-
+#ifdef CHANGED
+struct pthread{
+	int slot;
+	int id;
+};
+#endif
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
 
@@ -167,7 +172,7 @@ int UserThreadCreate(void (*f)(void *), void *arg);
 void UserThreadExit();
 
 /* Wait for other thread */
-void UserThreadJoin(int threadId);
+void UserThreadJoin(void *thread);
 
 /*  Create new process */
 int ForkExec(char *exec);
