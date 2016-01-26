@@ -9,19 +9,19 @@
 // 
 //----------------------------------------------------------------------
 
-int do_UserCreateFile(char* path, char* name)
+int do_UserCreateFile(char* path)
 {
-	
+	char *fileName = NULL;
 // Create a Nachos file of the same length
-    DEBUG('f', "Creating new file %s!\n", name);
+    DEBUG('f', "Creating new file %s!\n", path);
     
-	if ( !fileSystem->MoveToDirectory(path) ){
+	if ( !fileSystem->MoveToFile(path, fileName) ){
 		printf("Couldn't get to directory!\n");
 		return -1;
 	}
-    if ( !fileSystem->Create(name, 0) ) {	 // Create Nachos file
+    if ( !fileSystem->Create(fileName, 0) ) {	 // Create Nachos file
 		
-		printf("Create: couldn't create new file %s\n", name);
+		printf("Create: couldn't create new file %s\n", fileName);
 		return -1;
     }
 	return 0;
@@ -32,15 +32,15 @@ int do_UserCreateFile(char* path, char* name)
 // 
 //----------------------------------------------------------------------
 
-int do_UserOpenFile(char* path, char* name)
+int do_UserOpenFile(char* path)
 {
-
-	if ( !fileSystem->MoveToFile(path) ){
+	char *fileName = NULL;
+	if ( !fileSystem->MoveToFile(path, fileName) ){
 		printf("Couldnt go to directory!\n");
 		return -1;
 	}
 
-	OpenFile *file = fileSystem->Open(name);
+	OpenFile *file = fileSystem->Open(fileName);
 	currentThread->addFile(file);
 
 	return 0;

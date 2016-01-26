@@ -89,7 +89,7 @@ class FileSystem {
     bool CreateDirectory(const char *name);
     bool RemoveDirectory(const char *name);
     bool MoveToDirectory(const char *path);
-    bool MoveToFile(const char *path);
+    bool MoveToFile(const char *path, char* fileName);
     int  getCurrentSector();
     #endif
 

@@ -617,19 +617,18 @@ FileSystem::MoveToDirectory(const char *name)
 //----------------------------------------------------------------------
 
 bool
-FileSystem::MoveToFile(const char *name)
+FileSystem::MoveToFile(const char *path, char *fileName)
 {   
     currentDirSector = 1; // just for now always start with root folder!
 
     char name1[PathMaxLen];
-    strcpy(name1,name);
+    strcpy(name1, path);
     
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *file = new OpenFile(currentDirSector);
     directory->FetchFrom(file);   
     
-    char * token;
-    char *oneBeforeFile;
+    char *token;
     const char s[2] = "/";
    token = strtok(name1, s);
    while( token != NULL )
@@ -642,22 +641,22 @@ FileSystem::MoveToFile(const char *name)
        printf("No such file or directory!\n");
        return FALSE;             // file not found 
     }
-    
-    oneBeforeFile = strtok(NULL, s);
-    if( oneBeforeFile == NULL){
+
+    if ( directory->isFile(token) )
         break;
-    }
+
     delete file;
     file = new OpenFile(sector);
     directory->FetchFrom(file);
+    if(directory->isDirectory())
     this->currentDirSector = sector;     
     
-    token = oneBeforeFile;
    // printf("moving to directory: %s \n", token);
    
     
    }
 
+   fileName = token;
    delete directory;
    delete file;
 

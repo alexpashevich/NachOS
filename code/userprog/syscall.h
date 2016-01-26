@@ -183,10 +183,10 @@ void UserThreadJoin(void *thread);
 int ForkExec(char *exec);
 
 /*  Open a file */
-int UserCreateFile(char *filePath, char *fileName);
+int UserCreateFile(char *filePath);
 
 /*  Open a file */
-int UserOpenFile(char *path, char *name);
+int UserOpenFile(char *path);
 
 /*  Close a file */
 int UserCloseFile(int id);

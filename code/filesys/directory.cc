@@ -287,4 +287,15 @@ Directory::Initialize(int currSector, int parentSector)
     table[1].sector = parentSector;
     table[1].isDirectory = TRUE;      
 }
+
+bool
+Directory::isFile(const char *name)
+{
+    int i = FindIndex(name);
+
+    if (i != -1){
+       return !table[i].isDirectory;
+    }
+    return FALSE;
+}
 #endif //CHANGED
