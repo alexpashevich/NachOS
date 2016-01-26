@@ -207,7 +207,39 @@ ForkExec:
 	addiu $2,$0,SC_ForkExec
 	syscall
 	j	$31
-	.end ForkExec	
+	.end ForkExec
+
+	.globl OpenFile
+	.ent	OpenFile
+OpenFile:
+	addiu $2,$0,SC_OpenFile
+	syscall
+	j	$31
+	.end OpenFile
+
+	.globl CloseFile
+	.ent	CloseFile
+CloseFile:
+	addiu $2,$0,SC_CloseFile
+	syscall
+	j	$31
+	.end CloseFile
+
+	.globl ReadFile
+	.ent	ReadFile
+ReadFile:
+	addiu $2,$0,SC_ReadFile
+	syscall
+	j	$31
+	.end ReadFile
+
+	.globl WriteFile
+	.ent	WriteFile
+WriteFile:
+	addiu $2,$0,SC_WriteFile
+	syscall
+	j	$31
+	.end WriteFile					
 
 /* dummy function to keep gcc happy */
         .globl  __main

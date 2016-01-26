@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "userthread.h"
+#include "userfile.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -200,7 +201,6 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadExit: {
-        // printf("Test\n");
         do_UserThreadExit();
         break;
       }
@@ -216,7 +216,43 @@ ExceptionHandler (ExceptionType which)
         bufferlock->V();
         machine->WriteRegister(2, res);
         break;
-      }      
+      }
+      case SC_OpenFile: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserOpenFile(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_CloseFile: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserCloseFile(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_ReadFile: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserReadFile(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_WriteFile: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserWriteFile(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }                              
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

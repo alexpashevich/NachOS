@@ -42,12 +42,12 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
                         stats.cc sysdep.cc timer.cc switch.S
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc progtest.cc console.cc \
-                        machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc frameprovider.cc
+                        machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc frameprovider.cc userfile.cc
 
 VM_SRC          :=
 
 FILESYS_SRC     :=      directory.cc filehdr.cc filesys.cc fstest.cc openfile.cc \
-                        synchdisk.cc disk.cc
+                        synchdisk.cc disk.cc userfile.cc
 
 NETWORK_SRC     :=      nettest.cc post.cc network.cc
 #

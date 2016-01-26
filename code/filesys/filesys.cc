@@ -207,8 +207,12 @@ FileSystem::Create(const char *name, int initialSize)
     DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
 
     directory = new Directory(NumDirEntries);
+#ifndef CHANGED    
     directory->FetchFrom(directoryFile);
-
+#else
+    OpenFile *file = new OpenFile(currentDirSector);
+    directory->FetchFrom(file);
+#endif
     if (directory->Find(name) != -1)
       success = FALSE;			// file is already in directory
     else {	
@@ -235,6 +239,9 @@ FileSystem::Create(const char *name, int initialSize)
         delete freeMap;
     }
     delete directory;
+#ifdef CHANGED
+    delete file;
+#endif    
     return success;
 }
 
@@ -387,14 +394,21 @@ FileSystem::Print()
 
     freeMap->FetchFrom(freeMapFile);
     freeMap->Print();
-
+#ifndef CHANGED
     directory->FetchFrom(directoryFile);
+#else
+    OpenFile *file = new OpenFile(currentDirSector);
+    directory->FetchFrom(file);
+#endif    
     directory->Print();
 
     delete bitHdr;
     delete dirHdr;
     delete freeMap;
     delete directory;
+#ifdef CHANGED
+    delete file;
+#endif
 } 
 
 
