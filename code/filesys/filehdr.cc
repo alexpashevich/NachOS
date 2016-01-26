@@ -43,11 +43,70 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
+    #ifdef CHANGED
+    //get the amount of headers/inodes needed for indirection
+    //numdirect is the amount of sectors in each header
+    numHeaders = divRoundUp(numSectors, NumDirect); 
+    #endif //CHANGED
+    
     if (freeMap->NumClear() < numSectors)
 	   return FALSE;		// not enough space
 
+    #ifndef CHANGED
     for (int i = 0; i < numSectors; i++)
 	   dataSectors[i] = freeMap->Find();
+    #else
+    
+    if (indirect > 0)
+    {
+        for(int i = 0; i < numHeaders; i++)
+        {
+            //Find the next free sector for header
+            dataSectors[i] = freeMap->Find();
+            //set new inode/header
+            FileHeader *inode = new FileHeader;
+            inode->FetchFrom(dataSectors[i]);
+            //travel each inode, while finding space for each sector
+            int numSectorsCount = numSectors;
+            for(int c = 0; c < numSectorsCount; c++)
+            {
+                if(c == NumDirect)
+                    break;
+                //-------------second indirection
+                //*
+                if(indirect > 1)
+                { //second indirection?
+                    //pass to function?
+                    dataSectors[c] = freeMap->Find();
+                    FileHeader *inode2 = new FileHeader;
+                    inode2->FetchFrom(dataSectors[i]);
+                    for(int j = 0; j < numSectorsCount; j++)
+                    {
+                        if(j == NumDirect)
+                            break;
+                            
+                        inode2->dataSectors[j] = freeMap->Find();
+                    }
+                    inode2->dataSectors[c] = freeMap->Find();
+                    numSectorsCount--;
+                }//--//--//--//second indirection*/
+                else
+                {
+                   inode->dataSectors[c] = freeMap->Find();
+                }
+            }
+            //write changes to disk and continue with next fileheader
+            inode->WriteBack(dataSectors[i]);
+            numSectorsCount--;
+            
+        }
+    }
+    else
+    {
+       for (int i = 0; i < numSectors; i++)
+	       dataSectors[i] = freeMap->Find();
+    }
+    #endif //CHANGED
     return TRUE;
 }
 

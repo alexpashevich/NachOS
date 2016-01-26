@@ -65,7 +65,7 @@
 #define FreeMapSector 		    0
 #define DirectorySector 	    1
 #define CurrentDirectorySector  2
-#define ParentDirectorySector   3
+#define ParentDirectorySector   3 //is this used?
 
 // Initial file sizes for the bitmap and directory; until the file system
 // supports extensible files, the directory size sets the maximum number 

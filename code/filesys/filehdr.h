@@ -23,6 +23,7 @@
 
 #define NumDirect 	((SectorSize - 2 * sizeof(int)) / sizeof(int))
 #define MaxFileSize 	(NumDirect * SectorSize)
+#define indirect    1
 
 // The following class defines the Nachos "file header" (in UNIX terms,  
 // the "i-node"), describing where on disk to find all of the data in the file.
@@ -72,8 +73,7 @@ class FileHeader {
                     
     #ifdef CHANGED
     bool isDirectory;
-    
-    
+    int numHeaders; //Number of headers for file
     #endif
 };
 
