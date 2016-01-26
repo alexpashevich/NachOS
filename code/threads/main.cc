@@ -64,7 +64,9 @@ extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFil
 extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out);
 extern void SynchConsoleTest (char *in, char *out);
+#ifdef NETWORK
 extern void MailTest (int networkID);
+#endif
 extern void shell (char** cmd);
 
 void intro(void); // local function to print out shell introduction

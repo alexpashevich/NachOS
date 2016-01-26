@@ -9,7 +9,7 @@
 #include "system.h"
 
 #ifdef CHANGED
-#include <ctime>
+#include <sys/time.h>
 #endif
 
 // This defines *all* of the global data structures used by Nachos.
@@ -43,6 +43,8 @@ Semaphore *bufferlock;
 #ifdef NETWORK
 #ifdef CHANGED
 PostOfficeReliableAnySize *postOffice;
+#else
+PostOffice *postOffice;
 #endif // CHANGED
 #endif // NETWORK
 
@@ -75,22 +77,19 @@ extern void Cleanup ();
 static void
 TimerInterruptHandler (int dummy)
 {
-    // printf("TimerInterruptHandler\n");
     if (interrupt->getStatus() != IdleMode)
         interrupt->YieldOnReturn();
 #ifdef CHANGED
-    time_t now;
-    time(&now);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long now = tv.tv_sec*1000LL + tv.tv_usec/1000;
     while (!listOfSleepingThreads->IsEmpty()) {
         long long wakeupTime;
         Thread *st = (Thread*) listOfSleepingThreads->SortedRemove(&wakeupTime);
-        // printf("now = %li, wakeupTime = %lli\n", now, wakeupTime);
         if (wakeupTime <= now) {
-            // printf("THREAD IS AWAKEN\n");
             // it means that it is time to wake up the thread
             scheduler->SetFirstToRun(st);
         } else {
-            // printf("THREAD IS NOT AWAKEN, BACK TO SLEEP\n");
             // return the thread to the list
             // and break as the rest of threads have greater wakeupTime (list is sorted)
             listOfSleepingThreads->SortedInsert((void*) st, wakeupTime);
@@ -217,6 +216,8 @@ Initialize (int argc, char **argv)
 #ifdef NETWORK
 #ifdef CHANGED
     postOffice = new PostOfficeReliableAnySize(netname, rely, 10);
+#else
+    postOffice = new PostOffice(netname, rely, 10);
 #endif // CHANGED
 #endif // NETWORK
 }
@@ -230,9 +231,7 @@ Cleanup ()
 {
     printf ("\nCleaning up...\n");
 #ifdef NETWORK
-#ifdef CHANGED
     delete postOffice;
-#endif // CHANGED
 #endif // NETWORK
 
 #ifdef USER_PROGRAM

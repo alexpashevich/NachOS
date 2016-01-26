@@ -64,6 +64,8 @@ extern List *listOfSleepingThreads;
 #include "post.h"
 #ifdef CHANGED
 extern PostOfficeReliableAnySize *postOffice;
+#else
+extern PostOffice *postOffice;
 #endif // CHANGED
 #endif // NETWORK
 

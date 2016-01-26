@@ -18,7 +18,6 @@
 #endif
 
 #ifdef CHANGED
-#include <ctime>
 #include <sys/time.h>
 #endif
 

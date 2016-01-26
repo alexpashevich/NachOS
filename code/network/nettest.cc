@@ -30,6 +30,7 @@
 //	4. wait for an acknowledgement from the other machine to our 
 //	    original message
 
+#ifdef NETWORK
 void
 MailTest(int farAddr)
 {
@@ -48,7 +49,7 @@ MailTest(int farAddr)
     outMailHdr.length = strlen(data) + 1;
 
     // Send the first message
-    postOffice->Send(outPktHdr, &outMailHdr, data); 
+    postOffice->Send(outPktHdr, outMailHdr, data); 
 
     // Wait for the first message from the other machine
     postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
@@ -60,7 +61,7 @@ MailTest(int farAddr)
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
     outMailHdr.length = strlen(ack) + 1;
-    postOffice->Send(outPktHdr, &outMailHdr, ack); 
+    postOffice->Send(outPktHdr, outMailHdr, ack); 
 
     // Wait for the ack from the other machine to the first message we sent.
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
@@ -75,18 +76,19 @@ MailTest(int farAddr)
         outMailHdr.to = 0;
         outMailHdr.from = 1;
         outMailHdr.length = strlen(data) + 1;
-        postOffice->SendReliable(outPktHdr, &outMailHdr, data); // TODO: uncomment later
+        postOffice->SendReliable(outPktHdr, &outMailHdr, data);
         postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
     }
-#endif
+#endif // CHANGED
     // Then we're done!
     interrupt->Halt();
 }
 
+#ifdef CHANGED
+
 void MailCircleTest(int n) {
-#ifdef CHANGED_AGAIN
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
@@ -119,12 +121,10 @@ void MailCircleTest(int n) {
             postOffice->Send(outPktHdr, &outMailHdr, data);
         }
     }
-#endif
     interrupt->Halt();
 }
 
 void ReliableMailTest(int farAddr) {
-#ifdef CHANGED
     printf("We are in the ReliableMailTest, farAddr = %d, network = %d\n", farAddr, postOffice->GetNetworkName());
     PacketHeader outPktHdr, inPktHdr;
     MailHeader *outMailHdr, inMailHdr;
@@ -171,12 +171,10 @@ void ReliableMailTest(int farAddr) {
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
-#endif
     interrupt->Halt();
 }
 
 void VariableMailTest(int farAddr) {
-#ifdef CHANGED
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[1000];
@@ -240,11 +238,55 @@ void VariableMailTest(int farAddr) {
     postOffice->ReceiveAnySize(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
-#endif
     interrupt->Halt();
+}
+#endif
+
+#ifdef CHANGED_AGAIN
+struct ServClientArgs {
+    ServClientArgs(int addr_, int port_, int boxNb_):
+        addr(addr_), port(port_), boxNb(boxNb_) {}
+    int addr;
+    int port;
+    int boxNb;
+};
+
+void TalkWithClient(int arg) {
+    ServClientArgs *realarg = (ServClientArgs*) arg;
+    int addr = arg.addr;
+    int port = arg.port;
+    int boxNb = arg.boxNb;
+    delete realarg;
+
+    PacketHeader outPktHdr;
+    outPktHdr.to = addr;
+    outPktHdr.from = postOffice->GetNetworkName();
+    MailHeader outMailHdr(port, boxNb, 4);
+
+    postOffice->SendReliable(outPktHdr, &outMailHdr, (char*) &boxNb)
+    char filepath[50];
+    postOffice->Receive(boxNb, &inPktHdr, &inMailHdr, filepath);
+    // TODO: somehow open filepath
+    postOffice->SendReliableAnySize(filedata);
+    currentThread->Finish();
 }
 
 
+void FileServer(int clientaddr) {
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
+    int clientport;
+    int connectedMachines = 0;
+    while (connectedMachines < postOffice->GetNumberOfBoxes() - 1) {
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, (char*)&clientport);
+        ServClientArgs *arg = new ServClientArgs(inPktHdr.from, clientport, connectedMachines + 1);
+        currentThread->Fork(TalkWithClient, (int)arg);
+        ++connectedMachines;
+    }
+    interrupt->Halt();
+}
+#endif // CHANGED_AGAIN
+#endif // NETWORK
 
 
 
