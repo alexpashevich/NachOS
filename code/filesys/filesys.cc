@@ -231,8 +231,12 @@ FileSystem::Create(const char *name, int initialSize)
 	    	success = TRUE;
 		// everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
+        #ifndef CHANGED        
     	    	directory->WriteBack(directoryFile);
-    	    	freeMap->WriteBack(freeMapFile);
+    	#else 
+               directory->WriteBack(file);  
+        #endif    	
+                freeMap->WriteBack(freeMapFile);
 	    }
             delete hdr;
 	}
@@ -581,7 +585,7 @@ FileSystem::MoveToDirectory(const char *name)
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *file = new OpenFile(currentDirSector);
     directory->FetchFrom(file);   
-    
+     
     char * token;
     const char s[2] = "/";
    token = strtok(name1, s);
@@ -606,8 +610,6 @@ FileSystem::MoveToDirectory(const char *name)
     this->currentDirSector = sector;     
     
     token = strtok(NULL, s);
-   // printf("moving to directory: %s \n", token);
-   
     
    }
 
@@ -638,19 +640,19 @@ FileSystem::MoveToFile(const char *path, char* name)
    while( token != NULL )
    { 
     
-    int sector = directory->Find(token);
-    printf("JEstem tutaj!!!!! %s %s\n", name, token);
-    printf("Sector: %d\n", sector);
     if( !strcmp(name, token) ){
-        printf("JEstem tutaj!!!!! %s %s\n", name, token);
+
         delete directory;
         delete file;
         return TRUE;
     }
+    int sector = directory->Find(token);
+
     if (sector == -1) {
+
        delete directory;
        delete file;
-       // printf("No such file or directory! %s\n", token);
+       printf("No such file or directory!\n");
        return FALSE;             // file not found 
     }
 
