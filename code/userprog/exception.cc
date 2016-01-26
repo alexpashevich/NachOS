@@ -217,6 +217,21 @@ ExceptionHandler (ExceptionType which)
         machine->WriteRegister(2, res);
         break;
       }
+      case SC_CreateFile: {
+        char filePath[MAX_STRING_SIZE];
+        int path = machine->ReadRegister(4);
+        int name = machine->ReadRegister(5);
+        bufferlock->P();
+        copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
+        bufferlock->V();
+        strcpy(filePath, stringbuffer);
+        bufferlock->P();
+        copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE);
+        bufferlock->V();
+        int res = do_UserCreateFile(filePath, stringbuffer);
+        machine->WriteRegister(2, res);
+        break;
+      }
       case SC_OpenFile: {
         int from = machine->ReadRegister(4);
         bufferlock->P();

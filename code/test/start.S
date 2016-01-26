@@ -209,6 +209,14 @@ ForkExec:
 	j	$31
 	.end ForkExec
 
+	.globl CreateFile
+	.ent	CreateFile
+CreateFile:
+	addiu $2,$0,SC_CreateFile
+	syscall
+	j	$31
+	.end CreateFile
+
 	.globl OpenFile
 	.ent	OpenFile
 OpenFile:

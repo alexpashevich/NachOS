@@ -3,6 +3,7 @@
 
 
 #ifdef CHANGED
+extern int do_UserCreateFile(char* path, char* fileName);
 extern int do_UserOpenFile(char* exec);
 extern int do_UserCloseFile(char* exec);
 extern int do_UserReadFile(char* exec);

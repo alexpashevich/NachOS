@@ -41,10 +41,11 @@
 #define SC_UserThreadExit	18
 #define SC_UserThreadJoin	19
 #define SC_ForkExec			20
-#define SC_OpenFile			21
-#define SC_CloseFile		22
-#define SC_ReadFile			23
-#define SC_WriteFile		24 
+#define SC_CreateFile		21 
+#define SC_OpenFile			22
+#define SC_CloseFile		23
+#define SC_ReadFile			24
+#define SC_WriteFile		25 
 #endif
 
 #ifdef IN_USER_MODE
@@ -180,6 +181,9 @@ void UserThreadJoin(void *thread);
 
 /*  Create new process */
 int ForkExec(char *exec);
+
+/*  Open a file */
+int UserCreateFile(char *filePath, char *fileName);
 
 /*  Open a file */
 int UserOpenFile(char *exec);
