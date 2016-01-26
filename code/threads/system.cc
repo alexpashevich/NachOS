@@ -42,9 +42,7 @@ Semaphore *bufferlock;
 
 #ifdef NETWORK
 #ifdef CHANGED
-PostOfficeReliable *postOffice;
-// PostOffice *postOffice;
-// PostOfficeAnySize *postOfficeAnySize;
+PostOfficeReliableAnySize *postOffice;
 #endif // CHANGED
 #endif // NETWORK
 
@@ -213,9 +211,7 @@ Initialize (int argc, char **argv)
 
 #ifdef NETWORK
 #ifdef CHANGED
-    postOffice = new PostOfficeReliable(netname, rely, 10);
-    // postOffice = new PostOffice(netname, rely, 10);
-    // postOfficeAnySize = new PostOfficeAnySize(netname, rely, 10);
+    postOffice = new PostOfficeReliableAnySize(netname, rely, 10);
 #endif // CHANGED
 #endif // NETWORK
 }
@@ -231,7 +227,6 @@ Cleanup ()
 #ifdef NETWORK
 #ifdef CHANGED
     delete postOffice;
-    // delete postOfficeAnySize;
 #endif // CHANGED
 #endif // NETWORK
 

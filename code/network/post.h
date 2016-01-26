@@ -60,6 +60,8 @@ class MailHeader {
 // Excluding the MailHeader and the PacketHeader
 
 #define MaxMailSize 	(MaxPacketSize - sizeof(MailHeader))
+#define MaxMailSizeReliable   (MaxPacketSize - sizeof(MailHeaderReliable))
+#define MaxMailSizeVariableSize   (MaxPacketSize - sizeof(MailHeaderReliableAnySize))
 
 
 // The following class defines the format of an incoming/outgoing 

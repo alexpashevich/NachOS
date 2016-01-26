@@ -19,5 +19,15 @@ MailHeaderReliable::MailHeaderReliable(const MailHeader *mailHdr) {
         isConfirmation = true;
     }
 }
+
+MailHeaderReliableAnySize::MailHeaderReliableAnySize(const MailHeader *mailHdr) {
+    to = mailHdr->to;
+    from = mailHdr->from;
+    length = mailHdr->length;
+    id = 0;
+    timestamp = 0;
+    isConfirmation = true;
+    theLast = false;
+}
 #endif // CHANGED
 #endif // NETWORK

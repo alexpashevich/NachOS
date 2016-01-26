@@ -33,7 +33,7 @@ class MailHeaderReliable: public MailHeader {
 class MailHeaderReliableAnySize: public MailHeaderReliable {
   public:
     MailHeaderReliableAnySize() {}
-    // MailHeaderReliableAnySize(const MailHeader *mailHdr);
+    MailHeaderReliableAnySize(const MailHeader *mailHdr);
     bool theLast;
 };
 #endif // CHANGED
