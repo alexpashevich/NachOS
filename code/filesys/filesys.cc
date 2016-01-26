@@ -480,6 +480,11 @@ FileSystem::CreateDirectory(const char *name)
 bool
 FileSystem::RemoveDirectory(const char *name)
 { 
+    if( !strcmp(name, ".") || !strcmp(name, "..") ){
+        printf("You cannot remove that directory!\n");
+        return FALSE;
+    }
+
     Directory *directory;
     BitMap *freeMap;
     FileHeader *fileHdr;
