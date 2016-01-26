@@ -74,6 +74,8 @@ extern void ThreadPrint (int arg);
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
 
+
+
 class Thread
 {
   private:
@@ -81,8 +83,8 @@ class Thread
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;		// the current stack pointer
     int machineState[MachineStateSize];	// all registers except for stackTop
-
   public:
+
       Thread (const char *debugName);	// initialize a Thread 
      ~Thread ();		// deallocate a Thread
     // NOTE -- thread being deleted
@@ -116,7 +118,6 @@ class Thread
     {
 	printf ("%s, ", name);
     }
-
   private:
     // some of the private data for this class is listed above
 
@@ -134,7 +135,6 @@ class Thread
 // A thread running a user program actually has *two* sets of CPU registers -- 
 // one for its state while executing user code, one for its state 
 // while executing kernel code.
-
     int userRegisters[NumTotalRegs];	// user-level CPU register state
 
   public:
@@ -142,6 +142,11 @@ class Thread
     void RestoreUserState ();	// restore user-level register state
 
     AddrSpace *space;		// User code this thread is running.
+#ifdef CHANGED
+    int stackSlotNb;        // need to know which slot did current thread take
+    List *waitingList;      // list of threads waiting for this thread to terminate (threadJoin)
+    int threadId;           // unique threadId
+#endif
 #endif
 };
 

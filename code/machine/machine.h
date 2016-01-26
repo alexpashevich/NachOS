@@ -25,6 +25,10 @@
 #include "utility.h"
 #include "translate.h"
 #include "disk.h"
+#ifdef CHANGED
+#include "frameprovider.h"
+#include "synch.h"
+#endif
 
 // Definitions related to the size, and format of user memory
 
@@ -32,7 +36,7 @@
 					// the disk sector size, for
 					// simplicity
 
-#define NumPhysPages    32
+#define NumPhysPages    2000//32
 #define MemorySize 	(NumPhysPages * PageSize)
 #define TLBSize		4		// if there is a TLB, make it small
 
@@ -157,7 +161,11 @@ class Machine {
 				// code and data, while executing
     int registers[NumTotalRegs]; // CPU registers, for executing user programs
 
-
+#ifdef CHANGED
+    Semaphore *lock;
+    FrameProvider *frameProvider;
+    unsigned processCnt;
+#endif /* CHANGED */
 // NOTE: the hardware translation of virtual addresses in the user program
 // to physical addresses (relative to the beginning of "mainMemory")
 // can be controlled by one of:

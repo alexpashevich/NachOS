@@ -70,7 +70,11 @@ Machine::Machine(bool debug)
     tlb = NULL;
     pageTable = NULL;
 #endif
-
+#ifdef CHANGED
+    lock = new Semaphore("Machine lock", 1);
+    frameProvider = new FrameProvider(NumPhysPages, PageSize, mainMemory);
+    processCnt = 0;
+#endif
     singleStep = debug;
     CheckEndian();
 }
@@ -85,6 +89,9 @@ Machine::~Machine()
     delete [] mainMemory;
     if (tlb != NULL)
         delete [] tlb;
+#ifdef CHANGED
+    delete frameProvider;
+#endif
 }
 
 //----------------------------------------------------------------------

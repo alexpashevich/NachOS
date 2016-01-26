@@ -21,6 +21,10 @@
 
 #define FileNameMaxLen 		9	// for simplicity, we assume 
 					// file names are <= 9 characters long
+#ifdef CHANGED
+#define NumDirEntries   10 //same as NumDirEntries in filesys.cc
+ #define PathMaxLen 30
+#endif //CHANGED
 
 // The following class defines a "directory entry", representing a file
 // in the directory.  Each entry gives the name of the file, and where
@@ -28,6 +32,16 @@
 //
 // Internal data structures kept public so that Directory operations can
 // access them directly.
+class Directory;
+
+
+class Directory;
+
+class DirectoryInfo {
+  public:
+    bool isDirectory;
+    int occupiedEntries;
+};
 
 class DirectoryEntry {
   public:
@@ -36,7 +50,11 @@ class DirectoryEntry {
 					//   FileHeader for this file 
     char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
 					// the trailing '\0'
+#ifdef CHANGED
+    bool isDirectory;
+#endif
 };
+
 
 // The following class defines a UNIX-like "directory".  Each entry in
 // the directory describes a file, and where to find it on disk.
@@ -60,9 +78,11 @@ class Directory {
 
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-
+// #ifndef CHANGED
     bool Add(const char *name, int newSector);  // Add a file name into the directory
-
+// #else    
+    // bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
+// #endif
     bool Remove(const char *name);	// Remove a file from the directory
 
     void List();			// Print the names of all the files
@@ -70,12 +90,20 @@ class Directory {
     void Print();			// Verbose print of the contents
 					//  of the directory -- all the file
 					//  names and their contents.
+                    
+    #ifdef CHANGED
+    //Add directory into table
+    void Initialize(int currSector, int parentSector);
+    bool AddDir(const char *name, int newSector);  
+    bool isEmpty(void);
+    bool isDirectory();
+    #endif //CHANGED
 
   private:
     int tableSize;			// Number of directory entries
     DirectoryEntry *table;		// Table of pairs: 
 					// <file name, file header location> 
-
+    DirectoryInfo *info;
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
 };

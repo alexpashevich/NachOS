@@ -113,7 +113,7 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
-        printf("main is finished with value %d\n", res);
+        printf("\nMain program has finished with value %d\n", res);
         interrupt->Halt();
         break;
       }
@@ -123,8 +123,24 @@ ExceptionHandler (ExceptionType which)
           currentThread->space->mainthreadwait->P();
         }
         DEBUG('a', "Shutdown, end of main function.\n");
-        printf("main is finished with value %d\n", res);
-        interrupt->Halt();
+        printf("\nMain program has finished with value %d\n", res);
+        
+        
+        if(currentThread->stackSlotNb == 0)
+        {
+            machine->lock->P();
+            --machine->processCnt;
+            machine->lock->V();  
+
+            if( machine->processCnt == 0)
+            {
+              interrupt->Halt();  
+            }
+            else
+            {
+              currentThread->Finish();
+            }
+        }
         break;
       }
       case SC_PutChar: {
@@ -149,6 +165,7 @@ ExceptionHandler (ExceptionType which)
         int to = machine->ReadRegister(4);
         int n = machine->ReadRegister(5);
         char buf[n];
+        ++n; // make space for '\0' character added at the end of string
         synchconsole->SynchGetString(buf, n);
         int i;
         for (i = 0; i < n; ++i) {
@@ -177,14 +194,29 @@ ExceptionHandler (ExceptionType which)
       case SC_UserThreadCreate: {
         int f = machine->ReadRegister(4);
         int arg = machine->ReadRegister(5);
-        int res = do_UserThreadCreate(f, arg);
+        int tid = machine->ReadRegister(6);
+        int res = do_UserThreadCreate(f, arg, tid);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_UserThreadExit: {
+        // printf("Test\n");
         do_UserThreadExit();
         break;
       }
+      case SC_UserThreadJoin: {
+        do_UserThreadJoin(machine->ReadRegister(4));
+        break;
+      }
+      case SC_ForkExec: {
+        int from = machine->ReadRegister(4);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = do_UserForkExec(stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }      
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

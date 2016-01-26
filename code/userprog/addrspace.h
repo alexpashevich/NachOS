@@ -18,9 +18,14 @@
 
 #ifdef CHANGED
 #include "synch.h"
+#include "bitmap.h"
+#include "frameprovider.h"
 #endif
 
-#define UserStackSize		1024	// increase this as necessary!
+#define UserStackSize		24 * PageSize //1024	// increase this as necessary!
+#ifdef CHANGED
+#define threadStackSize 4 * PageSize  // 512
+#endif
 
 class AddrSpace
 {
@@ -35,20 +40,28 @@ class AddrSpace
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
-
+    
 #ifdef CHANGED
   public:
     void IncrementCounter(); // in case one more thread started to use this addrspace
     void DecrementCounter(); // in case one thread using this addrspace was destroyed
     int GetCounterValue();
+    int GetNewThreadId();
     Semaphore *mainthreadwait;
     Semaphore *lock;
+
+    BitMap* stackMap; // bitMap for userThread's stack allocation
+    int mainStackTop; // userThread's stacks are allocated below main stack, so we need
+                      // to know where main stack ends
+    int threadsNb;    // make those private?
+    void** threadArray;
   private:
     int counter;
+    int threadId;
 #endif
 
   private:
-      TranslationEntry * pageTable;	// Assume linear page table translation
+    TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
     unsigned int numPages;	// Number of pages in the virtual 
     // address space

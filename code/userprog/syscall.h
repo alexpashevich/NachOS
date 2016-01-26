@@ -39,10 +39,17 @@
 #define SC_GetInt			16
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit	18
+#define SC_UserThreadJoin	19
+#define SC_ForkExec			20
 #endif
 
 #ifdef IN_USER_MODE
-
+#ifdef CHANGED
+typedef struct {
+	int slot;
+	int id;
+} pthread;
+#endif
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
 
@@ -159,10 +166,17 @@ void GetString (char *s, int n);
 void GetInt (int *n);
 
 /* Create a new thread executing the function with arguments */
-int UserThreadCreate(void (*f)(void *), void *arg);
+int UserThreadCreate(void (*f)(void *), void *arg, void* tid);
 
 /* Destroy the thread */
 void UserThreadExit();
+
+/* Wait for other thread */
+void UserThreadJoin(void *thread);
+
+/*  Create new process */
+int ForkExec(char *exec);
+
 #endif
 
 

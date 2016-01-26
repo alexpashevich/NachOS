@@ -193,6 +193,22 @@ UserThreadExit:
 	j	$31
 	.end UserThreadExit
 
+	.globl UserThreadJoin
+	.ent	UserThreadJoin
+UserThreadJoin:
+	addiu $2,$0,SC_UserThreadJoin
+	syscall
+	j	$31
+	.end UserThreadJoin
+
+	.globl ForkExec
+	.ent	ForkExec
+ForkExec:
+	addiu $2,$0,SC_ForkExec
+	syscall
+	j	$31
+	.end ForkExec	
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
