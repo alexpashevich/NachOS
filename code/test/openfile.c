@@ -10,8 +10,8 @@ main ()
 	PutString("Testing filesystem syscalls!\n");
 
 	// UserCreateFile("..", "dupeczka");
-	
-	int id = UserOpenFile("..", "test");
+	/*
+	int id = UserOpenFile("../test");
 	char buff[12];
 	UserReadFile(id, buff, 12);
 	UserCloseFile(id);
@@ -19,19 +19,20 @@ main ()
 	PutString(buff);
 	
 	char *buf = "abracadabra";
-	id = UserOpenFile("..", "test");
+	id = UserOpenFile("../test");
 	UserWriteFile(id, buf, 12);
 	UserCloseFile(id);
 
 	char bu[12];
-	id = UserOpenFile("..", "test");
+	id = UserOpenFile("../test");
 	UserReadFile(id, bu, 12);
 	UserCloseFile(id);
 
 	PutString(bu);
 	
 	PutInt(id);
-
+*/
+	UserCreateFile("test/file/simple");
 	// UserCloseFile(id);
 
 	return 0;

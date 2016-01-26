@@ -514,32 +514,36 @@ FileSystem::RemoveDirectory(const char *name)
        return FALSE;			 // file not found 
     }
     
-    Directory *dirToRemove = new Directory(NumDirEntries);
-    OpenFile *file = new OpenFile(sector);
-    dirToRemove->FetchFrom(file);
+    // if( !dirToRemove->isDirectory() )
+    // {
+    //     printf("It is not a directory!\n");
 
+    //     delete dirToRemove;
+    //     delete file;
+    //     delete directory;
+    //     delete currDir;
+    //     return FALSE;
+    // }
 
-    if( !dirToRemove->isDirectory() )
+    if( !directory->isFile(name) )
     {
-        printf("It is not a directory!\n");
-
+        Directory *dirToRemove = new Directory(NumDirEntries);
+        OpenFile *file = new OpenFile(sector);
+        dirToRemove->FetchFrom(file);
+    
+        if( !(dirToRemove->isEmpty()) )
+        {
+            printf("Directory %s cannot be removed!\n", name);
+            printf("It is either not a directory, or it is not empty\n");
+        
+            delete dirToRemove;
+            delete file;    
+            delete directory;
+            delete currDir;
+            return FALSE; 
+        }
         delete dirToRemove;
         delete file;
-        delete directory;
-        delete currDir;
-        return FALSE;
-    }
-
-    if( !(dirToRemove->isEmpty()) )
-    {
-        printf("Directory %s cannot be removed!\n", name);
-        printf("It is either not a directory, or it is not empty\n");
-        
-        delete dirToRemove;
-        delete file;    
-        delete directory;
-        delete currDir;
-        return FALSE; 
     }
     
     fileHdr = new FileHeader;
@@ -554,9 +558,6 @@ FileSystem::RemoveDirectory(const char *name)
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(currDir);        // flush to disk
-
-    delete dirToRemove;
-    delete file;
 
     delete fileHdr;
     delete directory;
@@ -594,7 +595,12 @@ FileSystem::MoveToDirectory(const char *name)
        printf("No such file or directory!\n");
        return FALSE;             // file not found 
     }
-    
+    if ( directory->isFile(token) ) {
+       delete directory;
+       delete file;
+       printf("It is not a directory!\n");
+       return FALSE;             // file not found 
+    }
     file = new OpenFile(sector);
     directory->FetchFrom(file);
     this->currentDirSector = sector;     
@@ -617,17 +623,15 @@ FileSystem::MoveToDirectory(const char *name)
 //----------------------------------------------------------------------
 
 bool
-FileSystem::MoveToFile(const char *path, char *fileName)
+FileSystem::MoveToFile(const char *path, char* name)
 {   
-    currentDirSector = 1; // just for now always start with root folder!
-
     char name1[PathMaxLen];
     strcpy(name1, path);
     
     Directory *directory = new Directory(NumDirEntries);
-    OpenFile *file = new OpenFile(currentDirSector);
-    directory->FetchFrom(file);   
-    
+    directory->FetchFrom(directoryFile);   
+    OpenFile *file = NULL;
+
     char *token;
     const char s[2] = "/";
    token = strtok(name1, s);
@@ -635,34 +639,46 @@ FileSystem::MoveToFile(const char *path, char *fileName)
    { 
     
     int sector = directory->Find(token);
+    printf("JEstem tutaj!!!!! %s %s\n", name, token);
+    printf("Sector: %d\n", sector);
+    if( !strcmp(name, token) ){
+        printf("JEstem tutaj!!!!! %s %s\n", name, token);
+        delete directory;
+        delete file;
+        return TRUE;
+    }
     if (sector == -1) {
        delete directory;
        delete file;
-       printf("No such file or directory!\n");
+       // printf("No such file or directory! %s\n", token);
        return FALSE;             // file not found 
     }
 
     if ( directory->isFile(token) )
+    {
         break;
-
-    delete file;
+    }
+    
+    if (file != NULL)
+        delete file;
+    
     file = new OpenFile(sector);
     directory->FetchFrom(file);
-    if(directory->isDirectory())
-    this->currentDirSector = sector;     
-    
-   // printf("moving to directory: %s \n", token);
-   
-    
+    this->currentDirSector = sector;
+
+    token = strtok(NULL, s);
    }
 
-   fileName = token;
    delete directory;
-   delete file;
+   if (file != NULL)
+        delete file;
 
    return TRUE;
 }
 
 int
-FileSystem::getCurrentSector() { return currentDirSector; }
+FileSystem::getCurrentSector(void) { return currentDirSector; }
+
+void
+FileSystem::setCurrentSector(void){ this->currentDirSector = DirectorySector; }
 #endif

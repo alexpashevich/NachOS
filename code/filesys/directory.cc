@@ -298,4 +298,5 @@ Directory::isFile(const char *name)
     }
     return FALSE;
 }
+
 #endif //CHANGED
