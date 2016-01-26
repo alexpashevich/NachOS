@@ -6,7 +6,7 @@
 
 void bar(void *arg)
 {
-	PutString("I am in bar thread!\n");
+	PutString("Bar  thread: Started working!\n");
 	int tmp = 1;
 	int i;
 	
@@ -15,35 +15,42 @@ void bar(void *arg)
 		tmp *= 123*i;
 	}	
 
-	PutString("Bar thread: Done waiting, now I terminate!\n");
+	PutString("Bar  thread: Done working, now I terminate!\n");
 	UserThreadExit();	
 }
 
 void foo (void *arg)
 {
-	PutString("I am in foo thread!\n");
+	PutString("Foo  thread: Started working!\n");
 	
-	int t_id;
-	if ( (t_id = UserThreadCreate(bar, 0)) == -1 )
+	char* tid[2 * sizeof(int)];
+	int b;
+	if ( (b = UserThreadCreate(bar, 0, tid)) == -1 )
 	{
 		PutString("Could not create a new user thread.\n");
+	}
+	else 
+	{;
+		PutString("Foo  thread: Created bar thread and now waiting for it to finish...\n");
+		UserThreadJoin(tid); // comment this line to see difference
+		PutString("Foo  thread: Done waiting, now I terminate!\n");	
 	}	
-
-	PutString("Foo thread: done my job and now waiting for bar thread.\n");
-	UserThreadJoin(t_id); // comment this line to see difference
-	PutString("Foo thread: Done waiting, now I terminate!\n");
 	UserThreadExit();	
 }
 
 int main () {
 	
+	char* tid[2 * sizeof(int)];
 	int f;
-	if ( (f = UserThreadCreate(foo, 0)) == -1)
+	if ( (f = UserThreadCreate(foo, 0, tid)) == -1 )
 	{
-		PutString("Could not create a new user thread.\n");
+		PutString("Could not create a new user thread.\n");	
 	}
-	// UserThreadJoin(f);
-
-	PutString("Main has finished its job and waiting for threads to finish...\n");
+	else 
+	{
+		PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
+		UserThreadJoin(tid);
+		PutString("Main thread: Done waiting, now I terminate!\n");
+	}	
 	return 0;
 }

@@ -14,16 +14,16 @@ void func (void *arg) {
 int main () {
 
 	int threadsNb = 10;
+	char* tid[2 * sizeof(int)];
 	int i;
-	
 	for (i = 0; i < threadsNb; ++i)
 	{
-		if (UserThreadCreate(func, 0) == -1)
+		if (UserThreadCreate(func, 0, tid) == -1)
 		{
 			PutString("Could not create a new user thread.\n");
 		}
 	}
-	// UserThreadJoin(1);
+	UserThreadJoin(tid);
 	PutString("Main has finished its job and waiting for threads to finish...\n");
 	return 0;
 }

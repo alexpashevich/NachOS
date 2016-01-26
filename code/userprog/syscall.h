@@ -44,12 +44,12 @@
 #endif
 
 #ifdef IN_USER_MODE
-#ifdef CHANGED
-struct pthread{
-	int slot;
-	int id;
-};
-#endif
+// #ifdef CHANGED
+// typedef struct {
+// 	int slot;
+// 	int id;
+// } pthread;
+// #endif
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
 
@@ -166,7 +166,7 @@ void GetString (char *s, int n);
 void GetInt (int *n);
 
 /* Create a new thread executing the function with arguments */
-int UserThreadCreate(void (*f)(void *), void *arg);
+int UserThreadCreate(void (*f)(void *), void *arg, void* tid);
 
 /* Destroy the thread */
 void UserThreadExit();

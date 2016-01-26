@@ -194,7 +194,8 @@ ExceptionHandler (ExceptionType which)
       case SC_UserThreadCreate: {
         int f = machine->ReadRegister(4);
         int arg = machine->ReadRegister(5);
-        int res = do_UserThreadCreate(f, arg);
+        int tid = machine->ReadRegister(6);
+        int res = do_UserThreadCreate(f, arg, tid);
         machine->WriteRegister(2, res);
         break;
       }

@@ -24,11 +24,12 @@ void b(void *s)
 int
 main()
 {
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
+	char* tid[2 * sizeof(int)];
+	UserThreadCreate(f, (void *) THIS, tid);
+	UserThreadCreate(f, (void *) THIS, tid);
+	UserThreadCreate(f, (void *) THIS, tid);
+	UserThreadCreate(f, (void *) THIS, tid);
+	UserThreadCreate(f, (void *) THIS, tid);
 	
 	ForkExec("multiplethreads");
 
