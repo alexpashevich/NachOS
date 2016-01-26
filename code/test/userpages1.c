@@ -23,12 +23,12 @@ void b(void *s)
 int
 main()
 {
-	char* tid[2 * sizeof(int)];
-	UserThreadCreate(f, (void *) THIS, tid);
-	UserThreadCreate(f, (void *) THIS, tid);
-	UserThreadCreate(f, (void *) THIS, tid);
-	UserThreadCreate(f, (void *) THIS, tid);
-	UserThreadCreate(f, (void *) THIS, tid);
+	pthread tid;
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
 	
 	b((void*) THAT);	
 	b((void*) THAT);

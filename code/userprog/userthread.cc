@@ -2,12 +2,7 @@
 #include "thread.h"
 #include "system.h"
 #include "bitmap.h"
-// #ifdef CHANGED
-// typedef struct {
-// 	int slot;
-// 	int id;
-// } pthread;
-// #endif
+
 //----------------------------------------------------------------------
 // Structure needed to pass to Thread::Fork function as it takes only
 // one argument for function arguments.

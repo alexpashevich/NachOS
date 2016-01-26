@@ -19,8 +19,8 @@ main()
 	int a[1];
 	*a = 228;
 
-	char* tid[2 * sizeof(int)];
-	if(UserThreadCreate(func, (void*)a, tid) == -1)
+	pthread tid;
+	if(UserThreadCreate(func, (void*)a, &tid) == -1)
 	{
 		PutString("Thread was not created!\n");
 	}

@@ -40,16 +40,16 @@ void foo (void *arg)
 
 int main () {
 	
-	char* tid[2 * sizeof(int)];
+	pthread tid;
 	int f;
-	if ( (f = UserThreadCreate(foo, 0, tid)) == -1 )
+	if ( (f = UserThreadCreate(foo, 0, &tid)) == -1 )
 	{
 		PutString("Could not create a new user thread.\n");	
 	}
 	else 
 	{
 		PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
-		UserThreadJoin(tid);
+		UserThreadJoin(&tid);
 		PutString("Main thread: Done waiting, now I terminate!\n");
 	}	
 	return 0;
