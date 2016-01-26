@@ -138,7 +138,7 @@ main (int argc, char **argv)
 #endif // USER_PROGRAM
 #ifdef FILESYS
 
-#ifndef CHANGED	   	
+// #ifndef CHANGED	   	
 	  if (!strcmp (*argv, "-cp"))
 	    {			// copy from UNIX to Nachos
 		ASSERT (argc > 2);
@@ -171,8 +171,8 @@ main (int argc, char **argv)
 	    }
         interrupt->Halt();	   	
 
-#else
-	
+// #else
+	/*
 	// shell takes max only 3 params - if have time, improve that!
 	char arg1[100];
 	char arg2[100];
@@ -244,7 +244,9 @@ main (int argc, char **argv)
       }
     }
     interrupt->Halt();
+
 #endif//CHANGED
+ */
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))

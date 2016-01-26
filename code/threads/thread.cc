@@ -49,6 +49,11 @@ Thread::Thread (const char *threadName)
 #ifdef CHANGED
     stackSlotNb = 0;
     waitingList = new List;
+
+ // files Table
+    fileMap   = new BitMap(OpenedFiles);
+    fileTable = new OpenFile*[OpenedFiles];
+
 #endif      
 #endif
 }
@@ -421,6 +426,45 @@ Thread::RestoreUserState ()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, userRegisters[i]);
 }
+
+#ifdef CHANGED
+
+int
+Thread::addFile(OpenFile *file)
+{
+  int pos = this->fileMap->Find();
+  if( pos == -1){
+    printf("Cannot open new file! Opened file number exceeded!\n");
+    return -1;
+  }
+
+  fileTable[pos] = file;
+
+  return 0;
+}
+
+OpenFile*
+Thread::removeFile(int pos)
+{
+  this->fileMap->Clear(pos);
+  OpenFile *file = fileTable[pos];
+  fileTable[pos] = NULL;
+
+  return file;
+}
+
+OpenFile*
+Thread::getFile(int pos)
+{
+  if ( !this->fileMap->Test(pos) ){
+    printf("There is no such a file in this thread!\n");
+    return NULL;
+  }
+
+  return fileTable[pos];
+}
+
+#endif
 #endif
 
 

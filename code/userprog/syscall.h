@@ -186,16 +186,16 @@ int ForkExec(char *exec);
 int UserCreateFile(char *filePath, char *fileName);
 
 /*  Open a file */
-int UserOpenFile(char *exec);
+int UserOpenFile(char *path, char *name);
 
 /*  Close a file */
-int UserCloseFile(char *exec);
+int UserCloseFile(int id);
 
 /*  Read from a file */
-int UserReadFile(char *exec);
+int UserReadFile(int id, char* into, int numBytes);
 
 /*  Write to a file */
-int UserWriteFile(char *exec);
+int UserWriteFile(int id, char* from, int numBytes);
 
 #endif
 

@@ -43,6 +43,7 @@
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
+#include "openfile.h"
 #endif
 
 // CPU register state to be saved on context switch.  
@@ -55,6 +56,9 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize	(4 * 1024)	// in words
 
+#ifdef CHANGED
+#define OpenedFiles 10
+#endif
 
 // Thread state
 enum ThreadStatus
@@ -132,13 +136,21 @@ class Thread
 // one for its state while executing user code, one for its state 
 // while executing kernel code.
     int userRegisters[NumTotalRegs];	// user-level CPU register state
-
+#ifdef CHANGED
+    BitMap *fileMap;
+    OpenFile **fileTable;
+#endif
   public:
     void SaveUserState ();	// save user-level register state
     void RestoreUserState ();	// restore user-level register state
 
     AddrSpace *space;		// User code this thread is running.
 #ifdef CHANGED
+
+    int addFile(OpenFile* file);
+    OpenFile* removeFile(int pos);
+    OpenFile* getFile(int pos);
+
     int stackSlotNb;        // need to know which slot did current thread take
     List *waitingList;      // list of threads waiting for this thread to terminate (threadJoin)
     int threadId;           // unique threadId

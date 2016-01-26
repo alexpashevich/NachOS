@@ -217,15 +217,14 @@ ExceptionHandler (ExceptionType which)
         machine->WriteRegister(2, res);
         break;
       }
+#ifdef FILESYS      
       case SC_CreateFile: {
         char filePath[MAX_STRING_SIZE];
         int path = machine->ReadRegister(4);
         int name = machine->ReadRegister(5);
         bufferlock->P();
         copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
-        bufferlock->V();
         strcpy(filePath, stringbuffer);
-        bufferlock->P();
         copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE);
         bufferlock->V();
         int res = do_UserCreateFile(filePath, stringbuffer);
@@ -233,41 +232,42 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_OpenFile: {
-        int from = machine->ReadRegister(4);
+        char filePath[MAX_STRING_SIZE];
+        int path = machine->ReadRegister(4);
+        int name = machine->ReadRegister(5);
         bufferlock->P();
-        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
-        int res = do_UserOpenFile(stringbuffer);
+        copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
+        strcpy(filePath, stringbuffer);
+        copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE);
         bufferlock->V();
+        int res = do_UserOpenFile(filePath, stringbuffer);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_CloseFile: {
-        int from = machine->ReadRegister(4);
-        bufferlock->P();
-        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
-        int res = do_UserCloseFile(stringbuffer);
-        bufferlock->V();
+        int id = machine->ReadRegister(4);
+        int res = do_UserCloseFile(id);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_ReadFile: {
-        int from = machine->ReadRegister(4);
-        bufferlock->P();
-        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
-        int res = do_UserReadFile(stringbuffer);
-        bufferlock->V();
+        int id = machine->ReadRegister(4);
+        int into = machine->ReadRegister(5);
+        int numBytes = machine->ReadRegister(6);      
+        int res = do_UserReadFile(id, into, numBytes);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_WriteFile: {
-        int from = machine->ReadRegister(4);
-        bufferlock->P();
+        int id = machine->ReadRegister(4);
+        int from = machine->ReadRegister(5);
+        int numBytes = machine->ReadRegister(6); 
         copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
-        int res = do_UserWriteFile(stringbuffer);
-        bufferlock->V();
+        int res = do_UserWriteFile(id, stringbuffer, numBytes);
         machine->WriteRegister(2, res);
         break;
-      }                              
+      }       
+#endif                       
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

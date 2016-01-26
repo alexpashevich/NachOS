@@ -209,45 +209,45 @@ ForkExec:
 	j	$31
 	.end ForkExec
 
-	.globl CreateFile
-	.ent	CreateFile
-CreateFile:
+	.globl UserCreateFile
+	.ent	UserCreateFile
+UserCreateFile:
 	addiu $2,$0,SC_CreateFile
 	syscall
 	j	$31
-	.end CreateFile
+	.end UserCreateFile
 
-	.globl OpenFile
-	.ent	OpenFile
-OpenFile:
+	.globl UserOpenFile
+	.ent	UserOpenFile
+UserOpenFile:
 	addiu $2,$0,SC_OpenFile
 	syscall
 	j	$31
-	.end OpenFile
+	.end UserOpenFile
 
-	.globl CloseFile
-	.ent	CloseFile
-CloseFile:
+	.globl UserCloseFile
+	.ent	UserCloseFile
+UserCloseFile:
 	addiu $2,$0,SC_CloseFile
 	syscall
 	j	$31
-	.end CloseFile
+	.end UserCloseFile
 
-	.globl ReadFile
-	.ent	ReadFile
-ReadFile:
+	.globl UserReadFile
+	.ent	UserReadFile
+UserReadFile:
 	addiu $2,$0,SC_ReadFile
 	syscall
 	j	$31
-	.end ReadFile
+	.end UserReadFile
 
-	.globl WriteFile
-	.ent	WriteFile
-WriteFile:
+	.globl UserWriteFile
+	.ent	UserWriteFile
+UserWriteFile:
 	addiu $2,$0,SC_WriteFile
 	syscall
 	j	$31
-	.end WriteFile					
+	.end UserWriteFile					
 
 /* dummy function to keep gcc happy */
         .globl  __main

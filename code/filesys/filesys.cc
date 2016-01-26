@@ -257,7 +257,7 @@ FileSystem::Create(const char *name, int initialSize)
 
 OpenFile *
 FileSystem::Open(const char *name)
-{ 
+{  
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
     int sector;
@@ -611,4 +611,59 @@ FileSystem::MoveToDirectory(const char *name)
    return TRUE;
 }
 
+//----------------------------------------------------------------------
+// FileSystem::MoveToDirectory
+//  Move to the directory, given by user in console.
+//----------------------------------------------------------------------
+
+bool
+FileSystem::MoveToFile(const char *name)
+{   
+    currentDirSector = 1; // just for now always start with root folder!
+
+    char name1[PathMaxLen];
+    strcpy(name1,name);
+    
+    Directory *directory = new Directory(NumDirEntries);
+    OpenFile *file = new OpenFile(currentDirSector);
+    directory->FetchFrom(file);   
+    
+    char * token;
+    char *oneBeforeFile;
+    const char s[2] = "/";
+   token = strtok(name1, s);
+   while( token != NULL )
+   { 
+    
+    int sector = directory->Find(token);
+    if (sector == -1) {
+       delete directory;
+       delete file;
+       printf("No such file or directory!\n");
+       return FALSE;             // file not found 
+    }
+    
+    oneBeforeFile = strtok(NULL, s);
+    if( oneBeforeFile == NULL){
+        break;
+    }
+    delete file;
+    file = new OpenFile(sector);
+    directory->FetchFrom(file);
+    this->currentDirSector = sector;     
+    
+    token = oneBeforeFile;
+   // printf("moving to directory: %s \n", token);
+   
+    
+   }
+
+   delete directory;
+   delete file;
+
+   return TRUE;
+}
+
+int
+FileSystem::getCurrentSector() { return currentDirSector; }
 #endif
