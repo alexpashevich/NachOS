@@ -87,7 +87,9 @@
 
 FileSystem::FileSystem(bool format)
 { 
+#ifdef CHANGED    
     currentDirSector = 1;
+#endif    
     DEBUG('f', "Initializing the file system.\n");
     if (format) {
         BitMap *freeMap = new BitMap(NumSectors);
@@ -492,7 +494,6 @@ FileSystem::RemoveDirectory(const char *name)
     directory->FetchFrom(currDir);
 
     sector = directory->Find(name);
-    printf("Sektor: %d\n", sector);
     if (sector == -1) {
        delete directory;
        printf("File or directory not found!\n");
@@ -582,26 +583,18 @@ FileSystem::MoveToDirectory(const char *name)
     
     file = new OpenFile(sector);
     directory->FetchFrom(file);
-    this->currentDirSector = sector; 
-    // Directory *newDir = new Directory(NumDirEntries);
-    // OpenFile *newDirFile = new OpenFile(sector);
-    // newDir->FetchFrom(newDirFile);
-    // newDir->WriteBack(currDirFile);
-
-    // delete newDir;
-    
-    // delete newDirFile;
-    
+    this->currentDirSector = sector;     
     
     token = strtok(NULL, s);
    // printf("moving to directory: %s \n", token);
    
     
-   }//while;
+   }
+
    delete directory;
    delete file;
 
-    return TRUE;
+   return TRUE;
 }
 
 #endif

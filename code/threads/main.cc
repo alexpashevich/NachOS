@@ -239,7 +239,6 @@ main (int argc, char **argv)
       else if (!strcmp (cmd[0], "cd"))
       {			// move to directory with argument name
        	// ASSERT (argc > 1);
-       	printf("%s\n", cmd[1]);
        	fileSystem->MoveToDirectory(cmd[1]);
        	// argCount = 2;
       }
