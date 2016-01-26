@@ -33,12 +33,9 @@
 void
 MailTest(int farAddr)
 {
-// #ifdef CHAGNED_AGAIN
-
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
-
 #ifndef CHANGED
     const char *data = "Hello there!";
     const char *ack = "Got it!";
@@ -71,21 +68,19 @@ MailTest(int farAddr)
     fflush(stdout);
 #else
     char data[20];
-    int times = 10, i;
-    for (i = 0; i < times; ++i) {
+    int times = 10;
+    for (int i = 0; i < times; ++i) {
         sprintf(data, "MESSAGE_%d", i);
         outPktHdr.to = farAddr;     
         outMailHdr.to = 0;
         outMailHdr.from = 1;
         outMailHdr.length = strlen(data) + 1;
         postOffice->SendReliable(outPktHdr, &outMailHdr, data); // TODO: uncomment later
-        postOffice->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
     }
 #endif
-
-// #endif
     // Then we're done!
     interrupt->Halt();
 }
@@ -155,7 +150,7 @@ void ReliableMailTest(int farAddr) {
     }
 
     // Wait for the first message from the other machine
-    postOffice->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+    postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 
@@ -173,7 +168,7 @@ void ReliableMailTest(int farAddr) {
     }
 
     // Wait for the ack from the other machine to the first message we sent.
-    postOffice->ReceiveReliable(1, &inPktHdr, &inMailHdr, buffer);
+    postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 #endif
@@ -231,7 +226,7 @@ void VariableMailTest(int farAddr) {
     postOffice->SendReliableAnySize(outPktHdr, &outMailHdr, data); 
 
     // Wait for the first message from the other machine
-    postOffice->ReceiveReliableAnySize(0, &inPktHdr, &inMailHdr, buffer);
+    postOffice->ReceiveAnySize(0, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
     // Send acknowledgement to the other machine (using "reply to" mailbox
@@ -242,7 +237,7 @@ void VariableMailTest(int farAddr) {
     postOffice->SendReliableAnySize(outPktHdr, &outMailHdr, ack); 
 
     // Wait for the ack from the other machine to the first message we sent.
-    postOffice->ReceiveReliableAnySize(1, &inPktHdr, &inMailHdr, buffer);
+    postOffice->ReceiveAnySize(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 #endif

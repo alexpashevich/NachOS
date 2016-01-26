@@ -509,7 +509,7 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
 // setting internal fields
 
     //TODO: fix this bullshit with new/delete and pointer (above)
-    MailHeaderReliable mailHdrReliable;
+    MailHeaderReliable mailHdrReliable(mailHdr);
     MailHeaderReliableAnySize *mailHdrReliableAnySize = NULL;
     if ((mailHdrReliableAnySize = dynamic_cast<MailHeaderReliableAnySize*>(const_cast<MailHeader*>(mailHdr))) != NULL ) {
         // it means that we are trying to use PostOffice with variable size features
@@ -557,12 +557,6 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
     return 0;
 }
 
-void PostOfficeReliable::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
-// receiving the mail
-    DEBUG('u', "Trying to receive a mail\n");
-    this->Receive(box, pktHdr, mailHdr, data);
-}
-
 bool PostOfficeReliable::CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr) {
     DEBUG('u', "Checking confirmation\n");
     int maxlag = TEMPO * MAXREEMISSIONS;
@@ -579,7 +573,7 @@ PostOfficeReliableAnySize::~PostOfficeReliableAnySize() {
     // nothing to do here as well
 }
 
-void PostOfficeReliableAnySize::SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data) {
+int PostOfficeReliableAnySize::SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data) {
     int length = mailHdr->length;
 
     for (int p = 0; p < length; p += MaxMailSizeVariableSize) {
@@ -588,13 +582,18 @@ void PostOfficeReliableAnySize::SendReliableAnySize(PacketHeader pktHdr, const M
         tempMailHdr.theLast = (p + (int) MaxMailSizeVariableSize >= length ? true : false);
         char tempData[tempMailHdr.length];
         memcpy(tempData, data + p, tempMailHdr.length);
-        this->SendReliable(pktHdr, &tempMailHdr, tempData);
+        int res = this->SendReliable(pktHdr, &tempMailHdr, tempData);
+        if (res == -1) {
+            DEBUG('u', "PostOfficeReliableAnySize failed to send one piece\n");
+            return res;
+        }
         DEBUG('u', "One piece was sent in PostOfficeReliableAnySize\n");
     }
     DEBUG('u', "PostOfficeReliableAnySize is done with sending\n");
+    return 0;
 }
 
-void PostOfficeReliableAnySize::ReceiveReliableAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
+void PostOfficeReliableAnySize::ReceiveAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
     PacketHeader tempPktHdr;
     MailHeader tempMailHdr;
     char *firstData = new char[MaxMailSizeVariableSize];

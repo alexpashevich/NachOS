@@ -41,7 +41,15 @@
 #define SC_UserThreadExit	18
 #define SC_UserThreadJoin	19
 #define SC_ForkExec			20
-#endif
+#ifdef NETWORK
+#define SC_CreateConnection 21
+#define SC_SendData         22
+#define SC_ReceiveData      23
+#endif // NETWORK
+
+#define MAX_FILE_SIZE 500
+
+#endif // CHANGED
 
 #ifdef IN_USER_MODE
 #ifdef CHANGED
@@ -49,6 +57,7 @@ typedef struct {
 	int slot;
 	int id;
 } pthread;
+
 #endif
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
@@ -176,6 +185,15 @@ void UserThreadJoin(void *thread);
 
 /*  Create new process */
 int ForkExec(char *exec);
+
+/* Create connection with another machine */
+int CreateConnection(int addr, int port, int receivingPort);
+
+/* Send data to another machine */
+int SendData(int addr, int port, const char *data);
+
+/*  Receive data from another machine */
+void ReceiveData(int port, char *data);
 
 #endif
 

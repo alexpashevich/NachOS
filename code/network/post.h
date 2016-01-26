@@ -168,7 +168,6 @@ friend PostOffice;
     PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes);
     virtual ~PostOfficeReliable();
     int SendReliable(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
-    void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
   private:
     bool CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr);
 
@@ -180,8 +179,8 @@ class PostOfficeReliableAnySize: public PostOfficeReliable {
 public:
     PostOfficeReliableAnySize(NetworkAddress addr, double reliability, int nBoxes);
     virtual ~PostOfficeReliableAnySize();
-    void SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
-    void ReceiveReliableAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+    int SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
+    void ReceiveAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
 };
 #endif
 

@@ -14,6 +14,8 @@ typedef int MailBoxAddress;
 class MailHeader {
   public:
     MailHeader() {}
+    MailHeader(int to_, int from_, unsigned length_):
+                to(to_), from(from_), length(length_) {}
     virtual ~MailHeader() {}
     MailBoxAddress to;      // Destination mail box
     MailBoxAddress from;    // Mail box to reply to

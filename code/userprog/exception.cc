@@ -200,7 +200,6 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_UserThreadExit: {
-        // printf("Test\n");
         do_UserThreadExit();
         break;
       }
@@ -216,7 +215,49 @@ ExceptionHandler (ExceptionType which)
         bufferlock->V();
         machine->WriteRegister(2, res);
         break;
-      }      
+      }
+#ifdef NETWORK
+      case SC_CreateConnection: {
+        int addr = machine->ReadRegister(4);
+        int port = machine->ReadRegister(5);
+        int receivingPort = machine->ReadRegister(6);
+        PacketHeader pktHdr;
+        pktHdr.to = addr;
+        pktHdr.from = postOffice->GetNetworkName();
+        MailHeader mailHdr(port, 0, 4);
+        int res = postOffice->SendReliable(pktHdr, &mailHdr, (char*)receivingPort);
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_SendData: {
+        int addr = machine->ReadRegister(4);
+        int port = machine->ReadRegister(5);
+        int from = machine->ReadRegister(6);
+        PacketHeader pktHdr;
+        pktHdr.to = addr;
+        pktHdr.from = postOffice->GetNetworkName();
+        MailHeader mailHdr(port, 0, 0);
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        int res = postOffice->SendReliableAnySize(pktHdr, &mailHdr, stringbuffer);
+        bufferlock->V();
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_ReceiveData: {
+        int port = machine->ReadRegister(4);
+        int to = machine->ReadRegister(5);
+        PacketHeader pktHdr;
+        MailHeader mailHdr;
+        char *filebuffer = new char[MAX_FILE_SIZE];
+        postOffice->ReceiveAnySize(port, &pktHdr, &mailHdr, filebuffer);
+        for (unsigned i = 0; i < mailHdr.length; ++i) {
+          ASSERT(machine->WriteMem(to + i, 1, (int)(filebuffer[i])));
+        }
+        delete[] filebuffer;
+        break;
+      }
+#endif // NETWORK
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
@@ -225,4 +266,4 @@ ExceptionHandler (ExceptionType which)
     UpdatePC();
   }
 }
-#endif
+#endif // CHANGED
