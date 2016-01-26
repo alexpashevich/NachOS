@@ -186,66 +186,65 @@ main (int argc, char **argv)
 	intro();
 	while(TRUE)
 	{	   	
-		shell(cmd);
+	  shell(cmd);
 	  
 	  // printf("First arg1: %s\n", cmd[0]);
 	  // printf("Second arg1: %s\n", cmd[1]);
 	  // printf("Third arg1: %s\n", cmd[2]);
 
 	  if (!strcmp (cmd[0], "cp"))
-	    {			// copy from UNIX to Nachos
+	  {			// copy from UNIX to Nachos
 		// ASSERT (argc > 2);
 		Copy (cmd[1], cmd[2]);			
 		// argCount = 3;					
-	    }
+	  }
 	  else if (!strcmp (cmd[0], "p"))
-	    {			// print a Nachos file
+	  {			// print a Nachos file
 		// ASSERT (argc > 1);
 		Print (cmd[1]);
 		// argCount = 2;
-	    }
+	  }
 	  else if (!strcmp (cmd[0], "r"))
-	    {			// remove Nachos file
+	  {			// remove Nachos file
 		// ASSERT (argc > 1);
 		fileSystem->Remove (cmd[1]);
 		// argCount = 2;
-	    }
+	  }
 	  else if (!strcmp (cmd[0], "l"))
-	    {			// list Nachos directory
+	  {			// list Nachos directory
 		fileSystem->List ();
-	    }
+	  }
 	  else if (!strcmp (cmd[0], "D"))
-	    {			// print entire filesystem
+	  {			// print entire filesystem
 	    	// printf("I am inside if lala %s\n", cmd[0]);
 		fileSystem->Print ();
-	    }
+	  }
 	  else if (!strcmp (cmd[0], "t"))
-	    {			// performance test
+	  {			// performance test
 		PerformanceTest ();
-	    }
-
+	  }
       else if (!strcmp (cmd[0], "mkdir"))
-	    {			// Create a directory with argument as name
+	  {			// Create a directory with argument as name
 	    	//ASSERT (argc > 1);
-			if(cmd[1] != NULL)
-				fileSystem->CreateDirectory(cmd[1]);
-			// argCount = 2;
-        }     
+		if(cmd[1] != NULL)
+			fileSystem->CreateDirectory(cmd[1]);
+		// argCount = 2;
+      }     
       else if (!strcmp (cmd[0], "rm"))
-        {			// delete directory with argument name
-        	// ASSERT (argc > 1);	
-        	fileSystem->RemoveDirectory(cmd[1]);
-        	// argCount = 2;
-        }
+      {			// delete directory with argument name
+       	// ASSERT (argc > 1);	
+       	fileSystem->RemoveDirectory(cmd[1]);
+       	// argCount = 2;
+      }
       else if (!strcmp (cmd[0], "cd"))
-        {			// move to directory with argument name
-        	// ASSERT (argc > 1);
-        	printf("%s\n", cmd[1]);
-        	fileSystem->MoveToDirectory(cmd[1]);
-        	// argCount = 2;
-        }
-     }
-        interrupt->Halt();
+      {			// move to directory with argument name
+       	// ASSERT (argc > 1);
+       	printf("%s\n", cmd[1]);
+       	fileSystem->MoveToDirectory(cmd[1]);
+       	// argCount = 2;
+      }
+    }
+    interrupt->Halt();
 #endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK
