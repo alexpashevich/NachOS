@@ -62,6 +62,9 @@ extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out);
 extern void SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
+extern void shell (char** cmd);
+
+void intro(void); // local function to print out shell introduction
 
 //----------------------------------------------------------------------
 // main
@@ -134,6 +137,8 @@ main (int argc, char **argv)
 #endif
 #endif // USER_PROGRAM
 #ifdef FILESYS
+
+#ifndef CHANGED	   	
 	  if (!strcmp (*argv, "-cp"))
 	    {			// copy from UNIX to Nachos
 		ASSERT (argc > 2);
@@ -164,27 +169,82 @@ main (int argc, char **argv)
 	    {			// performance test
 		PerformanceTest ();
 	    }
-        #ifdef CHANGED
-      else if (!strcmp (*argv, "-mkdir"))
-	    {			// Create a directory with argument as name
-	    	ASSERT (argc > 1);
-			fileSystem->CreateDirectory(*(argv + 1));
-			argCount = 2;
-        }     
-      else if (!strcmp (*argv, "-rm"))
-        {			// delete directory with argument name
-        	ASSERT (argc > 1);	
-        	fileSystem->RemoveDirectory(*(argv + 1));
-        	argCount = 2;
-        }
-      else if (!strcmp (*argv, "-cd"))
-        {			// move to directory with argument name
-        	ASSERT (argc > 1);
-        	fileSystem->MoveToDirectory(*(argv + 1));
-        	argCount = 2;
-        }
-        interrupt->Halt();
-      #endif//CHANGED
+        interrupt->Halt();	   	
+
+#else
+	
+	// shell takes max only 3 params - if have time, improve that!
+	char arg1[100];
+	char arg2[100];
+	char arg3[100];
+	
+	char* cmd[3];
+	cmd[0] = arg1;
+	cmd[1] = arg2;
+	cmd[2] = arg3;
+
+	intro();
+	while(TRUE)
+	{	   	
+	  shell(cmd);
+	  
+	  // printf("First arg1: %s\n", cmd[0]);
+	  // printf("Second arg1: %s\n", cmd[1]);
+	  // printf("Third arg1: %s\n", cmd[2]);
+
+	  if (!strcmp (cmd[0], "cp"))
+	  {			// copy from UNIX to Nachos
+		// ASSERT (argc > 2);
+		Copy (cmd[1], cmd[2]);			
+		// argCount = 3;					
+	  }
+	  else if (!strcmp (cmd[0], "p"))
+	  {			// print a Nachos file
+		// ASSERT (argc > 1);
+		Print (cmd[1]);
+		// argCount = 2;
+	  }
+	  else if (!strcmp (cmd[0], "r"))
+	  {			// remove Nachos file
+		// ASSERT (argc > 1);
+		fileSystem->Remove (cmd[1]);
+		// argCount = 2;
+	  }
+	  else if (!strcmp (cmd[0], "l"))
+	  {			// list Nachos directory
+		fileSystem->List ();
+	  }
+	  else if (!strcmp (cmd[0], "D"))
+	  {			// print entire filesystem
+	    	// printf("I am inside if lala %s\n", cmd[0]);
+		fileSystem->Print ();
+	  }
+	  else if (!strcmp (cmd[0], "t"))
+	  {			// performance test
+		PerformanceTest ();
+	  }
+      else if (!strcmp (cmd[0], "mkdir"))
+	  {			// Create a directory with argument as name
+	    	//ASSERT (argc > 1);
+		if(cmd[1] != NULL)
+			fileSystem->CreateDirectory(cmd[1]);
+		// argCount = 2;
+      }     
+      else if (!strcmp (cmd[0], "rm"))
+      {			// delete directory with argument name
+       	// ASSERT (argc > 1);	
+       	fileSystem->RemoveDirectory(cmd[1]);
+       	// argCount = 2;
+      }
+      else if (!strcmp (cmd[0], "cd"))
+      {			// move to directory with argument name
+       	// ASSERT (argc > 1);
+       	fileSystem->MoveToDirectory(cmd[1]);
+       	// argCount = 2;
+      }
+    }
+    interrupt->Halt();
+#endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))
@@ -208,4 +268,13 @@ main (int argc, char **argv)
     // "main" thread is finished, preventing
     // it from returning.
     return (0);			// Not reached...
+}
+
+void intro(void)
+{
+	printf("###########################################################\n");
+	printf("### 	                                             	###\n");
+	printf("### 	Hello in my super shell you sneaky bastard! 	###\n");
+	printf("### 	                                             	###\n");
+	printf("###########################################################\n");
 }

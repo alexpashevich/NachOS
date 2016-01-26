@@ -78,11 +78,11 @@ class Directory {
 
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
-#ifndef CHANGED
+// #ifndef CHANGED
     bool Add(const char *name, int newSector);  // Add a file name into the directory
-#else    
-    bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
-#endif
+// #else    
+    // bool Add(const char *name, int newSector, bool isDirectory);  // Add a file/dir name into the directory
+// #endif
     bool Remove(const char *name);	// Remove a file from the directory
 
     void List();			// Print the names of all the files

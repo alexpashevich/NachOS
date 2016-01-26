@@ -160,7 +160,7 @@ Directory::Add(const char *name, int newSector)
 #else
 
 bool
-Directory::Add(const char *name, int newSector, bool dir)
+Directory::Add(const char *name, int newSector)
 {   
     if (FindIndex(name) != -1)
        return FALSE;
@@ -172,7 +172,7 @@ Directory::Add(const char *name, int newSector, bool dir)
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;      
-            table[i].isDirectory = dir ? TRUE : FALSE;
+            table[i].isDirectory = FALSE;
             return TRUE;
        }  
     }
@@ -216,7 +216,7 @@ Directory::List()
             printf("/");
         }
         #endif //CHANGED
-         printf("%s\n", table[i].name);  
+        printf("%s\n", table[i].name);  
     }
 	   
 }

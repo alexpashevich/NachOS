@@ -23,11 +23,12 @@ void b(void *s)
 int
 main()
 {
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
-	UserThreadCreate(f, (void *) THIS);
+	pthread tid;
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
+	UserThreadCreate(f, (void *) THIS, &tid);
 	
 	b((void*) THAT);	
 	b((void*) THAT);

@@ -46,6 +46,7 @@ class AddrSpace
     void IncrementCounter(); // in case one more thread started to use this addrspace
     void DecrementCounter(); // in case one thread using this addrspace was destroyed
     int GetCounterValue();
+    int GetNewThreadId();
     Semaphore *mainthreadwait;
     Semaphore *lock;
 
@@ -56,6 +57,7 @@ class AddrSpace
     void** threadArray;
   private:
     int counter;
+    int threadId;
 #endif
 
   private:

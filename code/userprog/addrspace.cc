@@ -181,6 +181,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     machine->lock->P();
     ++machine->processCnt;
     machine->lock->V();
+    threadId = 0;
 #endif
 }
 
@@ -291,5 +292,13 @@ void AddrSpace::DecrementCounter () {
 
 int AddrSpace::GetCounterValue() {
     return counter;
+}
+
+int AddrSpace::GetNewThreadId() {
+    this->lock->P();
+    int tmp = ++this->threadId;
+    this->lock->V();
+
+    return tmp;
 }
 #endif

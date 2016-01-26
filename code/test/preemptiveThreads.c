@@ -19,12 +19,12 @@ void func (void *arg) {
 
 int main () {
 
+	pthread tid;
 	int threadsNb = 4;
-	int i;
-	
+	int i;	
 	for (i = 0; i < threadsNb; ++i)
 	{
-		if (UserThreadCreate(func, 0) == -1)
+		if (UserThreadCreate(func, 0, &tid) == -1)
 		{
 			PutString("Could not create a new user thread.\n");
 		}

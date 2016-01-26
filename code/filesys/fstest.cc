@@ -183,3 +183,33 @@ PerformanceTest()
     stats->Print();
 }
 
+void
+shell(char** cmd)
+{
+    char input[100];
+    
+    printf("nachOS > ");
+    fgets(input, sizeof(input), stdin);
+
+    int i;  // clear buffers
+    for (i = 0; i < 100; ++i)
+    {
+        cmd[0][i] = 0;
+        cmd[1][i] = 0;
+        cmd[2][i] = 0;
+    }
+
+    const char s[2] = " ";  // space seperates input args
+    char* token;
+    token = strtok( input, s );
+    int pos;
+    i = 0; 
+    while( token != NULL && i < 3)
+    {
+        // printf( "%s\n", token );
+        pos = strcspn(token, "\n"); // get position of new line symbol to remove it
+        strncpy(cmd[i], token, pos);
+        token = strtok( NULL, s );
+        ++i;
+    }    
+}

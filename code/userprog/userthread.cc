@@ -60,7 +60,7 @@ StartUserThread(int myFuncAndArg)
 //----------------------------------------------------------------------
 
 int
-do_UserThreadCreate(int f, int arg)
+do_UserThreadCreate(int f, int arg, int tid)
 {
 
 	DEBUG('t', "Creating new User Thread.\n");
@@ -86,6 +86,13 @@ do_UserThreadCreate(int f, int arg)
 
 // putting new thread in the thread queue to execute
     newThread->space = currentThread->space;
+    newThread->threadId = newThread->space->GetNewThreadId();
+
+    // ((pthread*) tid)->slot = slotNb;
+	// ((pthread*) tid)->id = newThread->threadId;
+	// pthread test = {slotNb, newThread->threadId};
+    ASSERT(machine->WriteMem(tid, sizeof(int), slotNb));
+    ASSERT(machine->WriteMem(tid+sizeof(int), sizeof(int), newThread->threadId));
     funcAndArg *myfuncandarg = new funcAndArg(f, arg);
     newThread->Fork (StartUserThread, (int)myfuncandarg);
     return slotNb;	
@@ -122,24 +129,31 @@ do_UserThreadExit()
 //----------------------------------------------------------------------
 
 void
-do_UserThreadJoin(int threadId)
+do_UserThreadJoin(int tid)
 {
-	DEBUG('t', "Waiting for user thread %d.\n", threadId);	
-	currentThread->space->lock->P();
-	if (0 < threadId && threadId < currentThread->space->threadsNb)
-	{
-		if(currentThread->space->stackMap->Test(threadId))
-		{
+	int slotId, threadId;
+	// read values of slotId and threadId from structure address given by user
+	machine->ReadMem(tid,   sizeof(int), &slotId);
+	machine->ReadMem(tid+4, sizeof(int), &threadId);
+	// slotId 	 = ((pthread*) tid)->slot;
+	// threadId = ((pthread*) tid)->id;
 
-			Thread *tmp = (Thread*) currentThread->space->threadArray[threadId];
-			if(tmp != NULL)
+	DEBUG('t', "Waiting for user thread %d.\n", threadId);	
+
+	currentThread->space->lock->P();
+	if (0 < slotId && slotId < currentThread->space->threadsNb)
+	{
+		if(currentThread->space->stackMap->Test(slotId))	// check if stack slot is occupied
+		{
+			Thread *waitForMe = (Thread*) currentThread->space->threadArray[slotId];
+			if(waitForMe != NULL && waitForMe->threadId == threadId) // second check if threadId is correct
 			{
-				tmp->waitingList->Prepend(currentThread);	
+				currentThread->space->lock->V(); // release lock before going to sleep
+				waitForMe->waitingList->Prepend(currentThread);					
+				IntStatus oldLevel = interrupt->SetLevel (IntOff);				
+				currentThread->Sleep();
+				(void) interrupt->SetLevel (oldLevel);
 			}
-			IntStatus oldLevel = interrupt->SetLevel (IntOff);
-			currentThread->space->lock->V();
-			currentThread->Sleep();
-			(void) interrupt->SetLevel (oldLevel);
 		}
 	}
 	currentThread->space->lock->V();
