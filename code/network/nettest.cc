@@ -78,8 +78,8 @@ MailTest(int farAddr)
         outMailHdr.to = 0;
         outMailHdr.from = 1;
         outMailHdr.length = strlen(data) + 1;
-        postOffice->Send(outPktHdr, &outMailHdr, data); // TODO: uncomment later
-        postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
+        postOffice->SendReliable(outPktHdr, &outMailHdr, data); // TODO: uncomment later
+        postOffice->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
     }
@@ -147,7 +147,6 @@ void ReliableMailTest(int farAddr) {
     outMailHdr->from = 1;
     outMailHdr->length = strlen(data) + 1;
 
-    // Send the first message
     if (postOffice->SendReliable(outPktHdr, outMailHdr, data) == -1) {
         printf("[NETTEST FUNCTION] Can not send \"%s\"\n", data);
         interrupt->Halt();
@@ -165,6 +164,7 @@ void ReliableMailTest(int farAddr) {
     outPktHdr.to = inPktHdr.from;
     outMailHdr->to = inMailHdr.from;
     outMailHdr->length = strlen(ack) + 1;
+    // postOffice->SendReliable(outPktHdr, outMailHdr, ack);
     if (postOffice->SendReliable(outPktHdr, outMailHdr, ack) == -1) {
         printf("[NETTEST FUNCTION] Can not send \"%s\"\n", ack);
         interrupt->Halt();

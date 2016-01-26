@@ -235,11 +235,15 @@ PostOffice::PostalDelivery()
         pktHdr = network->Receive(buffer);
 
         MailHeaderReliable* hdr = NULL;
+        MailHeaderReliableAnySize *hdrAnySize = NULL;
         mailHdr = (MailHeader *)buffer;
         if (pktHdr.length == mailHdr->length + sizeof(MailHeaderReliable)) {
             hdr = (MailHeaderReliable *)buffer;
         }
-        // TODO: check here
+        if (pktHdr.length == mailHdr->length + sizeof(MailHeaderReliableAnySize)) {
+            hdrAnySize = (MailHeaderReliableAnySize *)buffer;
+        }
+
         if (DebugIsEnabled('n')) {
             printf("Putting mail into mailbox: ");
             PrintHeader(pktHdr, *mailHdr);
@@ -250,54 +254,51 @@ PostOffice::PostalDelivery()
         ASSERT(mailHdr->length <= MaxMailSize);
 
         // put into mailbox
-        try {
-            if (hdr != NULL) {
-                PostOfficeReliable* p = static_cast<PostOfficeReliable*>(this);
-                // it means that we are PostOfficeReliable
-                if (hdr->isConfirmation) {
-                    // confirmation mail was received
+        if (hdr != NULL) {
+            // reliable transfer is happening
 
-                    printf("confirmation received, id = %d\n", hdr->id);
-                    MailHeaderReliable *hdrRel = new MailHeaderReliable(hdr);
-                    p->confirmationMails->Append(hdrRel);
+            PostOfficeReliable* p = static_cast<PostOfficeReliable*>(this);
+            // it means that we are PostOfficeReliable
+            if (hdr->isConfirmation) {
+                // confirmation mail was received
+
+                DEBUG('u', "confirmation received, id = %d\n", hdr->id);
+                MailHeaderReliable *hdrRel = new MailHeaderReliable(hdr);
+                p->confirmationMails->Append(hdrRel);
+            } else {
+                // normal mail was received
+
+                DEBUG('u', "normal mail received, text = \"%s\", ", buffer + sizeof(MailHeaderReliable));
+                time_t maxlag = TEMPO * (MAXREEMISSIONS + 1);
+                
+                // TODO: check from here
+                if (!p->oldMessages->CheckOldMessages(hdr, maxlag, false)) {
+                    // if mailHdr is NOT in oldMessages
+                    DEBUG('u', "NOT repeated\n");
+                    boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeaderReliable));
+                    MailHeaderReliable *newMailHdr = new MailHeaderReliable(hdr);
+                    p->oldMessages->Append(newMailHdr);
                 } else {
-                    // normal mail was received
-
-                    printf("normal mail received, text = \"%s\", ", buffer + sizeof(MailHeaderReliable));
-                    time_t maxlag = TEMPO * (MAXREEMISSIONS + 1);
-                    
-                    // TODO: check from here
-                    if (!p->oldMessages->CheckOldMessages(hdr, maxlag, false)) {
-                        // if mailHdr is NOT in oldMessages
-                        printf("NOT repeated\n");
-                        boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeaderReliable));
-                        MailHeaderReliable *newMailHdr = new MailHeaderReliable(hdr);
-                        p->oldMessages->Append(newMailHdr);
-                    } else {
-                        printf("repeated\n");
-                    }
-
-                    // but send the confirmation anyway
-
-                    // setting headers to send the confirmation
-                    MailHeaderReliable mailHdrConf(hdr);
-                    mailHdrConf.length = 0;
-                    mailHdrConf.isConfirmation = true;
-
-                    PacketHeader pktHdrConf;
-                    pktHdrConf.to = pktHdr.from;
-                    pktHdrConf.from = pktHdr.to;
-                    pktHdrConf.length = mailHdrConf.length + sizeof(MailHeaderReliable);
-
-                // sending the confirmation
-                    this->Send(pktHdrConf, &mailHdrConf, NULL);
+                    DEBUG('u', "repeated\n");
                 }
-            } else
-                boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeader));
-        }
-        catch (...) {
-            printf("caught the exception\n");
-        }
+
+                // but send the confirmation anyway
+
+                // setting headers to send the confirmation
+                MailHeaderReliable mailHdrConf(hdr);
+                mailHdrConf.length = 0;
+                mailHdrConf.isConfirmation = true;
+
+                PacketHeader pktHdrConf;
+                pktHdrConf.to = pktHdr.from;
+                pktHdrConf.from = pktHdr.to;
+                pktHdrConf.length = mailHdrConf.length + sizeof(MailHeaderReliable);
+
+            // sending the confirmation
+                this->Send(pktHdrConf, &mailHdrConf, NULL);
+            }
+        } else
+            boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + sizeof(MailHeader));
     }
 #else
     PacketHeader pktHdr;
@@ -375,7 +376,6 @@ void PostOffice::Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char
     sendLock->Acquire();        // only one message can be sent
                     // to the network at any one time
 
-    printf("Sending from old post office %s\n", buffer);
     network->Send(pktHdr, buffer);
     messageSent->P();           // wait for interrupt to tell us
                     // ok to send the next message
@@ -506,21 +506,18 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
     mailHdrReliable->id = Random() + (int) data;
     time(&mailHdrReliable->timestamp);
 
-    printf("Sending from reliable\n");
 // sending the mail
     this->Send(pktHdr, mailHdrReliable, data);
-    printf("Sending \"%s\" the first time\n", data);
+    DEBUG('u', "Sending \"%s\" the first time\n", data);
 
 // waiting for some time to give the other machine chance to send the confirmation
 
     currentThread->Sleep(TEMPO);
-    // Delay(TEMPO);
-    // currentThread->Yield();
     int counter = 1;
     bool confirmed = false;
-    printf("I am awaken\n");
+    DEBUG('u', "I am awaken\n");
     while (!(confirmed = this->CheckConfirmation(pktHdr, *mailHdrReliable)) && counter < MAXREEMISSIONS) { // TODO: check if this works with MailHeaderReliableAnySize
-        printf("Didn't receive the confirmation, sending \"%s\" again\n", data);
+        DEBUG('u', "Didn't receive the confirmation, sending \"%s\" again\n", data);
 // if the confirmation is not received then we think that our message was not delivered
 // so send it again
         this->Send(pktHdr, mailHdrReliable, data);
@@ -528,12 +525,10 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
 
 // and wait again
         currentThread->Sleep(TEMPO);
-        // Delay(TEMPO);
-        // currentThread->Yield();
     }
 
     if (confirmed)
-        printf("[SUCCESS] Confirmation was received\n");
+        printf("[SUCCESS] Confirmation was received, sent from %d time\n", counter);
     delete mailHdrReliable;
     // printf("Received the confirmation? counter = %d\n", counter);
 // return the result
@@ -545,12 +540,12 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
 void PostOfficeReliable::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
 // receiving the mail
     // TODO:
-    printf("Trying to receive a mail\n");
+    DEBUG('u', "Trying to receive a mail\n");
     this->Receive(box, pktHdr, mailHdr, data); // or change to MailHeaderReliable  ???
 }
 
 bool PostOfficeReliable::CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr) {
-    printf("Checking confirmation\n");
+    DEBUG('u', "Checking confirmation\n");
     int maxlag = TEMPO * MAXREEMISSIONS;
     bool res = confirmationMails->CheckOldMessages(&mailHdr, maxlag, true);
     return res;

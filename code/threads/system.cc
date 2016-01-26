@@ -86,10 +86,13 @@ TimerInterruptHandler (int dummy)
     while (!listOfSleepingThreads->IsEmpty()) {
         long long wakeupTime;
         Thread *st = (Thread*) listOfSleepingThreads->SortedRemove(&wakeupTime);
-        if (wakeupTime > now) {
+        // printf("now = %li, wakeupTime = %lli\n", now, wakeupTime);
+        if (wakeupTime <= now) {
+            // printf("THREAD IS AWAKEN\n");
             // it means that it is time to wake up the thread
             scheduler->SetFirstToRun(st);
         } else {
+            // printf("THREAD IS NOT AWAKEN, BACK TO SLEEP\n");
             // return the thread to the list
             // and break as the rest of threads have greater wakeupTime (list is sorted)
             listOfSleepingThreads->SortedInsert((void*) st, wakeupTime);
@@ -112,7 +115,6 @@ TimerInterruptHandler (int dummy)
 void
 Initialize (int argc, char **argv)
 {
-    printf("Initializing...\n");
     int argCount;
     const char *debugArgs = "";
     bool randomYield = FALSE;
@@ -166,7 +168,6 @@ Initialize (int argc, char **argv)
 	    }
 	  else if (!strcmp (*argv, "-m"))
 	    {
-            printf("Setting netname\n");
 		ASSERT (argc > 1);
 		netname = atoi (*(argv + 1));
 		argCount = 2;

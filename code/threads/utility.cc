@@ -17,6 +17,11 @@
 #include "/usr/include/stdarg.h"
 #endif
 
+#ifdef CHANGED
+#include <ctime>
+#include <sys/time.h>
+#endif
+
 static const char *enableFlags = NULL;	// controls which DEBUG messages are printed 
 
 //----------------------------------------------------------------------
@@ -60,13 +65,26 @@ DebugIsEnabled (char flag)
 void
 DEBUG (char flag, const char *format, ...)
 {
-    if (DebugIsEnabled (flag))
-      {
-	  va_list ap;
-	  // You will get an unused variable message here -- ignore it.
-	  va_start (ap, format);
-	  vfprintf (stdout, format, ap);
-	  va_end (ap);
-	  fflush (stdout);
-      }
+    if (DebugIsEnabled (flag)) {
+        // You will get an unused variable message here -- ignore it.
+#ifdef CHANGED
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        long long milliseconds = tv.tv_sec*1000LL + tv.tv_usec/1000;
+        // char c_time_string[20];
+        // time_t current_time = time(NULL);
+        fprintf(stdout, "[%lld] ", milliseconds);
+        // char newFormat[100];
+        // char temp[10] = "[%s] ";
+        // memcpy(newFormat, temp, strlen(temp));
+        // memcpy(newFormat + strlen(temp), format, strlen(format));
+        
+        // vfprintf (stdout, "[%s] ", ctime(&current_time));
+#endif
+        va_list ap;
+        va_start (ap, format);
+        vfprintf (stdout, format, ap);
+        va_end (ap);
+        fflush (stdout);
+    }
 }

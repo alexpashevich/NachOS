@@ -177,7 +177,6 @@ main (int argc, char **argv)
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))
 	    {
-	    	printf("Starting the test\n");
 		ASSERT (argc > 1);
 		Delay (2);	// delay for 2 seconds
 		// to give the user time to 
@@ -194,7 +193,6 @@ main (int argc, char **argv)
 		MailCircleTest (atoi (*(argv + 1)));
 		argCount = 2;
       } else if (!strcmp (*argv, "-or")) {
-      	printf("Starting the test\n");
 		ASSERT (argc > 1);
 		Delay (2);	// delay for 2 seconds
 		// to give the user time to 

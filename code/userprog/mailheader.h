@@ -30,7 +30,7 @@ class MailHeaderReliable: public MailHeader {
     bool isConfirmation;
 };
 
-class MailHeaderReliableAnySize: public MailHeader { // ???
+class MailHeaderReliableAnySize: public MailHeaderReliable {
   public:
     MailHeaderReliableAnySize() {}
     // MailHeaderReliableAnySize(const MailHeader *mailHdr);

@@ -124,7 +124,6 @@ Network::Send(PacketHeader hdr, char* data)
     char *buffer = new char[MaxWireSize];
     *(PacketHeader *)buffer = hdr;
     bcopy(data, buffer + sizeof(PacketHeader), hdr.length);
-    printf("sending %s\n", data);
 
     SendToSocket(sock, buffer, MaxWireSize, toName);
     delete [] buffer;
