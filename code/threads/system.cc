@@ -90,6 +90,7 @@ Initialize (int argc, char **argv)
     bool debugUserProg = FALSE;	// single step user program
 #endif
 #ifdef FILESYS_NEEDED
+
 #ifndef CHANGED    
     bool format = FALSE;	// format disk
 #else
