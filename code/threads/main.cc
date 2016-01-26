@@ -226,8 +226,9 @@ main (int argc, char **argv)
 
       else if (!strcmp (cmd[0], "mkdir"))
 	    {			// Create a directory with argument as name
-	    	// ASSERT (argc > 1);
-			fileSystem->CreateDirectory(cmd[1]);
+	    	//ASSERT (argc > 1);
+			if(cmd[1] != NULL)
+				fileSystem->CreateDirectory(cmd[1]);
 			// argCount = 2;
         }     
       else if (!strcmp (cmd[0], "rm"))

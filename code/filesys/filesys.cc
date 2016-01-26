@@ -415,6 +415,12 @@ FileSystem::Print()
 bool
 FileSystem::CreateDirectory(const char *name)
 {  
+    char keys[] = "ABCDEFGHIJKLMNOPRSTUWXYZabcdefghijklmnoprstuwxyx";
+    if( (strcspn (name, keys)) != 0 || !strcmp(name, "") ){
+        printf("Wrong name of folder!\n");
+        return FALSE;
+    }    
+        
   Directory *directory;
   BitMap *freeMap;
   FileHeader *hdr;
