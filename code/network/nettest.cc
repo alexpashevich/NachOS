@@ -24,6 +24,7 @@
 #include "interrupt.h"
 
 #ifdef CHANGED
+#include "thread.h"
 #ifdef FILESYS
 #include "filesys.h"
 #endif
@@ -268,6 +269,7 @@ struct ServClientArgs {
 };
 
 void TalkWithClient(int arg) {
+    printf("One client is being served\n");
     ServClientArgs *realarg = (ServClientArgs*) arg;
     int addr = realarg->addr;
     int port = realarg->port;
@@ -282,12 +284,13 @@ void TalkWithClient(int arg) {
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
 
-    postOffice->SendReliable(outPktHdr, &outMailHdr, (char*) &boxNb);
+    postOffice->SendReliableAnySize(outPktHdr, &outMailHdr, (char*) &boxNb);
     char filename[20];
     postOffice->Receive(boxNb, &inPktHdr, &inMailHdr, filename);
 
     // filebuffer[] 3750
-
+    printf("HERE\n");
+    fflush(stdout);
     if (!fileSystem->MoveToFile("", filename) ){
         fileSystem->setCurrentSector();
         // TODO:
@@ -302,13 +305,16 @@ void TalkWithClient(int arg) {
     char into_char[number_of_bytes];
     file->Read(into_char, number_of_bytes);
 
-    outMailHdr.length = 3750;
+    number_of_bytes = strlen(into_char);;
+    outMailHdr.length = number_of_bytes;
     postOffice->SendReliableAnySize(outPktHdr, &outMailHdr, into_char);
+    printf("Finishing the thread...\n");
     currentThread->Finish();
 }
 
 
 void FileServer(int clientaddr) {
+    printf("Server is started\n");
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
     int clientport;
@@ -316,7 +322,8 @@ void FileServer(int clientaddr) {
     while (connectedMachines < postOffice->GetNumberOfBoxes() - 1) {
         postOffice->Receive(0, &inPktHdr, &inMailHdr, (char*)&clientport);
         ServClientArgs *arg = new ServClientArgs(inPktHdr.from, clientport, connectedMachines + 1);
-        currentThread->Fork(TalkWithClient, (int)arg);
+        Thread *t = new Thread("client service");
+        t->Fork(TalkWithClient, (int)arg);
         ++connectedMachines;
     }
     interrupt->Halt();

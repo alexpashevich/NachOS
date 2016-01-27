@@ -46,13 +46,10 @@
 #define SC_CloseFile		23
 #define SC_ReadFile			24
 #define SC_WriteFile		25 
-#endif
-
-#ifdef NETWORK
 #define SC_CreateConnection 26
 #define SC_SendData         27
 #define SC_ReceiveData      28
-#endif // NETWORK
+#endif // CHANGED
 
 #define MAX_FILE_SIZE 500
 

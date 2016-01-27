@@ -219,6 +219,7 @@ ExceptionHandler (ExceptionType which)
       }
 #ifdef FILESYS      
       case SC_CreateFile: {
+        fprintf(stderr, "SC_CreateFile\n");
         char filePath[MAX_STRING_SIZE];
         int path = machine->ReadRegister(4);
         // int name = machine->ReadRegister(5);
@@ -232,6 +233,7 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_OpenFile: {
+        fprintf(stderr, "SC_OpenFile\n");
         char filePath[MAX_STRING_SIZE];
         int path = machine->ReadRegister(4);
         // int name = machine->ReadRegister(5);
@@ -245,12 +247,14 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_CloseFile: {
+        fprintf(stderr, "SC_CloseFile\n");
         int id = machine->ReadRegister(4);
         int res = do_UserCloseFile(id);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_ReadFile: {
+        fprintf(stderr, "SC_ReadFile\n");
         int id = machine->ReadRegister(4);
         int into = machine->ReadRegister(5);
         int numBytes = machine->ReadRegister(6);      
@@ -259,6 +263,7 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_WriteFile: {
+        fprintf(stderr, "SC_WriteFile\n");
         char filePath[MAX_STRING_SIZE];
         int id = machine->ReadRegister(4);
         int from = machine->ReadRegister(5);
@@ -275,6 +280,7 @@ ExceptionHandler (ExceptionType which)
 
 #ifdef NETWORK
       case SC_CreateConnection: {
+        fflush(stdout);
         int addr = machine->ReadRegister(4);
         int port = machine->ReadRegister(5);
         int receivingPort = machine->ReadRegister(6);
@@ -282,11 +288,12 @@ ExceptionHandler (ExceptionType which)
         pktHdr.to = addr;
         pktHdr.from = postOffice->GetNetworkName();
         MailHeader mailHdr(port, 0, 4);
-        int res = postOffice->SendReliable(pktHdr, &mailHdr, (char*)receivingPort);
+        int res = postOffice->SendReliable(pktHdr, &mailHdr, (char*)&receivingPort);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_SendData: {
+        fflush(stdout);
         int addr = machine->ReadRegister(4);
         int port = machine->ReadRegister(5);
         int from = machine->ReadRegister(6);
@@ -303,6 +310,7 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_ReceiveData: {
+        fflush(stdout);
         int port = machine->ReadRegister(4);
         int to = machine->ReadRegister(5);
         int sizeaddr = machine->ReadRegister(6);

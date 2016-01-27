@@ -283,7 +283,6 @@ PostOffice::PostalDelivery()
                             mailHdr->from = -1;
                         }
                     }
-
                     boxes[mailHdr->to].Put(pktHdr, *mailHdr, buffer + shift);
                     MailHeaderReliable *newMailHdr = new MailHeaderReliable(hdr);
                     p->oldMessages->Append(newMailHdr);
