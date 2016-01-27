@@ -41,24 +41,20 @@
 #define SC_UserThreadExit	18
 #define SC_UserThreadJoin	19
 #define SC_ForkExec			20
-<<<<<<< HEAD
 #define SC_CreateFile		21 
 #define SC_OpenFile			22
 #define SC_CloseFile		23
 #define SC_ReadFile			24
 #define SC_WriteFile		25 
 #endif
-=======
+
 #ifdef NETWORK
-#define SC_CreateConnection 21
-#define SC_SendData         22
-#define SC_ReceiveData      23
+#define SC_CreateConnection 26
+#define SC_SendData         27
+#define SC_ReceiveData      28
 #endif // NETWORK
 
 #define MAX_FILE_SIZE 500
-
-#endif // CHANGED
->>>>>>> 8947d00b1d28b0f2b9de7dfeaa78ba28ee4fc1a1
 
 #ifdef IN_USER_MODE
 #ifdef CHANGED

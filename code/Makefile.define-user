@@ -83,7 +83,6 @@ USER_FLAVORS=$(ORIG_FLAVORS) step2 step3 step4 step5 step6
 # to the personal flavor
 # USER_FLAVORS=step2 step5 mynetwork final
 
-<<<<<<< HEAD
 $(eval $(call define-flavor,step2,userprog filesys-stub,synchconsole.cc ))
 $(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc))
 $(eval $(call define-flavor,step4,userprog filesys-stub,synchconsole.cc userthread.cc frameprovider.cc))
