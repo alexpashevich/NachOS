@@ -89,6 +89,9 @@ class FileSystem {
     bool CreateDirectory(const char *name);
     bool RemoveDirectory(const char *name);
     bool MoveToDirectory(const char *path);
+    bool MoveToFile(const char *path, char* name);
+    int  getCurrentSector(void);
+    void setCurrentSector(void);
     #endif
 
   private:
@@ -97,7 +100,6 @@ class FileSystem {
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
 #ifdef CHANGED
-
    int currentDirSector;
 #endif
 };

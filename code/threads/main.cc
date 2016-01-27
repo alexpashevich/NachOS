@@ -148,7 +148,6 @@ main (int argc, char **argv)
 #endif
 #endif // USER_PROGRAM
 #ifdef FILESYS
-
 #ifndef CHANGED	   	
 	  if (!strcmp (*argv, "-cp"))
 	    {			// copy from UNIX to Nachos
@@ -184,6 +183,9 @@ main (int argc, char **argv)
 
 #else
 	
+  else if ( !strcmp (*argv, "-shell") )
+  {
+
 	// shell takes max only 3 params - if have time, improve that!
 	char arg1[100];
 	char arg2[100];
@@ -254,7 +256,8 @@ main (int argc, char **argv)
        	// argCount = 2;
       }
     }
-    interrupt->Halt();
+  }
+  interrupt->Halt();
 #endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK

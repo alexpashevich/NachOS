@@ -209,6 +209,46 @@ ForkExec:
 	j	$31
 	.end ForkExec
 
+	.globl UserCreateFile
+	.ent	UserCreateFile
+UserCreateFile:
+	addiu $2,$0,SC_CreateFile
+	syscall
+	j	$31
+	.end UserCreateFile
+
+	.globl UserOpenFile
+	.ent	UserOpenFile
+UserOpenFile:
+	addiu $2,$0,SC_OpenFile
+	syscall
+	j	$31
+	.end UserOpenFile
+
+	.globl UserCloseFile
+	.ent	UserCloseFile
+UserCloseFile:
+	addiu $2,$0,SC_CloseFile
+	syscall
+	j	$31
+	.end UserCloseFile
+
+	.globl UserReadFile
+	.ent	UserReadFile
+UserReadFile:
+	addiu $2,$0,SC_ReadFile
+	syscall
+	j	$31
+	.end UserReadFile
+
+	.globl UserWriteFile
+	.ent	UserWriteFile
+UserWriteFile:
+	addiu $2,$0,SC_WriteFile
+	syscall
+	j	$31
+	.end UserWriteFile					
+
 	.globl CreateConnection
 	.ent	CreateConnection
 CreateConnection:

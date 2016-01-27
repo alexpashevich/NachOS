@@ -96,7 +96,8 @@ class Directory {
     void Initialize(int currSector, int parentSector);
     bool AddDir(const char *name, int newSector);  
     bool isEmpty(void);
-    bool isDirectory();
+    bool isDirectory(void);
+    bool isFile(const char* name);
     #endif //CHANGED
 
   private:

@@ -41,15 +41,20 @@
 #define SC_UserThreadExit	18
 #define SC_UserThreadJoin	19
 #define SC_ForkExec			20
+#define SC_CreateFile		21 
+#define SC_OpenFile			22
+#define SC_CloseFile		23
+#define SC_ReadFile			24
+#define SC_WriteFile		25 
+#endif
+
 #ifdef NETWORK
-#define SC_CreateConnection 21
-#define SC_SendData         22
-#define SC_ReceiveData      23
+#define SC_CreateConnection 26
+#define SC_SendData         27
+#define SC_ReceiveData      28
 #endif // NETWORK
 
 #define MAX_FILE_SIZE 500
-
-#endif // CHANGED
 
 #ifdef IN_USER_MODE
 #ifdef CHANGED
@@ -185,6 +190,21 @@ void UserThreadJoin(void *thread);
 
 /*  Create new process */
 int ForkExec(char *exec);
+
+/*  Open a file */
+int UserCreateFile(char *filePath);
+
+/*  Open a file */
+int UserOpenFile(char *path);
+
+/*  Close a file */
+int UserCloseFile(int id);
+
+/*  Read from a file */
+int UserReadFile(int id, char* into, int numBytes);
+
+/*  Write to a file */
+int UserWriteFile(int id, char* from, int numBytes);
 
 /* Create connection with another machine */
 int CreateConnection(int addr, int port, int receivingPort);

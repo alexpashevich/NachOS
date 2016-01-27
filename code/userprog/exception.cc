@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "userthread.h"
+#include "userfile.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -216,6 +217,62 @@ ExceptionHandler (ExceptionType which)
         machine->WriteRegister(2, res);
         break;
       }
+#ifdef FILESYS      
+      case SC_CreateFile: {
+        char filePath[MAX_STRING_SIZE];
+        int path = machine->ReadRegister(4);
+        // int name = machine->ReadRegister(5);
+        bufferlock->P();
+        copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
+        strcpy(filePath, stringbuffer);
+        // copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE);
+        bufferlock->V();
+        int res = do_UserCreateFile(filePath);
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_OpenFile: {
+        char filePath[MAX_STRING_SIZE];
+        int path = machine->ReadRegister(4);
+        // int name = machine->ReadRegister(5);
+        bufferlock->P();
+        copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
+        strcpy(filePath, stringbuffer);
+        // copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE); // add tmp 
+        bufferlock->V();
+        int res = do_UserOpenFile(filePath);
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_CloseFile: {
+        int id = machine->ReadRegister(4);
+        int res = do_UserCloseFile(id);
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_ReadFile: {
+        int id = machine->ReadRegister(4);
+        int into = machine->ReadRegister(5);
+        int numBytes = machine->ReadRegister(6);      
+        int res = do_UserReadFile(id, into, numBytes);
+        machine->WriteRegister(2, res);
+        break;
+      }
+      case SC_WriteFile: {
+        char filePath[MAX_STRING_SIZE];
+        int id = machine->ReadRegister(4);
+        int from = machine->ReadRegister(5);
+        int numBytes = machine->ReadRegister(6); 
+        bufferlock->P();
+        copyStringFromMachine(from, stringbuffer, numBytes);
+        strcpy(filePath, stringbuffer);
+        bufferlock->V();
+        int res = do_UserWriteFile(id, filePath, numBytes);
+        machine->WriteRegister(2, res);
+        break;
+      }       
+#endif                       
+
 #ifdef NETWORK
       case SC_CreateConnection: {
         int addr = machine->ReadRegister(4);

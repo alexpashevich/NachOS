@@ -207,8 +207,12 @@ FileSystem::Create(const char *name, int initialSize)
     DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
 
     directory = new Directory(NumDirEntries);
+#ifndef CHANGED    
     directory->FetchFrom(directoryFile);
-
+#else
+    OpenFile *file = new OpenFile(currentDirSector);
+    directory->FetchFrom(file);
+#endif
     if (directory->Find(name) != -1)
       success = FALSE;			// file is already in directory
     else {	
@@ -227,14 +231,21 @@ FileSystem::Create(const char *name, int initialSize)
 	    	success = TRUE;
 		// everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
+        #ifndef CHANGED        
     	    	directory->WriteBack(directoryFile);
-    	    	freeMap->WriteBack(freeMapFile);
+    	#else 
+               directory->WriteBack(file);  
+        #endif    	
+                freeMap->WriteBack(freeMapFile);
 	    }
             delete hdr;
 	}
         delete freeMap;
     }
     delete directory;
+#ifdef CHANGED
+    delete file;
+#endif    
     return success;
 }
 
@@ -250,7 +261,7 @@ FileSystem::Create(const char *name, int initialSize)
 
 OpenFile *
 FileSystem::Open(const char *name)
-{ 
+{  
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
     int sector;
@@ -387,14 +398,21 @@ FileSystem::Print()
 
     freeMap->FetchFrom(freeMapFile);
     freeMap->Print();
-
+#ifndef CHANGED
     directory->FetchFrom(directoryFile);
+#else
+    OpenFile *file = new OpenFile(currentDirSector);
+    directory->FetchFrom(file);
+#endif    
     directory->Print();
 
     delete bitHdr;
     delete dirHdr;
     delete freeMap;
     delete directory;
+#ifdef CHANGED
+    delete file;
+#endif
 } 
 
 
@@ -500,32 +518,36 @@ FileSystem::RemoveDirectory(const char *name)
        return FALSE;			 // file not found 
     }
     
-    Directory *dirToRemove = new Directory(NumDirEntries);
-    OpenFile *file = new OpenFile(sector);
-    dirToRemove->FetchFrom(file);
+    // if( !dirToRemove->isDirectory() )
+    // {
+    //     printf("It is not a directory!\n");
 
+    //     delete dirToRemove;
+    //     delete file;
+    //     delete directory;
+    //     delete currDir;
+    //     return FALSE;
+    // }
 
-    if( !dirToRemove->isDirectory() )
+    if( !directory->isFile(name) )
     {
-        printf("It is not a directory!\n");
-
+        Directory *dirToRemove = new Directory(NumDirEntries);
+        OpenFile *file = new OpenFile(sector);
+        dirToRemove->FetchFrom(file);
+    
+        if( !(dirToRemove->isEmpty()) )
+        {
+            printf("Directory %s cannot be removed!\n", name);
+            printf("It is either not a directory, or it is not empty\n");
+        
+            delete dirToRemove;
+            delete file;    
+            delete directory;
+            delete currDir;
+            return FALSE; 
+        }
         delete dirToRemove;
         delete file;
-        delete directory;
-        delete currDir;
-        return FALSE;
-    }
-
-    if( !(dirToRemove->isEmpty()) )
-    {
-        printf("Directory %s cannot be removed!\n", name);
-        printf("It is either not a directory, or it is not empty\n");
-        
-        delete dirToRemove;
-        delete file;    
-        delete directory;
-        delete currDir;
-        return FALSE; 
     }
     
     fileHdr = new FileHeader;
@@ -540,9 +562,6 @@ FileSystem::RemoveDirectory(const char *name)
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(currDir);        // flush to disk
-
-    delete dirToRemove;
-    delete file;
 
     delete fileHdr;
     delete directory;
@@ -566,7 +585,7 @@ FileSystem::MoveToDirectory(const char *name)
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *file = new OpenFile(currentDirSector);
     directory->FetchFrom(file);   
-    
+     
     char * token;
     const char s[2] = "/";
    token = strtok(name1, s);
@@ -580,14 +599,17 @@ FileSystem::MoveToDirectory(const char *name)
        printf("No such file or directory!\n");
        return FALSE;             // file not found 
     }
-    
+    if ( directory->isFile(token) ) {
+       delete directory;
+       delete file;
+       printf("It is not a directory!\n");
+       return FALSE;             // file not found 
+    }
     file = new OpenFile(sector);
     directory->FetchFrom(file);
     this->currentDirSector = sector;     
     
     token = strtok(NULL, s);
-   // printf("moving to directory: %s \n", token);
-   
     
    }
 
@@ -597,4 +619,68 @@ FileSystem::MoveToDirectory(const char *name)
    return TRUE;
 }
 
+//----------------------------------------------------------------------
+// FileSystem::MoveToDirectory
+//  Move to the directory, given by user in console.
+//----------------------------------------------------------------------
+
+bool
+FileSystem::MoveToFile(const char *path, char* name)
+{   
+    char name1[PathMaxLen];
+    strcpy(name1, path);
+    
+    Directory *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);   
+    OpenFile *file = NULL;
+
+    char *token;
+    const char s[2] = "/";
+   token = strtok(name1, s);
+   while( token != NULL )
+   { 
+    
+    if( !strcmp(name, token) ){
+
+        delete directory;
+        delete file;
+        return TRUE;
+    }
+    int sector = directory->Find(token);
+
+    if (sector == -1) {
+
+       delete directory;
+       delete file;
+       printf("No such file or directory!\n");
+       return FALSE;             // file not found 
+    }
+
+    if ( directory->isFile(token) )
+    {
+        break;
+    }
+    
+    if (file != NULL)
+        delete file;
+    
+    file = new OpenFile(sector);
+    directory->FetchFrom(file);
+    this->currentDirSector = sector;
+
+    token = strtok(NULL, s);
+   }
+
+   delete directory;
+   if (file != NULL)
+        delete file;
+
+   return TRUE;
+}
+
+int
+FileSystem::getCurrentSector(void) { return currentDirSector; }
+
+void
+FileSystem::setCurrentSector(void){ this->currentDirSector = DirectorySector; }
 #endif
