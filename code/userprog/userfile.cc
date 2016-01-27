@@ -115,12 +115,6 @@ int do_UserReadFile(int id, int into, int numBytes)
 int do_UserWriteFile(int id, char* from, int numBytes)
 {
 	OpenFile *file = currentThread->getFile(id);
-	
-	// int buff[numBytes / sizeof(int)];
- //    int i;
- //    for (i = 0; i < numBytes; ++i) {
- //       ASSERT(machine->ReadMem(from + i, 1, (buff[i])));
- //   	}	
    	int nbByte = file->Write(from, numBytes);
 	return nbByte;
 }

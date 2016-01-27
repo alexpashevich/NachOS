@@ -32,7 +32,7 @@ main ()
 	
 	// PutInt(id);
 
-	UserCreateFile("../test/file/simple");
+	UserCreateFile("../dupaaa/simple");
 	// UserCloseFile(id);
 
 	return 0;
