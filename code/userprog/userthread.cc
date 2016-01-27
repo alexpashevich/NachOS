@@ -33,7 +33,9 @@ StartUserThread(int myFuncAndArg)
 	delete (funcAndArg*)myFuncAndArg;
 
 // initialize backups of registers
+	currentThread->space->lock->P();
 	currentThread->space->InitRegisters();
+	currentThread->space->lock->V();
 	currentThread->RestoreUserState();
 // initialize the stack pointer of the thread program
     machine->WriteRegister(StackReg, 

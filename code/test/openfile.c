@@ -9,12 +9,14 @@ main ()
 {
 	PutString("Testing filesystem syscalls!\n");
 	
-	int id = UserOpenFile("test");
+	int id = UserCreateFile("/test/file/simple");
+	id = UserOpenFile("test");
 	
 	char *buf = "abracadabra";
 	UserWriteFile(id, buf, 12);
-	// UserCloseFile(id);
+	UserCloseFile(id);
 
+	id = UserOpenFile("test");
 	char bu[11];
 	UserReadFile(id, bu, 12);
 	UserCloseFile(id);

@@ -115,7 +115,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         printf("\nMain program has finished with value %d\n", res);
-        interrupt->Halt();
+        // interrupt->Halt();
         break;
       }
       case SC_Exit: {
@@ -126,13 +126,12 @@ ExceptionHandler (ExceptionType which)
         DEBUG('a', "Shutdown, end of main function.\n");
         printf("\nMain program has finished with value %d\n", res);
         
-        
+        // interrupt->Halt(); 
         if(currentThread->stackSlotNb == 0)
         {
             machine->lock->P();
             --machine->processCnt;
-            machine->lock->V();  
-
+            machine->lock->V();
             if( machine->processCnt == 0)
             {
               interrupt->Halt();  

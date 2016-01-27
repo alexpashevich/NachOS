@@ -120,14 +120,11 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
 #endif
-#ifdef FILESYS_NEEDED
+#ifdef FILESYS
 
-#ifndef CHANGED    
-    bool format = FALSE;	// format disk
-#else
+
     bool format = FALSE;    //TRUE
 #endif    
-#endif
 #ifdef NETWORK
     double rely = 1;		// network reliability
     int netname = 0;		// UNIX socket name
@@ -158,7 +155,7 @@ Initialize (int argc, char **argv)
 	  if (!strcmp (*argv, "-s"))
 	      debugUserProg = TRUE;
 #endif
-#ifdef FILESYS_NEEDED
+#ifdef FILESYS
 	  if (!strcmp (*argv, "-f"))
 	      format = TRUE;
 #endif
@@ -210,7 +207,7 @@ Initialize (int argc, char **argv)
     synchDisk = new SynchDisk ("DISK");
 #endif
 
-#ifdef FILESYS_NEEDED
+#ifdef FILESYS
     fileSystem = new FileSystem (format);
 #endif
 

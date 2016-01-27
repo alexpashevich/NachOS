@@ -9,5 +9,6 @@ main()
 	PutString("You have just typed: ");
 	PutString(s);
 	PutChar('\n');
-	Halt();
+	
+	return 0;
 }
