@@ -16,6 +16,10 @@
 #include "copyright.h"
 #include "utility.h"
 
+#ifdef CHANGED
+class ListOfMails;
+#endif // CHANGED
+
 // The following class defines a "list element" -- which is
 // used to keep track of one item on a list.  It is equivalent to a
 // LISP cell, with a "car" ("next") pointing to the next element on the list,
@@ -43,6 +47,9 @@ class ListElement
 
 class List
 {
+#ifdef CHANGED
+friend ListOfMails;
+#endif
   public:
     List ();			// initialize the list
     ~List ();			// de-allocate the list
@@ -61,8 +68,7 @@ class List
     void *SortedRemove (long long *keyPtr);	// Remove first item from list
 
   private:
-      ListElement * first;	// Head of the list, NULL if list is empty
+    ListElement * first;	// Head of the list, NULL if list is empty
     ListElement *last;		// Last element of list
 };
-
 #endif // LIST_H

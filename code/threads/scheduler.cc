@@ -60,6 +60,23 @@ Scheduler::ReadyToRun (Thread * thread)
 }
 
 //----------------------------------------------------------------------
+// Scheduler::SetFirstToRun
+//      Mark a thread as ready, but not running.
+//      Put it first on the ready list, for later scheduling onto the CPU.
+//
+//      "thread" is the thread to be put on the ready list.
+//----------------------------------------------------------------------
+
+void
+Scheduler::SetFirstToRun (Thread * thread)
+{
+    DEBUG ('t', "Putting thread %s on ready list in the first place.\n", thread->getName ());
+
+    thread->setStatus (READY);
+    readyList->Prepend ((void *) thread);
+}
+
+//----------------------------------------------------------------------
 // Scheduler::FindNextToRun
 //      Return the next thread to be scheduled onto the CPU.
 //      If there are no ready threads, return NULL.

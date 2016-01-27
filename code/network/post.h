@@ -32,9 +32,12 @@
 #include "synchlist.h"
 
 #ifdef CHANGED
+#include <ctime>
 #include "thread.h"
+#include "maillist.h"
 #endif
 
+#ifndef CHANGED
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
 typedef int MailBoxAddress;
@@ -50,11 +53,15 @@ class MailHeader {
     unsigned length;		// Bytes of message data (excluding the 
 				// mail header)
 };
+#endif
+
 
 // Maximum "payload" -- real data -- that can included in a single message
 // Excluding the MailHeader and the PacketHeader
 
 #define MaxMailSize 	(MaxPacketSize - sizeof(MailHeader))
+#define MaxMailSizeReliable   (MaxPacketSize - sizeof(MailHeaderReliable))
+#define MaxMailSizeVariableSize   (MaxPacketSize - sizeof(MailHeaderReliableAnySize))
 
 
 // The following class defines the format of an incoming/outgoing 
@@ -109,9 +116,13 @@ class PostOffice {
 				// Allocate and initialize Post Office
 				//   "reliability" is how many packets
 				//   get dropped by the underlying network
-    ~PostOffice();		// De-allocate Post Office data
-    
-    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    virtual ~PostOffice();		// De-allocate Post Office data
+
+#ifdef CHANGED
+void Send(PacketHeader pktHdr, const MailHeader *mailHdr, const char* data);
+#else
+void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
+#endif
     				// Send a message to a mailbox on a remote 
 				// machine.  The fromBox in the MailHeader is 
 				// the return box for ack's.
@@ -132,6 +143,10 @@ class PostOffice {
 				// off of network (i.e., time to call 
 				// PostalDelivery)
 
+#ifdef CHANGED
+    int GetNetworkName(); // Get network name
+#endif
+
   private:
     Network *network;		// Physical network connection
     NetworkAddress netAddr;	// Network address of this machine
@@ -141,5 +156,35 @@ class PostOffice {
     Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
 };
+
+#ifdef CHANGED
+
+#define TEMPO 1
+#define MAXREEMISSIONS 5
+
+class PostOfficeReliable: public PostOffice {
+friend PostOffice;
+  public:
+    PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes);
+    virtual ~PostOfficeReliable();
+    int SendReliable(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
+  private:
+    bool CheckConfirmation(PacketHeader pktHdr, MailHeaderReliable mailHdr);
+
+    ListOfMails *confirmationMails;
+    ListOfMails *oldMessages;
+};
+
+class PostOfficeReliableAnySize: public PostOfficeReliable {
+public:
+    PostOfficeReliableAnySize(NetworkAddress addr, double reliability, int nBoxes);
+    virtual ~PostOfficeReliableAnySize();
+    int SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
+    void ReceiveAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+};
+#endif
+
+
+
 
 #endif

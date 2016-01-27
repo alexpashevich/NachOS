@@ -102,6 +102,10 @@ class Thread
     // other thread is runnable
     void Sleep ();		// Put the thread to sleep and 
     // relinquish the processor
+#ifdef CHANGED
+    void Sleep(int sec); // Relinquish the processor, put the thread to sleep
+                        // and awake it in defined time.
+#endif
     void Finish ();		// The thread is done executing
 
     void CheckOverflow ();	// Check if thread has 

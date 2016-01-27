@@ -249,6 +249,30 @@ UserWriteFile:
 	j	$31
 	.end UserWriteFile					
 
+	.globl CreateConnection
+	.ent	CreateConnection
+CreateConnection:
+	addiu $2,$0,SC_CreateConnection
+	syscall
+	j	$31
+	.end CreateConnection
+
+	.globl SendData
+	.ent	SendData
+SendData:
+	addiu $2,$0,SC_SendData
+	syscall
+	j	$31
+	.end SendData
+
+	.globl ReceiveData
+	.ent	ReceiveData
+ReceiveData:
+	addiu $2,$0,SC_ReceiveData
+	syscall
+	j	$31
+	.end ReceiveData
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
