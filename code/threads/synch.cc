@@ -112,7 +112,6 @@ Lock::~Lock () {
 }
 
 void Lock::Acquire () {
-    // printf("Lock::Acquire\n");
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     while (hold) {
         queue->Append ((void *) currentThread);
@@ -123,7 +122,6 @@ void Lock::Acquire () {
 }
 
 void Lock::Release () {
-    // printf("Lock::Release\n");
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     if ((thread = (Thread *) queue->Remove()) != NULL) {
@@ -143,7 +141,6 @@ Condition::~Condition () {
 }
 
 void Condition::Wait (Lock * conditionLock) {
-    // printf("Condition::Wait\n");
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     queue->Append ((void *) currentThread);
     conditionLock->Release();
@@ -152,22 +149,22 @@ void Condition::Wait (Lock * conditionLock) {
 }
 
 void Condition::Signal (Lock * conditionLock) {
-    // printf("Condition::Signal\n");
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     thread = (Thread *) queue->Remove ();
-    if (thread != NULL)
+    if (thread != NULL) {
         scheduler->ReadyToRun (thread);
-    // conditionLock->Acquire();
+        conditionLock->Acquire();
+    }
     (void) interrupt->SetLevel (oldLevel);
 }
 
 void Condition::Broadcast (Lock * conditionLock) {
-    // printf("Condition::Broadcast\n");
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    while ((thread = (Thread *) queue->Remove()) != NULL)
+    while ((thread = (Thread *) queue->Remove()) != NULL) {
+        // conditionLock->Acquire();
         scheduler->ReadyToRun (thread);
-    // TODO: acuire ?
+    }
     (void) interrupt->SetLevel (oldLevel);
 }

@@ -38,6 +38,7 @@ MailTest(int farAddr)
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
 #ifndef CHANGED
+    printf("Starting MailTest...\n");
     const char *data = "Hello there!";
     const char *ack = "Got it!";
     // construct packet, mail header for original message
@@ -68,11 +69,12 @@ MailTest(int farAddr)
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 #else
+    printf("Started the test\n");
     char data[20];
     int times = 10;
     for (int i = 0; i < times; ++i) {
         sprintf(data, "MESSAGE_%d", i);
-        outPktHdr.to = farAddr;     
+        outPktHdr.to = farAddr;
         outMailHdr.to = 0;
         outMailHdr.from = 1;
         outMailHdr.length = strlen(data) + 1;
@@ -81,6 +83,7 @@ MailTest(int farAddr)
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
     }
+    currentThread->Sleep(2000);
 #endif // CHANGED
     // Then we're done!
     interrupt->Halt();
@@ -89,6 +92,7 @@ MailTest(int farAddr)
 #ifdef CHANGED
 
 void MailCircleTest(int n) {
+    printf("Starting MailCircleTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
@@ -121,11 +125,12 @@ void MailCircleTest(int n) {
             postOffice->Send(outPktHdr, &outMailHdr, data);
         }
     }
+    Delay(1);
     interrupt->Halt();
 }
 
 void ReliableMailTest(int farAddr) {
-    printf("We are in the ReliableMailTest, farAddr = %d, network = %d\n", farAddr, postOffice->GetNetworkName());
+    printf("Starting ReliableMailTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader *outMailHdr, inMailHdr;
     outMailHdr = new MailHeader;
@@ -171,15 +176,17 @@ void ReliableMailTest(int farAddr) {
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
+    currentThread->Sleep(2000);
     interrupt->Halt();
 }
 
 void VariableMailTest(int farAddr) {
+    printf("Starting VariableMailTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
-    char buffer[1000];
+    char buffer[10000];
 
-    /*const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
+    const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
     "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
     "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
     "circumstances and yet will not take the initiative to change their situation because they are conditioned "
@@ -205,11 +212,11 @@ void VariableMailTest(int farAddr) {
     "and engage in unconventional living.\n"
     "My point is that you do not need me or anyone else around to bring this new kind of light in your life. It is simply waiting out "
     "there for you to grasp it, and all you have to do is reach for it. The only person you are fighting is yourself and your "
-    "stubbornness to engage in new circumstances.";*/
-    const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
-    "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
-    "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
-    "circumstances and yet will not take the initiative to change their situation because they are conditioned\n";
+    "stubbornness to engage in new circumstances.";
+    // const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
+    // "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
+    // "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
+    // "circumstances and yet will not take the initiative to change their situation because they are conditioned\n";
     const char *ack = "Got it!";
     // construct packet, mail header for original message
     // To: destination machine, mailbox 0
@@ -238,6 +245,7 @@ void VariableMailTest(int farAddr) {
     postOffice->ReceiveAnySize(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
+    currentThread->Sleep(2000);
     interrupt->Halt();
 }
 #endif

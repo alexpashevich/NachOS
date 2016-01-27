@@ -86,6 +86,7 @@ TimerInterruptHandler (int dummy)
     while (!listOfSleepingThreads->IsEmpty()) {
         long long wakeupTime;
         Thread *st = (Thread*) listOfSleepingThreads->SortedRemove(&wakeupTime);
+        // printf("wakeupTime = %lli, now = %lli, difference = %lli\n", wakeupTime, now, wakeupTime - now);
         if (wakeupTime <= now) {
             // it means that it is time to wake up the thread
             scheduler->SetFirstToRun(st);
