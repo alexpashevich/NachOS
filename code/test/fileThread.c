@@ -11,18 +11,15 @@ void foo(void *arg)
 
 	
 	int id2 =  UserOpenFile("test2");
-	char *buf = "Siema to ja Marcin";
-	UserWriteFile(id2, buf, 18);
-	// PutInt(id2);
-	UserCloseFile(id2);
-	id2 = UserOpenFile("test2");
-	char *bu = " a teraz powiem ty!";
-	UserWriteFile(id2, bu, 19);
+	char *buf = "Second thread wrote something here ";
+	UserWriteFile(id2, buf, 36);
 
-		PutInt(id2);	
+	// UserCloseFile(id2);
+	// id2 = UserOpenFile("test2");
+	char *bu = "and here!";
+	UserWriteFile(id2, bu, 10);	
 		
 	UserCloseFile(id2);
-		// UserCloseFile(id2);	
 	PutString("Bar  thread: Done working, now I terminate!\n");
 	UserThreadExit();	
 }
@@ -39,46 +36,20 @@ main ()
 		PutString("Could not create a new user thread.\n");	
 	}
 
-	// PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
+	PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
 
-		UserThreadJoin(&tid);
-	// UserCreateFile("testt");
+	UserThreadJoin(&tid);
 	
-	// int id = UserOpenFile("testt");
+	int id = UserOpenFile("test");
 	
-// write to newly created file
+	char *buf = "First thread changed that file!";
+	UserWriteFile(id, buf, 32);
 	
+	char *bu = " and again!";
+	UserWriteFile(id, bu, 12);	
 	
-	// int id =  UserOpenFile("test", mode);
-	int id2 = UserOpenFile("test");
-	
-	char *buf = "Siema to ja Marcin";
-	UserWriteFile(id2, buf, 18);
-	// PutInt(id2);
-	// UserCloseFile(id2);
-	// id2 = UserOpenFile("test");
-	char *bu = " a teraz powiem ty a teraz powiem ty";
-	UserWriteFile(id2, bu, 40);
-	
-	PutInt(id2);	
-	
-	// UserCloseFile(id);
-	UserCloseFile(id2);
+	UserCloseFile(id);
 
-// read from file
-	// char buff[12];
-	// id = UserOpenFile("test");
-	// UserReadFile(id, buff, 12);
-	// UserCloseFile(id);
-
-	// id = UserOpenFile("test");
-	// char *bu = "12345678987";
-	// UserWriteFile(id, bu, 12);
-	// UserCloseFile(id);
-
-	// PutString("File content: ");
-	// PutString(buff);
-	// PutString("Testing filesystem syscalls!\n");
-			PutString("Main thread: Done waiting, now I terminate!\n");
+	PutString("Main thread: Done waiting, now I terminate!\n");
 	return 0;
 }

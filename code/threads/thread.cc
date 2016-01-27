@@ -462,12 +462,15 @@ Thread::addFile(OpenFile *file)
 
   fileTable[pos] = file;
 
-  return 0;
+  return pos;
 }
 
 OpenFile*
 Thread::removeFile(int pos)
 {
+  if(pos == -1 )
+    return NULL;
+  
   this->fileMap->Clear(pos);
   OpenFile *file = fileTable[pos];
   fileTable[pos] = NULL;

@@ -71,9 +71,12 @@ int do_UserOpenFile(char* path)
 	}
 
 	OpenFile *file = fileSystem->Open(fileName);
-	currentThread->addFile(file);
 	fileSystem->setCurrentSector();
-	return 0;
+	int pos = currentThread->addFile(file);
+	if (pos == -1)
+		return -1;
+	
+	return pos;
 }
 
 //----------------------------------------------------------------------
@@ -83,8 +86,11 @@ int do_UserOpenFile(char* path)
 
 int do_UserCloseFile(int pos)
 {
+	if(pos == -1)
+		return -1;
+
 	delete currentThread->removeFile(pos);
-	
+
 	return 0;
 }
 
