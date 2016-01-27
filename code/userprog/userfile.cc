@@ -89,7 +89,7 @@ int do_UserCloseFile(int pos)
 	if(pos == -1)
 		return -1;
 
-	delete currentThread->removeFile(pos);
+	currentThread->removeFile(pos);
 
 	return 0;
 }
