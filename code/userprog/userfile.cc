@@ -75,7 +75,6 @@ int do_UserOpenFile(char* path)
 	int pos = currentThread->addFile(file);
 	if (pos == -1)
 		return -1;
-	
 	return pos;
 }
 
