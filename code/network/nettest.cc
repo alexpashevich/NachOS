@@ -23,6 +23,12 @@
 #include "post.h"
 #include "interrupt.h"
 
+#ifdef CHANGED
+#ifdef FILESYS
+#include "filesys.h"
+#endif
+#endif
+
 // Test out message delivery, by doing the following:
 //	1. send a message to the machine with ID "farAddr", at mail box #0
 //	2. wait for the other machine's message to arrive (in our mailbox #0)
@@ -248,9 +254,11 @@ void VariableMailTest(int farAddr) {
     currentThread->Sleep(2000);
     interrupt->Halt();
 }
-#endif
+// #endif
 
-#ifdef CHANGED_AGAIN
+// #ifdef CHANGED
+
+#ifdef FILESYS
 struct ServClientArgs {
     ServClientArgs(int addr_, int port_, int boxNb_):
         addr(addr_), port(port_), boxNb(boxNb_) {}
@@ -261,9 +269,9 @@ struct ServClientArgs {
 
 void TalkWithClient(int arg) {
     ServClientArgs *realarg = (ServClientArgs*) arg;
-    int addr = arg.addr;
-    int port = arg.port;
-    int boxNb = arg.boxNb;
+    int addr = realarg->addr;
+    int port = realarg->port;
+    int boxNb = realarg->boxNb;
     delete realarg;
 
     PacketHeader outPktHdr;
@@ -271,11 +279,31 @@ void TalkWithClient(int arg) {
     outPktHdr.from = postOffice->GetNetworkName();
     MailHeader outMailHdr(port, boxNb, 4);
 
-    postOffice->SendReliable(outPktHdr, &outMailHdr, (char*) &boxNb)
-    char filepath[50];
-    postOffice->Receive(boxNb, &inPktHdr, &inMailHdr, filepath);
-    // TODO: somehow open filepath
-    postOffice->SendReliableAnySize(filedata);
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
+
+    postOffice->SendReliable(outPktHdr, &outMailHdr, (char*) &boxNb);
+    char filename[20];
+    postOffice->Receive(boxNb, &inPktHdr, &inMailHdr, filename);
+
+    // filebuffer[] 3750
+
+    if (!fileSystem->MoveToFile("", filename) ){
+        fileSystem->setCurrentSector();
+        // TODO:
+        // printf("Couldnt go to directory!\n");
+        // return -1;
+    }
+
+    OpenFile *file = fileSystem->Open(filename);
+    fileSystem->setCurrentSector();
+
+    int number_of_bytes = 3750;
+    char into_char[number_of_bytes];
+    file->Read(into_char, number_of_bytes);
+
+    outMailHdr.length = 3750;
+    postOffice->SendReliableAnySize(outPktHdr, &outMailHdr, into_char);
     currentThread->Finish();
 }
 
@@ -293,7 +321,9 @@ void FileServer(int clientaddr) {
     }
     interrupt->Halt();
 }
-#endif // CHANGED_AGAIN
+// #endif // CHANGED_AGAIN
+#endif // FILESYS
+#endif // CHANGED
 #endif // NETWORK
 
 

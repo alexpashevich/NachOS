@@ -42,6 +42,7 @@
 //	  -oc runs a circle test of the Nachos network software
 //	  -or runs a test of reliable networks
 //	  -ov runs a test of variable size transfer
+// 	  -os runs a server responding to user requests
 //
 //  NOTE -- flags are ignored until the relevant assignment.
 //  Some of the flags are interpreted here; some in system.cc.
@@ -72,10 +73,15 @@ extern void shell (char** cmd);
 void intro(void); // local function to print out shell introduction
 
 #ifdef CHANGED
+#ifdef NETWORK
 extern void MailCircleTest (int n);
 extern void ReliableMailTest (int networkID);
 extern void VariableMailTest (int networkID);
-#endif
+#ifdef FILESYS
+extern void FileServer (int networkID);
+#endif // FILESYS
+#endif // NETWORK
+#endif // CHANGED
 
 //----------------------------------------------------------------------
 // main
@@ -258,7 +264,7 @@ main (int argc, char **argv)
       }
     }
   }
-  // interrupt->Halt();
+
 #endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK
@@ -293,11 +299,18 @@ main (int argc, char **argv)
 		// start up another nachos
 		VariableMailTest (atoi (*(argv + 1)));
 		argCount = 2;
+      } 
+#ifdef FILESYS
+		else if (!strcmp(*argv, "-os")) {
+      	ASSERT(argc > 1);
+      	FileServer(atoi (*(argv + 1)));
+      	argCount = 2;
       }
+#endif // FILESYS
 #endif // CHANGED
 #endif // NETWORK
       }
-      // interrupt->Halt();
+      interrupt->Halt();
     currentThread->Finish ();	// NOTE: if the procedure "main" 
     // returns, then the program "nachos"
     // will exit (as any other normal program
