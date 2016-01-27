@@ -71,9 +71,9 @@ int do_UserOpenFile(char* path)
 	}
 
 	OpenFile *file = fileSystem->Open(fileName);
-	currentThread->addFile(file);
+	int pos = currentThread->addFile(file);
 	fileSystem->setCurrentSector();
-	return 0;
+	return pos;
 }
 
 //----------------------------------------------------------------------
@@ -83,8 +83,7 @@ int do_UserOpenFile(char* path)
 
 int do_UserCloseFile(int pos)
 {
-	delete currentThread->removeFile(pos);
-	
+	currentThread->removeFile(pos);
 	return 0;
 }
 
@@ -115,12 +114,6 @@ int do_UserReadFile(int id, int into, int numBytes)
 int do_UserWriteFile(int id, char* from, int numBytes)
 {
 	OpenFile *file = currentThread->getFile(id);
-	
-	// int buff[numBytes / sizeof(int)];
- //    int i;
- //    for (i = 0; i < numBytes; ++i) {
- //       ASSERT(machine->ReadMem(from + i, 1, (buff[i])));
- //   	}	
    	int nbByte = file->Write(from, numBytes);
 	return nbByte;
 }
