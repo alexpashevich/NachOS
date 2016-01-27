@@ -39,7 +39,7 @@
 //    -n sets the network reliability
 //    -m sets this machine's host id (needed for the network)
 //    -o runs a simple test of the Nachos network software
-//	  -w runs a circle test of the Nachos network software
+//	  -oc runs a circle test of the Nachos network software
 //	  -or runs a test of reliable networks
 //	  -ov runs a test of variable size transfer
 //
@@ -64,7 +64,9 @@ extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFil
 extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out);
 extern void SynchConsoleTest (char *in, char *out);
+#ifdef NETWORK
 extern void MailTest (int networkID);
+#endif
 extern void shell (char** cmd);
 
 void intro(void); // local function to print out shell introduction
@@ -269,7 +271,7 @@ main (int argc, char **argv)
 		argCount = 2;
 	  }
 #ifdef CHANGED
-      else if (!strcmp (*argv, "-w")) {
+      else if (!strcmp (*argv, "-oc")) {
 		ASSERT (argc > 1);
 		Delay (7);	// delay for 2 seconds
 		// to give the user time to 

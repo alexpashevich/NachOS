@@ -18,9 +18,7 @@
 
 #include "copyright.h"
 #include "post.h"
-// #ifndef CHANGED
-#include  "system.h" // PROBABLY not needed if CHANGED is not defined
-// #endif
+#include  "system.h"
 
 #include <strings.h> /* for bzero */
 
@@ -274,7 +272,6 @@ PostOffice::PostalDelivery()
                 DEBUG('u', "normal mail received, text = \"%s\", ", buffer + sizeof(MailHeaderReliable));
                 time_t maxlag = TEMPO * (MAXREEMISSIONS + 1);
                 
-                // TODO: check from here
                 if (!p->oldMessages->CheckOldMessages(hdr, maxlag, false)) {
                     // if mailHdr is NOT in oldMessages
                     DEBUG('u', "NOT repeated\n");
@@ -486,12 +483,23 @@ PostOffice::PacketSent()
 }
 
 #ifdef CHANGED
+
 //----------------------------------------------------------------------
 // PostOffice::GetNetworkName
 //  Get network name
 //----------------------------------------------------------------------
+
 int PostOffice::GetNetworkName() {
     return (int) netAddr;
+}
+
+//----------------------------------------------------------------------
+// PostOffice::GetNetworkName
+//  Get number of mailboxes of the PostOffice
+//----------------------------------------------------------------------
+
+int PostOffice::GetNumberOfBoxes() {
+    return numBoxes;
 }
 
 PostOfficeReliable::PostOfficeReliable(NetworkAddress addr, double reliability, int nBoxes):
@@ -508,7 +516,6 @@ PostOfficeReliable::~PostOfficeReliable() {
 int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data) {
 // setting internal fields
 
-    //TODO: fix this bullshit with new/delete and pointer (above)
     MailHeaderReliable mailHdrReliable(mailHdr);
     MailHeaderReliableAnySize *mailHdrReliableAnySize = NULL;
     if ((mailHdrReliableAnySize = dynamic_cast<MailHeaderReliableAnySize*>(const_cast<MailHeader*>(mailHdr))) != NULL ) {
@@ -532,12 +539,13 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
 
 // waiting for some time to give the other machine chance to send the confirmation
 
-    currentThread->Sleep(TEMPO);
+    currentThread->Sleep(TEMPO / 10);
     int counter = 1;
     bool confirmed = false;
     DEBUG('u', "I am awaken\n");
     while (!(confirmed = this->CheckConfirmation(pktHdr, (mailHdrReliableAnySize != NULL ? *mailHdrReliableAnySize : mailHdrReliable))) 
-           && counter < MAXREEMISSIONS) { // TODO: check if this works with MailHeaderReliableAnySize
+           && counter < MAXREEMISSIONS) {
+        currentThread->Sleep(TEMPO * 9 / 10);
         DEBUG('u', "Didn't receive the confirmation, sending \"%s\" again\n", data);
 // if the confirmation is not received then we think that our message was not delivered
 // so send it again
@@ -545,7 +553,7 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
         ++counter;
 
 // and wait again
-        currentThread->Sleep(TEMPO);
+        currentThread->Sleep(TEMPO / 10);
     }
 
     if (confirmed)
@@ -635,8 +643,6 @@ void PostOfficeReliableAnySize::ReceiveAnySize(int box, PacketHeader *pktHdr, Ma
 
 
 
-// 237
-// 574
 
 
 

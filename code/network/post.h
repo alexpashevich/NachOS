@@ -145,6 +145,7 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
 
 #ifdef CHANGED
     int GetNetworkName(); // Get network name
+    int GetNumberOfBoxes();
 #endif
 
   private:
@@ -159,7 +160,7 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
 
 #ifdef CHANGED
 
-#define TEMPO 1
+#define TEMPO 300
 #define MAXREEMISSIONS 5
 
 class PostOfficeReliable: public PostOffice {
@@ -182,7 +183,7 @@ public:
     int SendReliableAnySize(PacketHeader pktHdr, const MailHeader *mailHdr, const char *data);
     void ReceiveAnySize(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
 };
-#endif
+#endif // CHANGED
 
 
 

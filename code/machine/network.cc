@@ -11,9 +11,6 @@
 #include "copyright.h"
 #include "system.h"
 
-#include <sys/types.h> // TODO: delete
-#include <sys/socket.h> // TODO: delete
-
 #include <strings.h> /* for bzero */
 
 // Dummy functions because C++ can't call member functions indirectly 

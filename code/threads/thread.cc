@@ -21,7 +21,7 @@
 #include "system.h"
 
 #ifdef CHANGED
-#include <ctime>
+#include <sys/time.h>
 #endif
 
 #define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
@@ -272,17 +272,19 @@ Thread::Sleep ()
 
 #ifdef CHANGED
 //----------------------------------------------------------------------
-// Thread::Sleep (int sec)
+// Thread::Sleep (int milliseconds)
 //  Relinquish the processor, put the thread to sleep and awake it in defined time.
 //----------------------------------------------------------------------
-void Thread::Sleep(int sec) {
+void Thread::Sleep(int milliseconds) {
     interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
-    DEBUG ('t', "Sleeping thread \"%s\" for %d seconds\n", getName(), sec);
+    DEBUG ('t', "Sleeping thread \"%s\" for %d milliseconds\n", getName(), milliseconds);
 
-    time_t now;
-    time(&now);
-    listOfSleepingThreads->SortedInsert((void*) currentThread, sec + now);
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long now = tv.tv_sec*1000LL + tv.tv_usec/1000;
+    listOfSleepingThreads->SortedInsert((void*) currentThread, milliseconds + now);
 
     this->Sleep();
 }

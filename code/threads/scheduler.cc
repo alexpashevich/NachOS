@@ -66,7 +66,7 @@ Scheduler::ReadyToRun (Thread * thread)
 //
 //      "thread" is the thread to be put on the ready list.
 //----------------------------------------------------------------------
-
+#ifdef CHANGED
 void
 Scheduler::SetFirstToRun (Thread * thread)
 {
@@ -75,6 +75,7 @@ Scheduler::SetFirstToRun (Thread * thread)
     thread->setStatus (READY);
     readyList->Prepend ((void *) thread);
 }
+#endif
 
 //----------------------------------------------------------------------
 // Scheduler::FindNextToRun

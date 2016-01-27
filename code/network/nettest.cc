@@ -30,6 +30,7 @@
 //	4. wait for an acknowledgement from the other machine to our 
 //	    original message
 
+#ifdef NETWORK
 void
 MailTest(int farAddr)
 {
@@ -37,6 +38,7 @@ MailTest(int farAddr)
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
 #ifndef CHANGED
+    printf("Starting MailTest...\n");
     const char *data = "Hello there!";
     const char *ack = "Got it!";
     // construct packet, mail header for original message
@@ -48,7 +50,7 @@ MailTest(int farAddr)
     outMailHdr.length = strlen(data) + 1;
 
     // Send the first message
-    postOffice->Send(outPktHdr, &outMailHdr, data); 
+    postOffice->Send(outPktHdr, outMailHdr, data); 
 
     // Wait for the first message from the other machine
     postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
@@ -60,33 +62,37 @@ MailTest(int farAddr)
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
     outMailHdr.length = strlen(ack) + 1;
-    postOffice->Send(outPktHdr, &outMailHdr, ack); 
+    postOffice->Send(outPktHdr, outMailHdr, ack); 
 
     // Wait for the ack from the other machine to the first message we sent.
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 #else
+    printf("Started the test\n");
     char data[20];
     int times = 10;
     for (int i = 0; i < times; ++i) {
         sprintf(data, "MESSAGE_%d", i);
-        outPktHdr.to = farAddr;     
+        outPktHdr.to = farAddr;
         outMailHdr.to = 0;
         outMailHdr.from = 1;
         outMailHdr.length = strlen(data) + 1;
-        postOffice->SendReliable(outPktHdr, &outMailHdr, data); // TODO: uncomment later
+        postOffice->SendReliable(outPktHdr, &outMailHdr, data);
         postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
     }
-#endif
+    currentThread->Sleep(2000);
+#endif // CHANGED
     // Then we're done!
     interrupt->Halt();
 }
 
+#ifdef CHANGED
+
 void MailCircleTest(int n) {
-#ifdef CHANGED_AGAIN
+    printf("Starting MailCircleTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
@@ -119,13 +125,12 @@ void MailCircleTest(int n) {
             postOffice->Send(outPktHdr, &outMailHdr, data);
         }
     }
-#endif
+    Delay(1);
     interrupt->Halt();
 }
 
 void ReliableMailTest(int farAddr) {
-#ifdef CHANGED
-    printf("We are in the ReliableMailTest, farAddr = %d, network = %d\n", farAddr, postOffice->GetNetworkName());
+    printf("Starting ReliableMailTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader *outMailHdr, inMailHdr;
     outMailHdr = new MailHeader;
@@ -171,17 +176,17 @@ void ReliableMailTest(int farAddr) {
     postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
     printf("[NETTEST FUNCTION] Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
-#endif
+    currentThread->Sleep(2000);
     interrupt->Halt();
 }
 
 void VariableMailTest(int farAddr) {
-#ifdef CHANGED
+    printf("Starting VariableMailTest...\n");
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
-    char buffer[1000];
+    char buffer[10000];
 
-    /*const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
+    const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
     "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
     "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
     "circumstances and yet will not take the initiative to change their situation because they are conditioned "
@@ -207,11 +212,11 @@ void VariableMailTest(int farAddr) {
     "and engage in unconventional living.\n"
     "My point is that you do not need me or anyone else around to bring this new kind of light in your life. It is simply waiting out "
     "there for you to grasp it, and all you have to do is reach for it. The only person you are fighting is yourself and your "
-    "stubbornness to engage in new circumstances.";*/
-    const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
-    "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
-    "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
-    "circumstances and yet will not take the initiative to change their situation because they are conditioned\n";
+    "stubbornness to engage in new circumstances.";
+    // const char *data = "I'd like to repeat the advice that I gave you before, in that I think you really "
+    // "should make a radical change in your lifestyle and begin to boldly do things which you may previously "
+    // "never have thought of doing, or been too hesitant to attempt. So many people live within unhappy "
+    // "circumstances and yet will not take the initiative to change their situation because they are conditioned\n";
     const char *ack = "Got it!";
     // construct packet, mail header for original message
     // To: destination machine, mailbox 0
@@ -240,11 +245,56 @@ void VariableMailTest(int farAddr) {
     postOffice->ReceiveAnySize(1, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
-#endif
+    currentThread->Sleep(2000);
     interrupt->Halt();
+}
+#endif
+
+#ifdef CHANGED_AGAIN
+struct ServClientArgs {
+    ServClientArgs(int addr_, int port_, int boxNb_):
+        addr(addr_), port(port_), boxNb(boxNb_) {}
+    int addr;
+    int port;
+    int boxNb;
+};
+
+void TalkWithClient(int arg) {
+    ServClientArgs *realarg = (ServClientArgs*) arg;
+    int addr = arg.addr;
+    int port = arg.port;
+    int boxNb = arg.boxNb;
+    delete realarg;
+
+    PacketHeader outPktHdr;
+    outPktHdr.to = addr;
+    outPktHdr.from = postOffice->GetNetworkName();
+    MailHeader outMailHdr(port, boxNb, 4);
+
+    postOffice->SendReliable(outPktHdr, &outMailHdr, (char*) &boxNb)
+    char filepath[50];
+    postOffice->Receive(boxNb, &inPktHdr, &inMailHdr, filepath);
+    // TODO: somehow open filepath
+    postOffice->SendReliableAnySize(filedata);
+    currentThread->Finish();
 }
 
 
+void FileServer(int clientaddr) {
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
+    int clientport;
+    int connectedMachines = 0;
+    while (connectedMachines < postOffice->GetNumberOfBoxes() - 1) {
+        postOffice->Receive(0, &inPktHdr, &inMailHdr, (char*)&clientport);
+        ServClientArgs *arg = new ServClientArgs(inPktHdr.from, clientport, connectedMachines + 1);
+        currentThread->Fork(TalkWithClient, (int)arg);
+        ++connectedMachines;
+    }
+    interrupt->Halt();
+}
+#endif // CHANGED_AGAIN
+#endif // NETWORK
 
 
 
