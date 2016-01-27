@@ -290,12 +290,13 @@ ExceptionHandler (ExceptionType which)
         int addr = machine->ReadRegister(4);
         int port = machine->ReadRegister(5);
         int from = machine->ReadRegister(6);
+        int size = machine->ReadRegister(7);
         PacketHeader pktHdr;
         pktHdr.to = addr;
         pktHdr.from = postOffice->GetNetworkName();
-        MailHeader mailHdr(port, 0, 0);
+        MailHeader mailHdr(port, 0, size);
         bufferlock->P();
-        copyStringFromMachine(from, stringbuffer, MAX_STRING_SIZE);
+        copyStringFromMachine(from, stringbuffer, size);
         int res = postOffice->SendReliableAnySize(pktHdr, &mailHdr, stringbuffer);
         bufferlock->V();
         machine->WriteRegister(2, res);
@@ -304,6 +305,7 @@ ExceptionHandler (ExceptionType which)
       case SC_ReceiveData: {
         int port = machine->ReadRegister(4);
         int to = machine->ReadRegister(5);
+        int sizeaddr = machine->ReadRegister(6);
         PacketHeader pktHdr;
         MailHeader mailHdr;
         char *filebuffer = new char[MAX_FILE_SIZE];
@@ -312,6 +314,7 @@ ExceptionHandler (ExceptionType which)
           ASSERT(machine->WriteMem(to + i, 1, (int)(filebuffer[i])));
         }
         delete[] filebuffer;
+        ASSERT(machine->WriteMem(sizeaddr, 4, mailHdr.length));
         break;
       }
 #endif // NETWORK

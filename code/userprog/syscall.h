@@ -210,10 +210,10 @@ int UserWriteFile(int id, char* from, int numBytes);
 int CreateConnection(int addr, int port, int receivingPort);
 
 /* Send data to another machine */
-int SendData(int addr, int port, const char *data);
+int SendData(int addr, int port, const char *data, int size);
 
 /*  Receive data from another machine */
-void ReceiveData(int port, char *data);
+void ReceiveData(int port, char *data, int *size);
 
 #endif
 
