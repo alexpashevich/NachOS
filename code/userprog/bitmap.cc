@@ -139,6 +139,9 @@ BitMap::Print ()
 	if (Test (i))
 	    printf ("%d, ", i);
     printf ("\n");
+    #ifdef CHANGED
+    printf("\n");
+    #endif //CHANGED
 }
 
 // These aren't needed until the FILESYS assignment

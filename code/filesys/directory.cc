@@ -240,6 +240,9 @@ Directory::Print()
 	    hdr->Print();
 	}
     printf("\n");
+    #ifdef CHANGED
+    printf("\n");
+    #endif //CHANGED
     delete hdr;
 }
 
