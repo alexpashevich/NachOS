@@ -4,34 +4,24 @@
 // 	Check threadJoin function.
 //--------------------------------------------------------------------------
 
+// change NumPhysPAges to 180 to show that we release memory
+
 int 
 main () {
 		
 	PutString("\nMain Fork program is executing...\n");
 
-	ForkExec("userpages0");
-	ForkExec("userpages1");
-
-	// PutString("\nMain Fork has finished its job and waiting for threads to finish...\n");
-	// GetChar();
+	ForkExec("fork1");
+	ForkExec("fork2");
 	
-	ForkExec("userpages0");
-	ForkExec("userpages1");
+	ForkExec("fork1");
+	ForkExec("fork2");
 
-	ForkExec("userpages0");
-	ForkExec("userpages1");
-GetChar();
-	ForkExec("userpages0");
-	ForkExec("userpages1");
+	char buf[20];
+	GetString(buf, 20);
 
-	ForkExec("userpages0");
-	ForkExec("userpages1");
+	ForkExec("fork1");
 
-	ForkExec("userpages0");
-	ForkExec("userpages1");
-
-GetChar();
-	ForkExec("getstring");	
 	PutString("Main Fork has terminated...\n");
-	return 5;
+	return 0;
 }

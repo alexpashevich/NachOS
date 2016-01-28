@@ -4,7 +4,6 @@
 #include "system.h"
 #include "filesys.h"
 
-
 #define FILESIZE
 
 void getNameFromPath(char* path, char* name)

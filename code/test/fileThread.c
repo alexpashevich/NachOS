@@ -7,19 +7,16 @@
 
 void foo(void *arg)
 {
-	PutString("Bar  thread: Started working!\n");
-
+	PutString("Foo  thread: Started working!\n");
 	
-	int id2 =  UserOpenFile("test2");
+	int id =  UserOpenFile("test2/file2");
 	char *buf = "Second thread wrote something here ";
-	UserWriteFile(id2, buf, 36);
+	UserWriteFile(id, buf, 36);
 
-	// UserCloseFile(id2);
-	// id2 = UserOpenFile("test2");
 	char *bu = "and here!";
-	UserWriteFile(id2, bu, 10);	
+	UserWriteFile(id, bu, 10);	
 		
-	UserCloseFile(id2);
+	UserCloseFile(id);
 	PutString("Bar  thread: Done working, now I terminate!\n");
 	UserThreadExit();	
 }
@@ -37,11 +34,11 @@ main ()
 	}
 
 	PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
-
+	
+	int id = UserOpenFile("test2/file1");
+	
 	UserThreadJoin(&tid);
-	
-	int id = UserOpenFile("test");
-	
+
 	char *buf = "First thread changed that file!";
 	UserWriteFile(id, buf, 32);
 	

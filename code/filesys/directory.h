@@ -23,7 +23,7 @@
 					// file names are <= 9 characters long
 #ifdef CHANGED
 #define NumDirEntries   10 //same as NumDirEntries in filesys.cc
- #define PathMaxLen 30
+#define PathMaxLen 30
 #endif //CHANGED
 
 // The following class defines a "directory entry", representing a file

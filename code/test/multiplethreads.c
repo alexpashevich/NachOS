@@ -13,7 +13,7 @@ void func (void *arg) {
 
 int main () {
 
-	int threadsNb = 10;
+	int threadsNb = 14;
 	pthread tid;
 	int i;
 	for (i = 0; i < threadsNb; ++i)
@@ -24,6 +24,7 @@ int main () {
 		}
 	}
 	UserThreadJoin(&tid);
+
 	PutString("Main has finished its job and waiting for threads to finish...\n");
 	return 0;
 }
