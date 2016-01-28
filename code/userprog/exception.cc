@@ -115,7 +115,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         printf("\nMain program has finished with value %d\n", res);
-        // interrupt->Halt();
+        interrupt->Halt();
         break;
       }
       case SC_Exit: {
