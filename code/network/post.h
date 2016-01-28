@@ -160,8 +160,8 @@ void Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data);
 
 #ifdef CHANGED
 
-#define TEMPO 300
-#define MAXREEMISSIONS 5
+#define TEMPO 200
+#define MAXREEMISSIONS 10
 
 class PostOfficeReliable: public PostOffice {
 friend PostOffice;

@@ -40,7 +40,7 @@ extern Machine *machine;	// user program memory and registers
 #ifdef CHANGED
 #include "synchconsole.h"
 extern SynchConsole *synchconsole; // user program console
-#define MAX_STRING_SIZE 100
+#define MAX_STRING_SIZE 3800
 extern char *stringbuffer;
 extern Semaphore *bufferlock;
 #endif // CHANGED

@@ -4,7 +4,7 @@
 #include "system.h"
 #include "filesys.h"
 
-#define MAX_FILE_SIZE 3000
+#define FILESIZE
 
 void getNameFromPath(char* path, char* name)
 {
@@ -43,7 +43,7 @@ int do_UserCreateFile(char* path)
 		printf("Couldn't get to directory!\n");
 		return -1;
 	}
-    if ( !fileSystem->Create(fileName, MAX_FILE_SIZE) ) {	 // Create Nachos file
+    if ( !fileSystem->Create(fileName, 3750) ) {	 // Create Nachos file
 		
 		printf("Create: couldn't create new file %s\n", fileName);
 		fileSystem->setCurrentSector();

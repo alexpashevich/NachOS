@@ -115,7 +115,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         printf("\nMain program has finished with value %d\n", res);
-        // interrupt->Halt();
+        interrupt->Halt();
         break;
       }
       case SC_Exit: {
@@ -270,6 +270,7 @@ ExceptionHandler (ExceptionType which)
 
 #ifdef NETWORK
       case SC_CreateConnection: {
+        fflush(stdout);
         int addr = machine->ReadRegister(4);
         int port = machine->ReadRegister(5);
         int receivingPort = machine->ReadRegister(6);
@@ -277,11 +278,12 @@ ExceptionHandler (ExceptionType which)
         pktHdr.to = addr;
         pktHdr.from = postOffice->GetNetworkName();
         MailHeader mailHdr(port, 0, 4);
-        int res = postOffice->SendReliable(pktHdr, &mailHdr, (char*)receivingPort);
+        int res = postOffice->SendReliable(pktHdr, &mailHdr, (char*)&receivingPort);
         machine->WriteRegister(2, res);
         break;
       }
       case SC_SendData: {
+        fflush(stdout);
         int addr = machine->ReadRegister(4);
         int port = machine->ReadRegister(5);
         int from = machine->ReadRegister(6);
@@ -298,6 +300,7 @@ ExceptionHandler (ExceptionType which)
         break;
       }
       case SC_ReceiveData: {
+        fflush(stdout);
         int port = machine->ReadRegister(4);
         int to = machine->ReadRegister(5);
         int sizeaddr = machine->ReadRegister(6);
@@ -308,6 +311,7 @@ ExceptionHandler (ExceptionType which)
         for (unsigned i = 0; i < mailHdr.length; ++i) {
           ASSERT(machine->WriteMem(to + i, 1, (int)(filebuffer[i])));
         }
+
         delete[] filebuffer;
         ASSERT(machine->WriteMem(sizeaddr, 4, mailHdr.length));
         break;
