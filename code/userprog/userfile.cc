@@ -75,7 +75,6 @@ int do_UserOpenFile(char* path)
 	int pos = currentThread->addFile(file);
 	if (pos == -1)
 		return -1;
-	
 	return pos;
 }
 
@@ -89,7 +88,7 @@ int do_UserCloseFile(int pos)
 	if(pos == -1)
 		return -1;
 
-	delete currentThread->removeFile(pos);
+	currentThread->removeFile(pos);
 
 	return 0;
 }

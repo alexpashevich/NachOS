@@ -115,7 +115,7 @@ ExceptionHandler (ExceptionType which)
         }
         DEBUG('a', "Shutdown, initiated by user program.\n");
         printf("\nMain program has finished with value %d\n", res);
-        interrupt->Halt();
+        // interrupt->Halt();
         break;
       }
       case SC_Exit: {
@@ -126,13 +126,12 @@ ExceptionHandler (ExceptionType which)
         DEBUG('a', "Shutdown, end of main function.\n");
         printf("\nMain program has finished with value %d\n", res);
         
-        
+        // interrupt->Halt(); 
         if(currentThread->stackSlotNb == 0)
         {
             machine->lock->P();
             --machine->processCnt;
-            machine->lock->V();  
-
+            machine->lock->V();
             if( machine->processCnt == 0)
             {
               interrupt->Halt();  
@@ -221,11 +220,9 @@ ExceptionHandler (ExceptionType which)
       case SC_CreateFile: {
         char filePath[MAX_STRING_SIZE];
         int path = machine->ReadRegister(4);
-        // int name = machine->ReadRegister(5);
         bufferlock->P();
         copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
         strcpy(filePath, stringbuffer);
-        // copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE);
         bufferlock->V();
         int res = do_UserCreateFile(filePath);
         machine->WriteRegister(2, res);
@@ -234,11 +231,9 @@ ExceptionHandler (ExceptionType which)
       case SC_OpenFile: {
         char filePath[MAX_STRING_SIZE];
         int path = machine->ReadRegister(4);
-        // int name = machine->ReadRegister(5);
         bufferlock->P();
         copyStringFromMachine(path, stringbuffer, MAX_STRING_SIZE);
         strcpy(filePath, stringbuffer);
-        // copyStringFromMachine(name, stringbuffer, MAX_STRING_SIZE); // add tmp 
         bufferlock->V();
         int res = do_UserOpenFile(filePath);
         machine->WriteRegister(2, res);

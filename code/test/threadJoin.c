@@ -23,26 +23,32 @@ void foo (void *arg)
 {
 	PutString("Foo  thread: Started working!\n");
 	
-	char* tid[2 * sizeof(int)];
+	pthread tid;
 	int b;
-	if ( (b = UserThreadCreate(bar, 0, tid)) == -1 )
+	if ( (b = UserThreadCreate(bar, 0, &tid)) == -1 )
 	{
 		PutString("Could not create a new user thread.\n");
 	}
 	else 
 	{;
 		PutString("Foo  thread: Created bar thread and now waiting for it to finish...\n");
-		UserThreadJoin(tid); // comment this line to see difference
-		PutString("Foo  thread: Done waiting, now I terminate!\n");	
+		UserThreadJoin(&tid); // comment this line to see difference
+		
+		int myarg = ((int*)arg)[0];
+		PutInt(myarg);
+		PutString("\nFoo  thread: Done waiting, now I terminate!\n");	
 	}	
 	UserThreadExit();	
 }
 
 int main () {
 	
+	int a[1];
+	*a = 228;
+
 	pthread tid;
-	int f;
-	if ( (f = UserThreadCreate(foo, 0, &tid)) == -1 )
+	int f;	
+	if ( (f = UserThreadCreate(foo, (void*)a, &tid)) == -1 )
 	{
 		PutString("Could not create a new user thread.\n");	
 	}

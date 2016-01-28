@@ -112,6 +112,7 @@ main (int argc, char **argv)
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)
       {
+
 	  argCount = 1;
 	  if (!strcmp (*argv, "-z"))	// print copyright
 	      printf ("%s", copyright);
@@ -132,7 +133,7 @@ main (int argc, char **argv)
 		      ConsoleTest (*(argv + 1), *(argv + 2));
 		      argCount = 3;
 		  }
-		interrupt->Halt ();	// once we start the console, then 
+		// interrupt->Halt ();	// once we start the console, then 
 		// Nachos will loop forever waiting 
 		// for console input
 	    }
@@ -147,7 +148,7 @@ main (int argc, char **argv)
 	   	  	  SynchConsoleTest(*(argv + 1), *(argv + 2));
 	   	  	  argCount = 3;
 	   	  }
-	   	 interrupt->Halt (); // once we start the console, then 
+	   	 // interrupt->Halt (); // once we start the console, then 
 		// Nachos will loop forever waiting 
 		// for console input
 	   	}
@@ -202,7 +203,7 @@ main (int argc, char **argv)
 	cmd[1] = arg2;
 	cmd[2] = arg3;
 
-	intro();
+	// intro();
 	while(TRUE)
 	{	   	
 	  shell(cmd);
@@ -263,6 +264,7 @@ main (int argc, char **argv)
       }
     }
   }
+
 #endif//CHANGED
 #endif // FILESYS
 #ifdef NETWORK
@@ -323,7 +325,7 @@ void intro(void)
 {
 	printf("###########################################################\n");
 	printf("### 	                                             	###\n");
-	printf("### 	Hello in my super shell you sneaky bastard! 	###\n");
+	printf("### 		Welcome in NachOS super shell!				###\n");
 	printf("### 	                                             	###\n");
 	printf("###########################################################\n");
 }

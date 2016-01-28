@@ -27,9 +27,9 @@ main()
 	pthread tid;
 	UserThreadCreate(f, (void *) THIS, &tid);
 	UserThreadCreate(f, (void *) THIS, &tid);
-	UserThreadCreate(f, (void *) THIS, &tid);
-	UserThreadCreate(f, (void *) THIS, &tid);
-	UserThreadCreate(f, (void *) THIS, &tid);
+	// UserThreadCreate(f, (void *) THIS, &tid);
+	// UserThreadCreate(f, (void *) THIS, &tid);
+	// UserThreadCreate(f, (void *) THIS, &tid);
 	
 	ForkExec("multiplethreads");
 
