@@ -37,7 +37,6 @@ int do_UserCreateFile(char* path)
 	char buff[20];
 	char *fileName = buff;
 	getNameFromPath(path, fileName);
-	printf("Last dir name: %s\n", fileName);
 // Create a Nachos file of the same length
     DEBUG('f', "Creating new file %s!\n", path);
     

@@ -78,7 +78,7 @@ extern void MailCircleTest (int n);
 extern void ReliableMailTest (int networkID);
 extern void VariableMailTest (int networkID);
 #ifdef FILESYS
-extern void FileServer (int networkID);
+extern void FileServer ();
 #endif // FILESYS
 #endif // NETWORK
 #endif // CHANGED
@@ -300,9 +300,8 @@ main (int argc, char **argv)
       } 
 #ifdef FILESYS
 		else if (!strcmp(*argv, "-os")) {
-      	ASSERT(argc > 1);
-      	FileServer(atoi (*(argv + 1)));
-      	argCount = 2;
+      	FileServer();
+      	argCount = 1;
       }
 #endif // FILESYS
 #endif // CHANGED

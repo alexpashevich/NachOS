@@ -538,13 +538,13 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
 
 // waiting for some time to give the other machine chance to send the confirmation
 
-    currentThread->Sleep(TEMPO / 10);
+    currentThread->Sleep(TEMPO / 5);
     int counter = 1;
     bool confirmed = false;
     DEBUG('u', "I am awaken\n");
     while (!(confirmed = this->CheckConfirmation(pktHdr, (mailHdrReliableAnySize != NULL ? *mailHdrReliableAnySize : mailHdrReliable))) 
            && counter < MAXREEMISSIONS) {
-        currentThread->Sleep(TEMPO * 9 / 10);
+        currentThread->Sleep(TEMPO * 4 / 5);
         DEBUG('u', "Didn't receive the confirmation, sending \"%s\" again\n", data);
 // if the confirmation is not received then we think that our message was not delivered
 // so send it again
@@ -555,9 +555,10 @@ int PostOfficeReliable::SendReliable(PacketHeader pktHdr, const MailHeader *mail
         currentThread->Sleep(TEMPO / 10);
     }
 
-    if (confirmed)
+    if (confirmed) {
         DEBUG('u', "[SUCCESS] Confirmation was received, sent from %d time\n", counter);
-    // printf("Received the confirmation? counter = %d\n", counter);
+        DEBUG('U', "[SUCCESS] Confirmation was received, sent from %d time\n", counter);
+    }
 // return the result
     if (counter == MAXREEMISSIONS)
         return -1;

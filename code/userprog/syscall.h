@@ -51,7 +51,7 @@
 #define SC_ReceiveData      28
 #endif // CHANGED
 
-#define MAX_FILE_SIZE 500
+#define MAX_FILE_SIZE 3750
 
 #ifdef IN_USER_MODE
 #ifdef CHANGED
