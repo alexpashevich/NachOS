@@ -4,6 +4,8 @@
 // 	Check threadJoin function.
 //--------------------------------------------------------------------------
 
+// uncomment UserThreadJoin and recompile
+
 void bar(void *arg)
 {
 	PutString("Bar  thread: Started working!\n");
@@ -32,30 +34,24 @@ void foo (void *arg)
 	else 
 	{;
 		PutString("Foo  thread: Created bar thread and now waiting for it to finish...\n");
-		UserThreadJoin(&tid); // comment this line to see difference
-		
-		int myarg = ((int*)arg)[0];
-		PutInt(myarg);
+		// UserThreadJoin(&tid); // comment this line to see difference
 		PutString("\nFoo  thread: Done waiting, now I terminate!\n");	
 	}	
 	UserThreadExit();	
 }
 
 int main () {
-	
-	int a[1];
-	*a = 228;
 
 	pthread tid;
 	int f;	
-	if ( (f = UserThreadCreate(foo, (void*)a, &tid)) == -1 )
+	if ( (f = UserThreadCreate(foo, 0, &tid)) == -1 )
 	{
 		PutString("Could not create a new user thread.\n");	
 	}
 	else 
 	{
 		PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
-		UserThreadJoin(&tid);
+		// UserThreadJoin(&tid);
 		PutString("Main thread: Done waiting, now I terminate!\n");
 	}	
 	return 0;

@@ -25,9 +25,5 @@ main()
 		PutString("Thread was not created!\n");
 	}
 
-	char ch = GetChar();
-	PutString("first thread get char ");
-	PutChar(ch);
-	PutChar('\n');
 	return 0;
 }
