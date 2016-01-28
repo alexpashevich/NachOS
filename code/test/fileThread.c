@@ -17,7 +17,7 @@ void foo(void *arg)
 	UserWriteFile(id, bu, 10);	
 		
 	UserCloseFile(id);
-	PutString("Bar  thread: Done working, now I terminate!\n");
+	PutString("Foo  thread: Done working, now I terminate!\n");
 	UserThreadExit();	
 }
 

@@ -13,7 +13,7 @@ void func (void *arg) {
 
 int main () {
 
-	int threadsNb = 14;
+	int threadsNb = 10;
 	pthread tid;
 	int i;
 	for (i = 0; i < threadsNb; ++i)

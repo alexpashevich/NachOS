@@ -4,7 +4,7 @@
 // 	Check threadJoin function.
 //--------------------------------------------------------------------------
 
-// change NumPhysPAges to 180 to show that we release memory
+// change NumPhysPAges to 160 to show that we release memory
 
 int 
 main () {
@@ -15,7 +15,6 @@ main () {
 	ForkExec("fork2");
 	
 	ForkExec("fork1");
-	ForkExec("fork2");
 
 	char buf[20];
 	GetString(buf, 20);

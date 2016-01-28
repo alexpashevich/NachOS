@@ -32,9 +32,9 @@ void foo (void *arg)
 		PutString("Could not create a new user thread.\n");
 	}
 	else 
-	{;
+	{
 		PutString("Foo  thread: Created bar thread and now waiting for it to finish...\n");
-		// UserThreadJoin(&tid); // comment this line to see difference
+		UserThreadJoin(&tid); // comment this line to see difference
 		PutString("\nFoo  thread: Done waiting, now I terminate!\n");	
 	}	
 	UserThreadExit();	
@@ -51,7 +51,7 @@ int main () {
 	else 
 	{
 		PutString("Main thread: Created foo thread and now waiting for it to finish...\n");
-		// UserThreadJoin(&tid);
+		UserThreadJoin(&tid);
 		PutString("Main thread: Done waiting, now I terminate!\n");
 	}	
 	return 0;

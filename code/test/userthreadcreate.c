@@ -1,10 +1,13 @@
 #include "syscall.h"
 
 void func(void *arg) {
+
 	int myarg = ((int*)arg)[0];
+	
 	PutString("The argument = ");
 	PutInt(myarg);
 	PutChar('\n');
+	
 	char ch = GetChar();
 	PutString("second thread get char ");
 	PutChar(ch);
